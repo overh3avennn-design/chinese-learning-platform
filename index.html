@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Китайский язык — Образовательная платформа</title>
+  <meta name="description" content="Персональная образовательная платформа по изучению китайского языка. Материалы по уровням HSK, практика и поддержка.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>document.documentElement.classList.add("is-loading");</script>
+</head>
+<body class="home">
+  <div class="preloader" aria-hidden="true">
+    <span class="preloader-mark">欢迎</span>
+  </div>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-char">中</span>
+        <span>Китайский язык</span>
+      </a>
+      <button class="nav-toggle" aria-label="Меню" aria-expanded="false">☰</button>
+      <nav class="site-nav" aria-label="Основная навигация">
+        <ul>
+          <li><a href="index.html" class="active">Главная</a></li>
+          <li><a href="library/index.html">Библиотека</a></li>
+          <li><a href="support/teacher.html">Преподаватель</a></li>
+          <li><a href="support/faq.html">FAQ</a></li>
+          <li><a href="support/contacts.html">Контакты</a></li>
+        </ul>
+      </nav>
+      <a href="support/contacts.html" class="nav-cta">Записаться на урок</a>
+    </div>
+  </header>
+
+  <section class="hero-video">
+    <video class="hero-video-media" autoplay muted loop playsinline preload="auto" poster="images/hero-poster.jpg">
+      <source src="images/hero-video.mp4" type="video/mp4">
+    </video>
+    <div class="hero-video-overlay" aria-hidden="true"></div>
+    <div class="hero-video-inner">
+      <div class="hero-video-content">
+        <h1 class="hero-video-title" lang="zh-Hans">中文</h1>
+        <p class="hero-video-lead">
+          Материалы по уровням HSK, практика говорения и учебники — собраны
+          в одном месте, чтобы учиться последовательно и без лишней суеты.
+        </p>
+        <div class="hero-video-actions">
+          <a href="library/index.html" class="btn btn-primary">Открыть библиотеку</a>
+          <a href="support/contacts.html" class="hero-link">Записаться на пробное занятие <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+
+      <div class="hero-video-footer">
+        <a class="hero-video-footer-item" href="library/index.html">
+          <span class="hero-footer-index" aria-hidden="true">01</span>
+          <h2>Библиотека по HSK</h2>
+          <p>Материалы, разложенные по уровням — от новичка до HSK 6.</p>
+        </a>
+        <a class="hero-video-footer-item" href="library/practice/index.html">
+          <span class="hero-footer-index" aria-hidden="true">02</span>
+          <h2>Практика говорения</h2>
+          <p>Диалоги, тренировка тонов и живая разговорная речь.</p>
+        </a>
+        <a class="hero-video-footer-item" href="library/textbooks/index.html">
+          <span class="hero-footer-index" aria-hidden="true">03</span>
+          <h2>Учебники и материалы</h2>
+          <p>Рукодельникова, практический курс и билеты к экзамену.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="section">
+      <h2>О платформе</h2>
+      <p>
+        Это персональный инструмент для изучения и преподавания китайского языка.
+        Здесь собраны учебные материалы, конспекты, упражнения и ресурсы — от фонетики
+        до подготовки к экзамену HSK. Платформа помогает ученикам быстро находить
+        нужные материалы, а преподавателю — готовиться к урокам без лишней суеты.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>О преподавателе</h2>
+      <p>
+        Преподаватель китайского языка с опытом работы с учениками разных уровней —
+        от полных новичков до подготовки к HSK 4–6. Индивидуальный подход,
+        акцент на практику и понимание логики языка, а не только заучивание.
+      </p>
+      <p><a href="support/teacher.html">Подробнее о преподавателе и о том, как проходят занятия →</a></p>
+    </section>
+
+    <section class="section">
+      <h2>Контакты</h2>
+      <p>
+        Telegram: <a href="https://t.me/kski12">@kski12</a>
+      </p>
+      <p style="margin-top: 1rem;">
+        <a href="support/contacts.html" class="btn btn-primary">Связаться со мной</a>
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <strong style="color: #fff;">Китайский язык</strong>
+        <p style="margin: 0.5rem 0 0; font-size: 0.9rem;">Образовательная платформа · V1</p>
+      </div>
+      <div class="footer-links">
+        <a href="library/index.html">Библиотека</a>
+        <a href="support/faq.html">FAQ</a>
+        <a href="support/contacts.html">Контакты</a>
+      </div>
+      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    </div>
+  </footer>
+
+  <script src="js/parallax.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/header-border.js"></script>
+  <script src="js/preloader.js"></script>
+</body>
+</html>

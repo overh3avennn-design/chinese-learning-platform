@@ -1,0 +1,9 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# Учебники и материалы (PDF, docx, картинки) — только локально.
+# В library в git попадают только HTML-страницы сайта.
+library/**
+!library/**/
+!library/**/*.html
