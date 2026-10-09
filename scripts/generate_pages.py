@@ -177,6 +177,10 @@ def head(title, depth):
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{esc(title)} — Китайский язык</title>
+  <link rel="icon" href="{p}favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="32x32" href="{p}favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="{p}favicon-192.png">
+  <link rel="apple-touch-icon" href="{p}apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
