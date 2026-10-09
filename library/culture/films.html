@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Фильмы про культуру Китая — Китайский язык</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+  <div class="bg-fixed" aria-hidden="true"></div>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="logo">
+        <span class="logo-char">中</span>
+        <span>Китайский язык</span>
+      </a>
+      <button class="nav-toggle" aria-label="Меню" aria-expanded="false">☰</button>
+      <nav class="site-nav" aria-label="Основная навигация">
+        <ul>
+          <li><a href="../../index.html">Главная</a></li>
+          <li><a href="../index.html" class="active">Библиотека</a></li>
+          <li><a href="../../support/teacher.html">Преподаватель</a></li>
+          <li><a href="../../support/faq.html">FAQ</a></li>
+          <li><a href="../../support/contacts.html">Контакты</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <nav class="breadcrumb" aria-label="Навигация">
+      <a href="../../index.html">Главная</a> / <a href="../index.html">Библиотека</a> / <a href="index.html">Культура Китая</a> / Фильмы
+    </nav>
+    <h1 class="page-title">Фильмы про культуру Китая</h1>
+    <p class="page-subtitle">Документальные фильмы об истории и культуре Китая</p>
+
+    <p>
+      Выберите фильм — он откроется в плеере на этой странице. Сами видео
+      хранятся на Яндекс Диске, список подгружается оттуда при открытии страницы.
+    </p>
+
+    <!-- Список фильмов собирает js/main.js (initYandexFilms): берёт
+         публичную папку из data-yadisk-public, читает её через API
+         Яндекс Диска и раскладывает видео карточками. Новые фильмы достаточно
+         положить в эту папку на Диске — править страницу не нужно. -->
+    <div class="film-vpn" role="note">
+      <span class="film-vpn-icon" aria-hidden="true">⚠</span>
+      <p>
+        <strong>Смотрите фильмы с выключенным VPN.</strong>
+        Видео хранятся на Яндекс Диске, а Яндекс не пускает подключения через VPN:
+        с включённым VPN список фильмов не загрузится и плеер не запустится.
+        Выключите VPN и обновите страницу.
+      </p>
+    </div>
+
+    <section class="section films" data-yadisk-public="https://disk.yandex.ru/d/m8KBkUbYJi5Qsg">
+      <div class="film-player" hidden>
+        <video controls playsinline preload="metadata"></video>
+        <div class="film-player-info">
+          <h2 class="film-player-title"></h2>
+          <p class="film-player-note" hidden></p>
+        </div>
+      </div>
+
+      <p class="film-status" role="status">Загружаю список фильмов с Яндекс Диска…</p>
+      <div class="film-list"></div>
+
+      <p class="film-source">
+        Не открывается? <a href="https://disk.yandex.ru/d/m8KBkUbYJi5Qsg" target="_blank" rel="noopener">Открыть папку на Яндекс Диске</a>
+      </p>
+    </section>
+
+    <nav class="nav-next">
+      <a href="index.html" class="btn btn-secondary">← Культура Китая</a>
+    </nav>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <strong class="footer-brand">Китайский язык</strong>
+        <p class="footer-tagline">Образовательная платформа · V1</p>
+      </div>
+      <div class="footer-links">
+        <a href="../index.html">Библиотека</a>
+        <a href="../../support/faq.html">FAQ</a>
+        <a href="../../support/contacts.html">Контакты</a>
+      </div>
+      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    </div>
+  </footer>
+  <script src="../../js/main.js"></script>
+</body>
+</html>

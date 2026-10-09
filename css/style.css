@@ -3,7 +3,12 @@
 :root {
   --color-primary: #24365c;
   --color-primary-dark: #16223c;
-  --color-accent: #e8b95c;
+  /* Акцент библиотеки и внутренних страниц — красное солнце с фоновой
+     картинки images/bg-pine-shore.jpg (взято пипеткой с его ядра).
+     --color-accent-soft — осветлённый вариант: им подсвечиваются заливки,
+     где красный уже стоит фоном, например кнопка «Открыть» под курсором. */
+  --color-accent: #f65209;
+  --color-accent-soft: #ff7a45;
   --color-bg: #0b1524;
   --color-surface: rgba(18, 30, 48, 0.72);
   --color-surface-solid: #101d31;
@@ -12,9 +17,9 @@
   --color-border: rgba(168, 184, 209, 0.16);
   --color-chinese: #f2d9a8;
   --font-sans: "Segoe UI", system-ui, -apple-system, sans-serif;
-  /* Editorial display face for the first screen only: the hero headline,
-     the eyebrow, the homepage nav and the bottom bar. Body copy on the
-     rest of the site keeps --font-sans. */
+  /* Editorial display face for the first screen only: the homepage nav,
+     the hero lead and buttons, and the bottom bar. Body copy on the rest
+     of the site keeps --font-sans. */
   --font-display: "Jost", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-chinese: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   --max-width: 960px;
@@ -22,6 +27,16 @@
   --radius: 8px;
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   --header-height: 72px;
+  /* Тень под светлым текстом поверх видео и фоновой картинки. */
+  --shadow-text: 0 1px 10px rgba(0, 0, 0, 0.55);
+  /* Тёмные боковые края: один и тот же слой у hero, серой секции под ним
+     и футера главной. */
+  --edge-shade: linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.35) 100%);
+  /* Заливка шва между hero и серой секцией: верх секции (серый #2e2e2e
+     с теми же краями). Маски проявляют её с двух сторон стыка. */
+  --seam-fill: var(--edge-shade), #2e2e2e;
+  --seam-mask-up: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.945) 8.3%, rgba(0, 0, 0, 0.797) 16.7%, rgba(0, 0, 0, 0.600) 25%, rgba(0, 0, 0, 0.404) 33.3%, rgba(0, 0, 0, 0.242) 41.7%, rgba(0, 0, 0, 0.130) 50%, rgba(0, 0, 0, 0.062) 58.3%, rgba(0, 0, 0, 0.027) 66.7%, rgba(0, 0, 0, 0.010) 75%, rgba(0, 0, 0, 0.003) 83.3%, rgba(0, 0, 0, 0.001) 91.7%, transparent 100%);
+  --seam-mask-down: linear-gradient(180deg, transparent 68%, rgba(0, 0, 0, 0.009) 71.2%, rgba(0, 0, 0, 0.058) 74.4%, rgba(0, 0, 0, 0.163) 77.6%, rgba(0, 0, 0, 0.317) 80.8%, rgba(0, 0, 0, 0.500) 84%, rgba(0, 0, 0, 0.683) 87.2%, rgba(0, 0, 0, 0.837) 90.4%, rgba(0, 0, 0, 0.942) 93.6%, rgba(0, 0, 0, 0.991) 96.8%, #000 100%);
 }
 
 *,
@@ -30,8 +45,10 @@
   box-sizing: border-box;
 }
 
+/* Анимаций скролла на сайте нет: колесо, клавиатура, полоса прокрутки и
+   якорные ссылки работают нативно. scroll-padding-top не анимация — он
+   просто отводит якорю место под фиксированной шапкой. */
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 76px;
 }
 
@@ -45,35 +62,20 @@ body {
   min-height: 100vh;
 }
 
-/* Fixed backdrop: a plain element pinned to the viewport and sized taller
-   than it, so there's spare height to travel through. js/parallax.js pans
-   it with `transform: translateY()` — a compositor-only property the GPU
-   moves for free, with no repaint — instead of animating background-position
-   (which would repaint the whole layer on every scroll frame). It eases
-   toward the scroll position rather than snapping to it, which is what
-   makes the motion feel smooth rather than 1:1 with the scrollbar. At rest
-   it shows the top of the image; fully scrolled, it shows the bottom.
-   Falls back to a static top-of-image view with no JS or reduced motion. */
+/* Фон под содержимым: элемент, прибитый к вьюпорту ровно по его размеру.
+   Никакого параллакса и вообще никакой реакции на скролл: ни transform,
+   ни will-change, ни отдельного слоя композитора — значит, и ни одного
+   кадра перерисовки на прокрутку. Картинка просто стоит на месте. */
 .bg-fixed {
   position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 130vh;
+  inset: 0;
   z-index: -1;
   background-image:
     linear-gradient(180deg, rgba(8, 13, 23, 0.72) 0%, rgba(8, 13, 23, 0.58) 45%, rgba(8, 13, 23, 0.86) 100%),
     url("../images/bg-pine-shore.jpg");
   background-repeat: no-repeat;
-  background-position: center top;
+  background-position: center center;
   background-size: cover;
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-}
-
-.chinese {
-  font-family: var(--font-chinese);
-  color: var(--color-chinese);
 }
 
 a {
@@ -83,6 +85,16 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+/* Кнопки и ссылки-действия под курсором не подчёркиваются: у них своя
+   подсветка — цвет, рамка, заливка, — а подчёркивание от общего правила
+   для ссылок выше только рябит. */
+.btn:hover,
+.material-action:hover,
+.material-title a:hover,
+.material-cover:hover {
+  text-decoration: none;
 }
 
 img {
@@ -122,7 +134,7 @@ img {
   font-size: 1.1rem;
   color: var(--color-text);
   text-decoration: none;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+  text-shadow: var(--shadow-text);
 }
 
 .logo:hover {
@@ -149,7 +161,7 @@ img {
   color: var(--color-text-muted);
   font-size: 0.95rem;
   font-weight: 500;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+  text-shadow: var(--shadow-text);
   padding: 0.35rem 0.7rem;
   border-radius: 999px;
   transition: background 0.15s, color 0.15s;
@@ -186,14 +198,11 @@ body.home .site-header {
   background: linear-gradient(180deg, rgba(6, 10, 18, 0.55) 0%, rgba(6, 10, 18, 0) 100%);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Past the hero the header takes the paper color of the section below
    it, so the bar reads as part of it; its text switches to dark ink. */
-body.home .site-header {
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
 body.home .site-header.is-past-hero {
   border-bottom: 1px solid var(--paper-line);
   background:
@@ -258,14 +267,22 @@ body.home .site-nav ul {
   gap: 0.35rem;
 }
 
-/* No pills on the homepage — the nav reads as plain editorial type with
-   a hairline that grows under the current item. */
-body.home .site-nav a {
+/* Одна и та же капитель первого экрана: меню главной, кнопка в hero и
+   ссылка рядом с ней. Правило стоит раньше самих блоков, поэтому каждый
+   из них может переопределить что угодно из этого набора. */
+body.home .site-nav a,
+.hero-video-actions .btn-primary,
+.hero-link {
   font-family: var(--font-display);
   font-size: 0.78rem;
   font-weight: 400;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+/* No pills on the homepage — the nav reads as plain editorial type with
+   a hairline that grows under the current item. */
+body.home .site-nav a {
   color: rgba(238, 241, 246, 0.72);
   padding: 0.5rem 0.9rem;
   border-radius: 0;
@@ -289,7 +306,7 @@ body.home .site-nav a:hover,
 body.home .site-nav a.active {
   background: none;
   color: #fff;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+  text-shadow: var(--shadow-text);
 }
 
 body.home .site-nav a:hover::after,
@@ -350,7 +367,6 @@ body.home {
   --paper-edges: linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.12) 100%);
   --paper-line: rgba(0, 0, 0, 0.14);
   --ink: #161719;
-  --ink-soft: #232528;
 }
 
 /* Homepage: the section under the hero sits on the paper palette and its
@@ -391,11 +407,9 @@ body.home .hero-video + main::before {
   height: 50%;
   z-index: -1;
   pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.35) 100%),
-    #2e2e2e;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.945) 8.3%, rgba(0, 0, 0, 0.797) 16.7%, rgba(0, 0, 0, 0.600) 25%, rgba(0, 0, 0, 0.404) 33.3%, rgba(0, 0, 0, 0.242) 41.7%, rgba(0, 0, 0, 0.130) 50%, rgba(0, 0, 0, 0.062) 58.3%, rgba(0, 0, 0, 0.027) 66.7%, rgba(0, 0, 0, 0.010) 75%, rgba(0, 0, 0, 0.003) 83.3%, rgba(0, 0, 0, 0.001) 91.7%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.945) 8.3%, rgba(0, 0, 0, 0.797) 16.7%, rgba(0, 0, 0, 0.600) 25%, rgba(0, 0, 0, 0.404) 33.3%, rgba(0, 0, 0, 0.242) 41.7%, rgba(0, 0, 0, 0.130) 50%, rgba(0, 0, 0, 0.062) 58.3%, rgba(0, 0, 0, 0.027) 66.7%, rgba(0, 0, 0, 0.010) 75%, rgba(0, 0, 0, 0.003) 83.3%, rgba(0, 0, 0, 0.001) 91.7%, transparent 100%);
+  background: var(--seam-fill);
+  -webkit-mask-image: var(--seam-mask-up);
+  mask-image: var(--seam-mask-up);
 }
 
 body.home .hero-video + main p {
@@ -490,11 +504,9 @@ body.home .hero-video + main .btn-primary:hover {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.35) 100%),
-    #2e2e2e;
-  -webkit-mask-image: linear-gradient(180deg, transparent 68%, rgba(0, 0, 0, 0.009) 71.2%, rgba(0, 0, 0, 0.058) 74.4%, rgba(0, 0, 0, 0.163) 77.6%, rgba(0, 0, 0, 0.317) 80.8%, rgba(0, 0, 0, 0.500) 84%, rgba(0, 0, 0, 0.683) 87.2%, rgba(0, 0, 0, 0.837) 90.4%, rgba(0, 0, 0, 0.942) 93.6%, rgba(0, 0, 0, 0.991) 96.8%, #000 100%);
-  mask-image: linear-gradient(180deg, transparent 68%, rgba(0, 0, 0, 0.009) 71.2%, rgba(0, 0, 0, 0.058) 74.4%, rgba(0, 0, 0, 0.163) 77.6%, rgba(0, 0, 0, 0.317) 80.8%, rgba(0, 0, 0, 0.500) 84%, rgba(0, 0, 0, 0.683) 87.2%, rgba(0, 0, 0, 0.837) 90.4%, rgba(0, 0, 0, 0.942) 93.6%, rgba(0, 0, 0, 0.991) 96.8%, #000 100%);
+  background: var(--seam-fill);
+  -webkit-mask-image: var(--seam-mask-down);
+  mask-image: var(--seam-mask-down);
 }
 
 .hero-video-inner {
@@ -513,33 +525,6 @@ body.home .hero-video + main .btn-primary:hover {
   margin-top: auto;
   max-width: 44rem;
   padding-bottom: 4rem;
-}
-
-.hero-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  flex-wrap: wrap;
-  font-family: var(--font-display);
-  font-size: 0.78rem;
-  font-weight: 400;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: rgba(238, 241, 246, 0.82);
-  margin: 0 0 1.75rem;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
-}
-
-.hero-eyebrow .chinese {
-  font-size: 0.95rem;
-  letter-spacing: 0.2em;
-}
-
-.hero-eyebrow-sep {
-  display: block;
-  width: 3.5rem;
-  height: 1px;
-  background: rgba(238, 241, 246, 0.5);
 }
 
 /* The headline is a single Chinese word, so it uses the Chinese face
@@ -577,11 +562,6 @@ body.home .hero-video + main .btn-primary:hover {
 
 /* Hero-only button skin — .btn elsewhere on the site is untouched. */
 .hero-video-actions .btn-primary {
-  font-family: var(--font-display);
-  font-size: 0.78rem;
-  font-weight: 400;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
   padding: 1rem 2.25rem;
   border-radius: 999px;
   color: #fff;
@@ -599,11 +579,6 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .hero-link {
-  font-family: var(--font-display);
-  font-size: 0.78rem;
-  font-weight: 400;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
   color: rgba(238, 241, 246, 0.86);
   display: inline-flex;
   align-items: center;
@@ -705,7 +680,6 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
-.hero-eyebrow,
 .hero-video-title,
 .hero-video-lead,
 .hero-video-actions,
@@ -713,31 +687,10 @@ body.home .hero-video + main .btn-primary:hover {
   animation: hero-rise 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
-.hero-eyebrow { animation-delay: 0.1s; }
 .hero-video-title { animation-delay: 0.2s; }
 .hero-video-lead { animation-delay: 0.32s; }
 .hero-video-actions { animation-delay: 0.44s; }
 .hero-video-footer { animation-delay: 0.56s; }
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-video-media {
-    display: none;
-  }
-
-  .hero-video {
-    background-image: url("../images/hero-poster.jpg");
-    background-size: cover;
-    background-position: center;
-  }
-
-  .hero-eyebrow,
-  .hero-video-title,
-  .hero-video-lead,
-  .hero-video-actions,
-  .hero-video-footer {
-    animation: none;
-  }
-}
 
 /* Preloader: covers the homepage until the hero video can actually play,
    so a reload never shows a frozen frame — the video starts from its
@@ -777,18 +730,11 @@ body.home .hero-video + main .btn-primary:hover {
 
 /* Hold the hero entrance until the cover lifts, so it isn't spent
    behind the preloader. */
-.is-loading .hero-eyebrow,
 .is-loading .hero-video-title,
 .is-loading .hero-video-lead,
 .is-loading .hero-video-actions,
 .is-loading .hero-video-footer {
   animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .preloader-mark {
-    animation: none;
-  }
 }
 
 /* Buttons */
@@ -828,13 +774,6 @@ body.home .hero-video + main .btn-primary:hover {
   background: rgba(238, 241, 246, 0.12);
 }
 
-.btn-group {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
 /* Sections */
 .section {
   margin-bottom: 2.5rem;
@@ -860,18 +799,43 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .card {
+  position: relative;
   background: var(--color-surface-solid);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   padding: 1.25rem;
   box-shadow: var(--shadow);
+  cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
-.card:hover {
-  border-color: var(--color-primary);
+/* Карточка нажимается целиком: ссылка заголовка растянута прозрачным слоем
+   на весь прямоугольник, поэтому попасть можно в любое её место, а не
+   только по названию. Ссылка в карточке одна — перекрывать нечего. */
+.card h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+}
+
+.card:hover,
+.card:focus-within {
+  border-color: var(--color-accent);
   box-shadow: 0 8px 24px rgba(36, 54, 92, 0.35);
   transform: translateY(-2px);
+}
+
+/* Разделы, куда материалы ещё не добавлены: карточка та же, но прозрачная —
+   сразу видно, где пусто. Наведение и ссылка работают как обычно. */
+.card.is-empty {
+  background: transparent;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.card.is-empty h3 a {
+  color: var(--color-text-muted);
 }
 
 .card h3 {
@@ -901,30 +865,399 @@ body.home .hero-video + main .btn-primary:hover {
   font-weight: 500;
 }
 
-/* Content meta block */
-.meta-block {
-  background: rgba(36, 54, 92, 0.25);
-  border-left: 4px solid var(--color-primary);
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
-  border-radius: 0 var(--radius) var(--radius) 0;
+/* Разделы уровня на его главной странице: под заголовком стандарта сразу
+   идут материалы, поэтому у каждого раздела свой подзаголовок со ссылкой на
+   отдельную страницу раздела, описание и ниже карточки материалов. */
+.level-section {
+  margin: 2rem 0 0;
 }
 
-.meta-block dl {
+.level-section > h3 {
+  font-size: 1.1rem;
+  margin: 0 0 0.25rem;
+}
+
+.level-section > h3 a {
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.level-section > h3 a:hover {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.level-section-desc {
   margin: 0;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.25rem 1rem;
   font-size: 0.9rem;
-}
-
-.meta-block dt {
-  font-weight: 600;
   color: var(--color-text-muted);
 }
 
-.meta-block dd {
+.level-section .material-grid {
+  margin-top: 0.85rem;
+}
+
+.level-section .content-list {
+  margin-bottom: 0;
+}
+
+/* Разделы, куда материалы ещё не добавлены: не занимают на странице место
+   пустыми блоками, а собраны одной строкой в конце стандарта. */
+.level-empty {
+  margin: 2rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.level-empty a {
+  color: var(--color-text-muted);
+}
+
+.level-empty a:hover {
+  color: var(--color-accent);
+}
+
+/* Материалы раздела: карточка с обложкой первой страницы файла.
+   Обложки лежат в images/previews/ и собираются scripts/make_previews.py. */
+.material-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 0;
+}
+
+/* Карточка лежит на боку: слева небольшое превью, справа название,
+   описание и кнопки. Обложка во всю ширину карточки занимала полэкрана
+   и оттесняла текст вниз. */
+.material-card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+/* Под курсором карточка материала берётся красным ободком и мягким
+   свечением того же цвета — будто сзади зажгли подсветку. Свечение это
+   три тени подряд: плотный контур по краю, ореол вокруг карточки и
+   широкая подложка снизу; цвет — тот же --color-accent (#f65209).
+   :focus-within повторяет то же для перехода клавиатурой. */
+.material-card:hover,
+.material-card:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent),
+              0 0 18px rgba(246, 82, 9, 0.45),
+              0 12px 32px rgba(246, 82, 9, 0.22);
+  transform: translateY(-2px);
+}
+
+/* Превью на тёмной подложке, как книга на полке: у книг формат
+   вертикальный, у журналов горизонтальный, и подложка сглаживает разницу,
+   а обложка видна целиком, без обрезки. */
+.material-cover {
+  flex: 0 0 104px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: linear-gradient(160deg, rgba(36, 54, 92, 0.55), var(--color-primary-dark));
+  border-right: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.material-cover img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  /* Потолок по высоте: у карточки с длинным описанием превью
+     не должно растягиваться на всю её высоту. */
+  max-height: 132px;
+  border-radius: 2px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* Обложки ещё нет: вместо картинки плашка с расширением файла. */
+.material-fallback {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.material-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.85rem 1rem 0.85rem;
+}
+
+.material-title {
   margin: 0;
+  font-size: 0.97rem;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* По названию открывается сам файл — как по обложке и по кнопке «Открыть».
+   Цвет берётся у заголовка, красным название становится под курсором. */
+.material-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.material-title a:hover {
+  color: var(--color-accent);
+}
+
+.material-desc {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.material-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.7rem;
+}
+
+.material-type {
+  font-size: 0.72rem;
+  background: rgba(238, 241, 246, 0.08);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.material-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.material-action {
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+}
+
+.material-action:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.material-action.is-open {
+  color: var(--color-primary-dark);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.material-action.is-open:hover {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent-soft);
+  color: var(--color-primary-dark);
+}
+
+/* Фильмы с Яндекс Диска (library/culture/films.html). Список и плеер
+   собирает js/main.js — initYandexFilms. Плеер появляется над списком,
+   когда выбран фильм; карточка фильма — кнопка того же вида, что карточка
+   материала: превью слева, название и формат справа. */
+.film-player {
+  margin: 0 0 2rem;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.film-player video {
+  display: block;
+  width: 100%;
+  max-height: 70vh;
+  background: #000;
+}
+
+.film-player-info {
+  padding: 0.85rem 1.1rem 1rem;
+}
+
+.section .film-player-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 1.1rem;
+}
+
+.film-player-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+/* Предупреждение над списком: Яндекс Диск не отвечает через VPN. */
+.film-vpn {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin: 0 0 1.5rem;
+  padding: 0.85rem 1rem;
+  background: rgba(246, 82, 9, 0.10);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  font-size: 0.92rem;
+}
+
+.film-vpn strong {
+  color: var(--color-accent);
+}
+
+.film-vpn-icon {
+  flex: none;
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+
+.film-vpn p {
+  margin: 0;
+}
+
+.film-status {
+  color: var(--color-text-muted);
+}
+
+.film-status.is-error {
+  padding: 1rem;
+  background: rgba(246, 82, 9, 0.10);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.section h3.film-group {
+  margin: 1.75rem 0 0.75rem;
+}
+
+.film-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+  gap: 1rem;
+}
+
+.film-card {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.film-card:hover,
+.film-card:focus-visible,
+.film-card.is-active {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent),
+              0 0 18px rgba(246, 82, 9, 0.45),
+              0 12px 32px rgba(246, 82, 9, 0.22);
+  transform: translateY(-2px);
+}
+
+.film-cover {
+  position: relative;
+  flex: 0 0 132px;
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, rgba(36, 54, 92, 0.55), var(--color-primary-dark));
+  border-right: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.film-cover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.film-play {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding-left: 0.15rem;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  color: var(--color-primary-dark);
+  background: var(--color-accent);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.film-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.85rem 1rem;
+}
+
+.film-title {
+  font-size: 0.97rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.film-card:hover .film-title,
+.film-card.is-active .film-title {
+  color: var(--color-accent);
+}
+
+.film-meta {
+  margin-top: auto;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.film-source {
+  margin: 1.5rem 0 0;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
 }
 
 /* Content lists */
@@ -970,7 +1303,7 @@ body.home .hero-video + main .btn-primary:hover {
   color: var(--color-text-muted);
   font-size: 0.9rem;
   padding: 1rem;
-  background: rgba(232, 185, 92, 0.08);
+  background: rgba(246, 82, 9, 0.10);
   border: 1px dashed var(--color-accent);
   border-radius: var(--radius);
   margin: 1rem 0;
@@ -1047,6 +1380,14 @@ body.home .hero-video + main .btn-primary:hover {
   resize: vertical;
 }
 
+/* Мелкая сноска под блоком: примечание к контактам, к форме. Раньше эти
+   сноски были набраны inline-стилями в самой разметке. */
+.note-small {
+  margin: 1rem 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
 /* Nav next */
 .nav-next {
   margin-top: 2.5rem;
@@ -1078,6 +1419,15 @@ body.home .hero-video + main .btn-primary:hover {
 
 .footer-inner a {
   color: var(--color-text-muted);
+}
+
+.footer-brand {
+  color: #fff;
+}
+
+.footer-tagline {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
 }
 
 .footer-links {
@@ -1256,25 +1606,10 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
-/* Small tablet / large phone — the strip stays a strip, stacked. */
+/* Small tablet / large phone — the strip stays a strip, stacked.
+   Меню внутренних страниц (шесть пунктов) уже не помещается в строку
+   рядом с логотипом и уходит в бургер. */
 @media (max-width: 860px) {
-  .hero-video-footer {
-    grid-template-columns: 1fr;
-    gap: 1.1rem;
-  }
-
-  .hero-video-footer-item,
-  .hero-video-footer-item:first-child {
-    padding: 0 0 0 1rem;
-    border-left: 1px solid rgba(238, 241, 246, 0.2);
-  }
-
-  .hero-video-footer-item p {
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 640px) {
   .nav-toggle {
     display: block;
   }
@@ -1304,6 +1639,23 @@ body.home .hero-video + main .btn-primary:hover {
     flex-wrap: wrap;
   }
 
+  .hero-video-footer {
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+  }
+
+  .hero-video-footer-item,
+  .hero-video-footer-item:first-child {
+    padding: 0 0 0 1rem;
+    border-left: 1px solid rgba(238, 241, 246, 0.2);
+  }
+
+  .hero-video-footer-item p {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
   .contact-grid {
     grid-template-columns: 1fr;
   }
@@ -1312,23 +1664,30 @@ body.home .hero-video + main .btn-primary:hover {
     grid-template-columns: 1fr;
   }
 
+  /* На телефоне карточки идут одна под другой, превью чуть уже. */
+  .material-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .material-cover {
+    flex-basis: 84px;
+    padding: 0.6rem;
+  }
+
+  /* На узком экране подпись, метка и ссылка не влезают в строку: метка
+     отжимала подпись в колонку из одного-двух слов. Ставим их друг под друга. */
+  .content-list li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .hero-video-inner {
     padding: calc(var(--header-height) + 2rem) 1.25rem 1.75rem;
   }
 
   .hero-video-content {
     padding-bottom: 2.5rem;
-  }
-
-  .hero-eyebrow {
-    gap: 0.7rem;
-    font-size: 0.68rem;
-    letter-spacing: 0.24em;
-    margin-bottom: 1.25rem;
-  }
-
-  .hero-eyebrow-sep {
-    width: 2rem;
   }
 
   .hero-video-title {
@@ -1379,12 +1738,31 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
+/* prefers-reduced-motion — один блок на весь сайт. Стоит последним не
+   случайно: правила меню должны перебить @media (max-width: 1024px) выше,
+   а медиазапросы специфичности не добавляют — выигрывает тот, кто ниже. */
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
+  /* Вместо видео — его постер (на него же смотрит js/main.js, чтобы не
+     ждать загрузки видео, которого не будет). */
+  .hero-video-media {
+    display: none;
   }
 
-  /* Menu just fades — no sliding. */
+  .hero-video {
+    background-image: url("../images/hero-poster.jpg");
+    background-size: cover;
+    background-position: center;
+  }
+
+  .hero-video-title,
+  .hero-video-lead,
+  .hero-video-actions,
+  .hero-video-footer,
+  .preloader-mark {
+    animation: none;
+  }
+
+  /* Меню только проявляется — без сдвига. */
   body.home .site-nav,
   body.home .site-nav li {
     transform: none;
@@ -1415,7 +1793,7 @@ body.home .site-footer {
   color: #a6a6a6;
   border-top: 1px solid rgba(255, 255, 255, 0.14);
   background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.35) 100%),
+    var(--edge-shade),
     #262626;
 }
 

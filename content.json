@@ -1,0 +1,580 @@
+{
+  "nav": [
+    {"label": "Главная", "href": "index.html", "id": "home"},
+    {"label": "Библиотека", "href": "library/index.html", "id": "library"},
+    {"label": "Преподаватель", "href": "support/teacher.html", "id": "teacher"},
+    {"label": "FAQ", "href": "support/faq.html", "id": "faq"},
+    {"label": "Контакты", "href": "support/contacts.html", "id": "contacts"}
+  ],
+  "footer_links": ["library", "faq", "contacts"],
+  "hsk_sections": [
+    {"id": "phonetics", "title": "Фонетика и произношение", "file": "phonetics.html", "desc": "Правильное произношение звуков, тоны и слоги пиньинь."},
+    {"id": "grammar", "title": "Основная грамматика", "file": "grammar.html", "desc": "Базовые грамматические конструкции и их использование в речи."},
+    {"id": "characters", "title": "Иероглифика", "file": "characters.html", "desc": "Написание и запоминание иероглифов, ключи и мнемоники."},
+    {"id": "vocabulary", "title": "Словарь", "file": "vocabulary.html", "desc": "Списки слов, карточки и аудио для отработки лексики."},
+    {"id": "speaking", "title": "Разговорные фразы", "file": "speaking.html", "desc": "Диалоги, типовые фразы и практика устной речи."},
+    {"id": "culture", "title": "Культура и традиции", "file": "culture.html", "desc": "Статьи и видео о китайской культуре, традициях и обычаях."},
+    {"id": "materials", "title": "Учебные материалы", "file": "materials.html", "desc": "Учебники, рабочие тетради, презентации и домашние задания."}
+  ],
+  "standards": [
+    {"id": "2.0", "dir": "2.0", "title": "HSK 2.0", "label": "старый", "desc": "Шесть уровней, 5000 слов к HSK 6. По этому стандарту собрано большинство учебников."},
+    {"id": "3.0", "dir": "3.0", "title": "HSK 3.0", "label": "новый", "desc": "Стандарт 2021 года: девять уровней, где 7–9 — одна общая ступень, а списки слов шире на каждом уровне."}
+  ],
+  "levels": {
+    "hsk-1": {
+      "title": "HSK 1",
+      "standards": {
+        "2.0": {
+          "subtitle": "150 слов · Начинающий (A1)",
+          "next": "hsk-2",
+          "sections": {
+            "phonetics": {
+              "items": [
+                {"label": "Видео: Четыре тона китайского языка", "type": "Видео"},
+                {"label": "Таблица слогов пиньинь", "type": "PDF"},
+                {"label": "Аудиофайлы для прослушивания", "type": "Аудио"},
+                {"label": "Упражнения для отработки произношения", "type": "PDF"},
+                {"label": "Частые ошибки русскоговорящих", "type": "Статья"}
+              ]
+            },
+            "grammar": {
+              "items": [
+                {"label": "Конспект: предложение 是…的", "type": "PDF"},
+                {"label": "Базовые конструкции HSK 1", "type": "PDF"},
+                {"label": "Упражнения на порядок слов", "type": "PDF"},
+                {"label": "Примеры предложений с переводом", "type": "Документ"}
+              ]
+            },
+            "characters": {
+              "items": [
+                {"label": "HSK 1 · 写字", "file": "library/hsk-1/2.0/standard-course-1-writing.pdf", "type": "33 стр. · PDF", "desc": "Прописи к «HSK标准教程 1»: новые иероглифы уроков 1–15 в клетке, по пять повторов на знак."},
+                {"label": "Таблица иероглифов HSK 1", "type": "PDF"},
+                {"label": "Порядок черт: базовые правила", "type": "PDF"},
+                {"label": "Мнемоники для запоминания", "type": "Документ"}
+              ]
+            },
+            "vocabulary": {
+              "items": [
+                {"label": "Таблица слов к экзамену HSK 1", "file": "library/hsk-1/2.0/hsk-1-vocabulary-table.pdf", "type": "11 стр. · PDF", "desc": "Все 150 слов уровня: иероглиф, пиньинь, перевод на русский и примеры употребления."},
+                {"label": "Таблица слов к экзамену HSK 1 · с примерами (Kotormochular)", "file": "library/hsk-1/2.0/hsk-1-vocabulary-table-kotormochular.pdf", "type": "53 стр. · PDF", "desc": "Те же 150 слов, но с развёрнутыми примерами — по несколько предложений на слово."},
+                {"label": "Карточки для Anki / Quizlet", "type": "Ссылка"},
+                {"label": "Лексика по темам: семья, еда, числа", "type": "PDF"},
+                {"label": "Аудио произношение слов", "type": "Аудио"}
+              ]
+            },
+            "speaking": {
+              "items": [
+                {"label": "Диалог: Знакомство", "type": "PDF + аудио"},
+                {"label": "Диалог: В кафе", "type": "PDF + аудио"},
+                {"label": "20 полезных фраз для начинающих", "type": "PDF"},
+                {"label": "Видео: типичные ситуации", "type": "Видео"}
+              ]
+            },
+            "culture": {
+              "items": [
+                {"label": "Китайский Новый год: традиции", "type": "Статья"},
+                {"label": "Этикет за столом", "type": "Статья"},
+                {"label": "Видео: повседневная жизнь в Китае", "type": "Видео"}
+              ]
+            },
+            "materials": {
+              "items": [
+                {"label": "HSK标准教程 1 · 课本", "file": "library/hsk-1/2.0/standard-course-1-textbook.pdf", "type": "150 стр. · PDF", "desc": "Учебник первого уровня серии: 15 уроков и 150 слов экзамена HSK 1. В конце — сводные таблицы слов, иероглифов и ключей, а также таблица сочетаний инициалей и финалей."},
+                {"label": "HSK标准教程 1 · 课本答案", "file": "library/hsk-1/2.0/standard-course-1-textbook-answers.pdf", "type": "6 стр. · PDF", "desc": "Ответы к упражнениям учебника по всем 15 урокам."},
+                {"label": "HSK标准教程 1 · 练习册", "file": "library/hsk-1/2.0/standard-course-1-workbook.pdf", "type": "139 стр. · PDF", "desc": "Рабочая тетрадь к учебнику: задания к 15 урокам, а в приложении — пробный вариант и описание экзамена HSK 1."},
+                {"label": "HSK标准教程 1 · 练习册答案", "file": "library/hsk-1/2.0/standard-course-1-workbook-answers.pdf", "type": "21 стр. · PDF", "desc": "Ответы ко всем заданиям рабочей тетради."},
+                {"label": "Презентации к урокам", "type": "PPT/PDF"},
+                {"label": "Домашние задания (общие)", "type": "PDF"},
+                {"label": "Мини-тест HSK 1", "type": "PDF"}
+              ]
+            }
+          }
+        },
+        "3.0": {
+          "subtitle": "500 новых слов · Начальная ступень",
+          "next": "hsk-2",
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": []
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": []
+            }
+          }
+        }
+      }
+    },
+    "hsk-2": {
+      "title": "HSK 2",
+      "standards": {
+        "2.0": {
+          "subtitle": "300 слов · Элементарный (A2)",
+          "next": "hsk-3",
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": [
+                {"label": "HSK 2 · 写字", "file": "library/hsk-2/2.0/standard-course-2-writing.pdf", "type": "35 стр. · PDF", "desc": "Прописи к «HSK标准教程 2»: новые иероглифы уроков 1–15 в клетке, по пять повторов на знак."}
+              ]
+            },
+            "vocabulary": {
+              "items": [
+                {"label": "Таблица слов к экзамену HSK 2", "file": "library/hsk-2/2.0/hsk-2-vocabulary-table.pdf", "type": "20 стр. · PDF", "desc": "Все 300 слов уровня: иероглиф, пиньинь, перевод на русский и примеры употребления."}
+              ]
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": [
+                {"label": "HSK标准教程 2 · 课本", "file": "library/hsk-2/2.0/standard-course-2-textbook.pdf", "type": "148 стр. · PDF", "desc": "Учебник второго уровня: 15 уроков и 300 слов экзамена HSK 2."},
+                {"label": "HSK标准教程 2 · 课本答案", "file": "library/hsk-2/2.0/standard-course-2-textbook-answers.pdf", "type": "10 стр. · PDF", "desc": "Ответы к упражнениям учебника по всем 15 урокам."},
+                {"label": "HSK标准教程 2 · 练习册", "file": "library/hsk-2/2.0/standard-course-2-workbook.pdf", "type": "169 стр. · PDF", "desc": "Рабочая тетрадь к учебнику: задания к 15 урокам, в приложении — пробный вариант и описание экзамена HSK 2."},
+                {"label": "HSK标准教程 2 · 练习册答案", "file": "library/hsk-2/2.0/standard-course-2-workbook-answers.pdf", "type": "27 стр. · PDF", "desc": "Ответы ко всем заданиям рабочей тетради."}
+              ]
+            }
+          }
+        },
+        "3.0": {
+          "subtitle": "772 новых слова · Начальная ступень",
+          "next": "hsk-3",
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": []
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": []
+            }
+          }
+        }
+      }
+    },
+    "hsk-3": {
+      "title": "HSK 3",
+      "standards": {
+        "2.0": {
+          "subtitle": "600 слов · Средний (B1)",
+          "next": "hsk-4",
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": [
+                {"label": "Таблица слов к экзамену HSK 3", "file": "library/hsk-3/2.0/hsk-3-vocabulary-table.pdf", "type": "84 стр. · PDF", "desc": "Все 600 слов уровня: иероглиф, пиньинь, перевод на русский и примеры употребления."}
+              ]
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": [
+                {"label": "HSK标准教程 3 · 课本", "file": "library/hsk-3/2.0/standard-course-3-textbook.pdf", "type": "209 стр. · PDF", "desc": "Учебник третьего уровня: 20 уроков и 600 слов экзамена HSK 3, в конце — сводная таблица лексики."},
+                {"label": "HSK标准教程 3 · 课本答案", "file": "library/hsk-3/2.0/standard-course-3-textbook-answers.pdf", "type": "31 стр. · PDF", "desc": "Ответы к упражнениям учебника по всем 20 урокам."},
+                {"label": "HSK标准教程 3 · 练习册", "file": "library/hsk-3/2.0/standard-course-3-workbook.pdf", "type": "167 стр. · PDF", "desc": "Рабочая тетрадь к учебнику: задания к 20 урокам и приложение с дополнительным текстом."},
+                {"label": "HSK标准教程 3 · 练习册答案", "file": "library/hsk-3/2.0/standard-course-3-workbook-answers.pdf", "type": "65 стр. · PDF", "desc": "Ответы ко всем заданиям рабочей тетради."},
+                {"label": "HSK标准教程 3 · 老师用书", "file": "library/hsk-3/2.0/standard-course-3-teacher.pdf", "type": "139 стр. · PDF", "desc": "Книга для преподавателя: разбор каждого из 20 уроков и методические указания к занятиям."}
+              ]
+            }
+          }
+        },
+        "3.0": {
+          "subtitle": "973 новых слова · Начальная ступень",
+          "next": "hsk-4",
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": []
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": []
+            }
+          }
+        }
+      }
+    },
+    "hsk-4": {
+      "title": "HSK 4",
+      "standards": {
+        "2.0": {
+          "subtitle": "1200 слов · Средний+ (B2)",
+          "next": "hsk-5",
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": []
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": [
+                {"label": "HSK标准教程 4（上）· 课本", "file": "library/hsk-4/2.0/standard-course-4-shang-textbook.pdf", "type": "153 стр. · PDF", "desc": "Учебник четвёртого уровня, первая часть: уроки 1–10 и сводная таблица лексики."},
+                {"label": "HSK标准教程 4（上）· 课本答案", "file": "library/hsk-4/2.0/standard-course-4-shang-textbook-answers.pdf", "type": "11 стр. · PDF", "desc": "Ответы к упражнениям учебника, уроки 1–10."},
+                {"label": "HSK标准教程 4（上）· 练习册", "file": "library/hsk-4/2.0/standard-course-4-shang-workbook.pdf", "type": "112 стр. · PDF", "desc": "Рабочая тетрадь к урокам 1–10, в приложении — описание экзамена HSK 4."},
+                {"label": "HSK标准教程 4（上）· 练习册答案", "file": "library/hsk-4/2.0/standard-course-4-shang-workbook-answers.pdf", "type": "40 стр. · PDF", "desc": "Ответы ко всем заданиям рабочей тетради, уроки 1–10."},
+                {"label": "HSK标准教程 4（下）· 课本", "file": "library/hsk-4/2.0/standard-course-4-xia-textbook.pdf", "type": "167 стр. · PDF", "desc": "Учебник четвёртого уровня, вторая часть: уроки 11–20."},
+                {"label": "HSK标准教程 4（下）· 课本答案", "file": "library/hsk-4/2.0/standard-course-4-xia-textbook-answers.pdf", "type": "11 стр. · PDF", "desc": "Ответы к упражнениям учебника, уроки 11–20."},
+                {"label": "HSK标准教程 4（下）· 练习册", "file": "library/hsk-4/2.0/standard-course-4-xia-workbook.pdf", "type": "124 стр. · PDF", "desc": "Рабочая тетрадь к урокам 11–20 с приложением."},
+                {"label": "HSK标准教程 4（下）· 练习册答案", "file": "library/hsk-4/2.0/standard-course-4-xia-workbook-answers.pdf", "type": "47 стр. · PDF", "desc": "Ответы ко всем заданиям рабочей тетради, уроки 11–20."},
+                {"label": "HSK标准教程 4（下）· 教师用书", "file": "library/hsk-4/2.0/standard-course-4-xia-teacher.pdf", "type": "142 стр. · PDF", "desc": "Книга для преподавателя ко второй части: разбор уроков 11–20 и методические указания."}
+              ]
+            }
+          }
+        },
+        "3.0": {
+          "subtitle": "1000 новых слов · Средняя ступень",
+          "next": "hsk-5",
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": []
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": []
+            }
+          }
+        }
+      }
+    },
+    "hsk-5": {
+      "title": "HSK 5",
+      "standards": {
+        "2.0": {
+          "subtitle": "2500 слов · Продвинутый (C1)",
+          "next": "hsk-6",
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": [
+                {"label": "Таблица слов к экзамену HSK 5", "file": "library/hsk-5/2.0/hsk-5-vocabulary-table.pdf", "type": "170 стр. · PDF", "desc": "Все 2500 слов уровня: иероглиф, пиньинь, перевод на русский и примеры употребления."}
+              ]
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": [
+                {"label": "HSK标准教程 5（上）· 课本", "file": "library/hsk-5/2.0/standard-course-5-shang-textbook.pdf", "type": "198 стр. · PDF", "desc": "Учебник пятого уровня, первая часть: уроки 1–18, собранные в шесть тематических блоков."},
+                {"label": "HSK标准教程 5（上）· 课本答案", "file": "library/hsk-5/2.0/standard-course-5-shang-textbook-answers.pdf", "type": "19 стр. · PDF", "desc": "Ответы к упражнениям учебника, уроки 1–18."},
+                {"label": "HSK标准教程 5（上）· 练习册", "file": "library/hsk-5/2.0/standard-course-5-shang-workbook.pdf", "type": "142 стр. · PDF", "desc": "Рабочая тетрадь к урокам 1–18 — с текстами аудирования и ответами; в приложении описание экзамена HSK 5."},
+                {"label": "HSK标准教程 5（上）· 练习册录音文本及答案", "file": "library/hsk-5/2.0/standard-course-5-shang-workbook-answers.pdf", "type": "73 стр. · PDF", "desc": "Тексты аудирования и ответы к рабочей тетради, уроки 1–18."},
+                {"label": "HSK标准教程 5（下）· 课本", "file": "library/hsk-5/2.0/standard-course-5-xia-textbook.pdf", "type": "188 стр. · PDF", "desc": "Учебник пятого уровня, вторая часть: уроки 19–36, блоки с седьмого по двенадцатый."},
+                {"label": "HSK标准教程 5（下）· 课本答案", "file": "library/hsk-5/2.0/standard-course-5-xia-textbook-answers.pdf", "type": "19 стр. · PDF", "desc": "Ответы к упражнениям учебника, уроки 19–36."},
+                {"label": "HSK标准教程 5（下）· 练习册", "file": "library/hsk-5/2.0/standard-course-5-xia-workbook.pdf", "type": "158 стр. · PDF", "desc": "Рабочая тетрадь к урокам 19–36 — с текстами аудирования и ответами; в приложении пробный вариант экзамена HSK 5."},
+                {"label": "HSK标准教程 5（下）· 练习册录音文本及答案", "file": "library/hsk-5/2.0/standard-course-5-xia-workbook-answers.pdf", "type": "81 стр. · PDF", "desc": "Тексты аудирования и ответы к рабочей тетради, уроки 19–36."}
+              ]
+            }
+          }
+        },
+        "3.0": {
+          "subtitle": "1071 новое слово · Средняя ступень",
+          "next": "hsk-6",
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": []
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": []
+            }
+          }
+        }
+      }
+    },
+    "hsk-6": {
+      "title": "HSK 6",
+      "standards": {
+        "2.0": {
+          "subtitle": "5000+ слов · Продвинутый+ (C2)",
+          "next": null,
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": [
+                {"label": "Таблица слов к экзамену HSK 6", "file": "library/hsk-6/2.0/hsk-6-vocabulary-table.pdf", "type": "325 стр. · PDF", "desc": "Все 5000 слов уровня: иероглиф, пиньинь, перевод на русский и примеры употребления."}
+              ]
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": [
+                {"label": "HSK标准教程 6（上）· 课本", "file": "library/hsk-6/2.0/standard-course-6-shang-textbook.pdf", "type": "246 стр. · PDF", "desc": "Учебник шестого уровня, первая часть: уроки 1–20 в пяти тематических блоках и сводная таблица лексики."},
+                {"label": "HSK标准教程 6（上）· 课本答案", "file": "library/hsk-6/2.0/standard-course-6-shang-textbook-answers.pdf", "type": "32 стр. · PDF", "desc": "Ответы к упражнениям учебника, уроки 1–20."},
+                {"label": "HSK标准教程 6（上）· 练习册", "file": "library/hsk-6/2.0/standard-course-6-shang-workbook.pdf", "type": "181 стр. · PDF", "desc": "Рабочая тетрадь к урокам 1–20, в приложении — описание экзамена HSK 6."},
+                {"label": "HSK标准教程 6（上）· 练习册录音文本及答案", "file": "library/hsk-6/2.0/standard-course-6-shang-workbook-answers.pdf", "type": "89 стр. · PDF", "desc": "Тексты аудирования и ответы к рабочей тетради, уроки 1–20."},
+                {"label": "HSK标准教程 6（下）· 课本", "file": "library/hsk-6/2.0/standard-course-6-xia-textbook.pdf", "type": "256 стр. · PDF", "desc": "Учебник шестого уровня, вторая часть: уроки 21–40 в блоках с шестого по десятый и сводная таблица лексики."},
+                {"label": "HSK标准教程 6（下）· 课本答案", "file": "library/hsk-6/2.0/standard-course-6-xia-textbook-answers.pdf", "type": "40 стр. · PDF", "desc": "Ответы к упражнениям учебника, уроки 21–40."},
+                {"label": "HSK标准教程 6（下）· 练习册", "file": "library/hsk-6/2.0/standard-course-6-xia-workbook.pdf", "type": "198 стр. · PDF", "desc": "Рабочая тетрадь к урокам 21–40: пробный вариант экзамена HSK 6, тексты аудирования и ответы в приложении."},
+                {"label": "HSK标准教程 6（下）· 练习册录音文本及答案", "file": "library/hsk-6/2.0/standard-course-6-xia-workbook-answers.pdf", "type": "101 стр. · PDF", "desc": "Тексты аудирования и ответы к рабочей тетради, уроки 21–40."}
+              ]
+            }
+          }
+        },
+        "3.0": {
+          "subtitle": "1140 новых слов · Средняя ступень",
+          "next": "hsk-7-9",
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": []
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": []
+            }
+          }
+        }
+      }
+    },
+    "hsk-7-9": {
+      "title": "HSK 7–9",
+      "standards": {
+        "3.0": {
+          "subtitle": "Высшая ступень · единый уровень 7–9",
+          "next": null,
+          "sections": {
+            "phonetics": {
+              "items": []
+            },
+            "grammar": {
+              "items": []
+            },
+            "characters": {
+              "items": []
+            },
+            "vocabulary": {
+              "items": []
+            },
+            "speaking": {
+              "items": []
+            },
+            "culture": {
+              "items": []
+            },
+            "materials": {
+              "items": []
+            }
+          }
+        }
+      }
+    }
+  },
+  "additional": [
+    {
+      "slug": "advanced-phonetics",
+      "title": "Фонетика (углублённая)",
+      "desc": "Сравнение похожих звуков, интонация и ритм.",
+      "items": []
+    },
+    {
+      "slug": "grammar-reference",
+      "title": "Грамматика (справочник)",
+      "desc": "Полная таблица грамматических конструкций.",
+      "items": []
+    },
+    {
+      "slug": "advanced-characters",
+      "title": "Иероглифика (углублённая)",
+      "desc": "История иероглифов, ключи и система запоминания.",
+      "items": []
+    },
+    {
+      "slug": "spoken-chinese",
+      "title": "Разговорный китайский",
+      "desc": "Сленг, современные выражения и диалекты.",
+      "items": []
+    },
+    {
+      "slug": "pinyin",
+      "title": "Хань Юй Пинь Инь",
+      "desc": "Полная система транскрипции и тренировки.",
+      "items": []
+    },
+    {
+      "slug": "calligraphy",
+      "title": "Каллиграфия",
+      "desc": "Техника письма кистью и упражнения.",
+      "items": []
+    },
+    {
+      "slug": "resources",
+      "title": "Полезные ресурсы",
+      "desc": "Сайты, приложения, YouTube и подкасты.",
+      "resources": true,
+      "items": []
+    },
+    {
+      "slug": "books",
+      "title": "Книги и литература",
+      "desc": "Учебники, художественная литература и новости.",
+      "items": [
+        {"label": "成语 100 — китайские идиомы и устойчивые выражения", "file": "library/additional/chengyu-100.pdf", "desc": "И Биньюн (尹斌庸), серия «博古通今学汉语 · Жемчужины китайского языка». К каждой идиоме — история происхождения на китайском и русском, иллюстрация и пояснения к трудным словам.", "type": "207 стр. · PDF"}
+      ]
+    }
+  ],
+  "practice": [
+    {
+      "slug": "reading",
+      "title": "Тексты для чтения",
+      "desc": "Адаптированные и аутентичные тексты по уровням.",
+      "items": [
+        {"label": "Чтение на китайском языке — тексты с переводом и озвучкой", "url": "https://xn----8sbjrbhccd6aibowmi.xn--p1ai/chtenie/?sl=&lesson_cat=7&lesson_tag=10&pagi=1"}
+      ]
+    },
+    {
+      "slug": "dialogues",
+      "title": "Диалоги и разговоры",
+      "desc": "Бытовые, деловые и социальные сценарии.",
+      "items": []
+    },
+    {
+      "slug": "listening",
+      "title": "Аудирование",
+      "desc": "Подкасты, интервью, песни и видео с субтитрами.",
+      "items": []
+    },
+    {
+      "slug": "writing",
+      "title": "Письменные упражнения",
+      "desc": "Письма, отзывы и творческие задания.",
+      "items": []
+    }
+  ]
+}

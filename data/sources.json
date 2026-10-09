@@ -1,0 +1,91 @@
+{
+  "user_agent": "chinese-learning-platform/1.0 (personal study site; polite fetch)",
+  "delay_seconds": 1.5,
+  "sources": [
+    {
+      "id": "hsk2-1", "standard": "2.0", "level": 1, "expected_rows": 150,
+      "url": "https://raw.githubusercontent.com/glxxyz/hskhsk.com/main/data/lists/HSK%20Official%20With%20Definitions%202012%20L1.txt",
+      "page": "https://hskhsk.com/word-lists",
+      "file": "hsk2-1.txt", "format": "hskhsk-tsv",
+      "purpose": "HSK 2.0, уровень 1: иероглиф, пиньинь, перевод на английский"
+    },
+    {
+      "id": "hsk2-2", "standard": "2.0", "level": 2, "expected_rows": 150,
+      "url": "https://raw.githubusercontent.com/glxxyz/hskhsk.com/main/data/lists/HSK%20Official%20With%20Definitions%202012%20L2.txt",
+      "page": "https://hskhsk.com/word-lists",
+      "file": "hsk2-2.txt", "format": "hskhsk-tsv",
+      "purpose": "HSK 2.0, уровень 2: иероглиф, пиньинь, перевод на английский"
+    },
+    {
+      "id": "hsk2-3", "standard": "2.0", "level": 3, "expected_rows": 300,
+      "url": "https://raw.githubusercontent.com/glxxyz/hskhsk.com/main/data/lists/HSK%20Official%20With%20Definitions%202012%20L3.txt",
+      "page": "https://hskhsk.com/word-lists",
+      "file": "hsk2-3.txt", "format": "hskhsk-tsv",
+      "purpose": "HSK 2.0, уровень 3: иероглиф, пиньинь, перевод на английский"
+    },
+    {
+      "id": "hsk2-4", "standard": "2.0", "level": 4, "expected_rows": 600,
+      "url": "https://raw.githubusercontent.com/glxxyz/hskhsk.com/main/data/lists/HSK%20Official%20With%20Definitions%202012%20L4.txt",
+      "page": "https://hskhsk.com/word-lists",
+      "file": "hsk2-4.txt", "format": "hskhsk-tsv",
+      "purpose": "HSK 2.0, уровень 4: иероглиф, пиньинь, перевод на английский"
+    },
+    {
+      "id": "hsk2-5", "standard": "2.0", "level": 5, "expected_rows": 1300,
+      "url": "https://raw.githubusercontent.com/glxxyz/hskhsk.com/main/data/lists/HSK%20Official%20With%20Definitions%202012%20L5.txt",
+      "page": "https://hskhsk.com/word-lists",
+      "file": "hsk2-5.txt", "format": "hskhsk-tsv",
+      "purpose": "HSK 2.0, уровень 5: иероглиф, пиньинь, перевод на английский"
+    },
+    {
+      "id": "hsk2-6", "standard": "2.0", "level": 6, "expected_rows": 2500,
+      "url": "https://raw.githubusercontent.com/glxxyz/hskhsk.com/main/data/lists/HSK%20Official%20With%20Definitions%202012%20L6.txt",
+      "page": "https://hskhsk.com/word-lists",
+      "file": "hsk2-6.txt", "format": "hskhsk-tsv",
+      "purpose": "HSK 2.0, уровень 6: иероглиф, пиньинь, перевод на английский"
+    },
+
+    {
+      "id": "hsk3-1", "standard": "3.0", "level": 1, "expected_rows": 500,
+      "url": "https://chineseplus.club/api/newhskwords/csv/1",
+      "page": "https://chineseplus.club/hsk/3/table/?lvl=1&pg=0",
+      "file": "hsk3-1.csv", "format": "chineseplus-csv",
+      "purpose": "HSK 3.0, band 1: иероглиф, пиньинь, перевод на русский (HTML-словарная статья)"
+    },
+    {
+      "id": "hsk3-2", "standard": "3.0", "level": 2, "expected_rows": 772,
+      "url": "https://chineseplus.club/api/newhskwords/csv/2",
+      "page": "https://chineseplus.club/hsk/3/table/?lvl=2&pg=0",
+      "file": "hsk3-2.csv", "format": "chineseplus-csv",
+      "purpose": "HSK 3.0, band 2: иероглиф, пиньинь, перевод на русский (HTML-словарная статья)"
+    },
+    {
+      "id": "hsk3-3", "standard": "3.0", "level": 3, "expected_rows": 973,
+      "url": "https://chineseplus.club/api/newhskwords/csv/3",
+      "page": "https://chineseplus.club/hsk/3/table/?lvl=3&pg=0",
+      "file": "hsk3-3.csv", "format": "chineseplus-csv",
+      "purpose": "HSK 3.0, band 3: иероглиф, пиньинь, перевод на русский (HTML-словарная статья)"
+    },
+    {
+      "id": "hsk3-4", "standard": "3.0", "level": 4, "expected_rows": 1000,
+      "url": "https://chineseplus.club/api/newhskwords/csv/4",
+      "page": "https://chineseplus.club/hsk/3/table/?lvl=4&pg=0",
+      "file": "hsk3-4.csv", "format": "chineseplus-csv",
+      "purpose": "HSK 3.0, band 4: иероглиф, пиньинь, перевод на русский (HTML-словарная статья)"
+    },
+    {
+      "id": "hsk3-5", "standard": "3.0", "level": 5, "expected_rows": 1071,
+      "url": "https://chineseplus.club/api/newhskwords/csv/5",
+      "page": "https://chineseplus.club/hsk/3/table/?lvl=5&pg=0",
+      "file": "hsk3-5.csv", "format": "chineseplus-csv",
+      "purpose": "HSK 3.0, band 5: иероглиф, пиньинь, перевод на русский (HTML-словарная статья)"
+    },
+    {
+      "id": "hsk3-6", "standard": "3.0", "level": 6, "expected_rows": 1140,
+      "url": "https://chineseplus.club/api/newhskwords/csv/6",
+      "page": "https://chineseplus.club/hsk/3/table/?lvl=6&pg=0",
+      "file": "hsk3-6.csv", "format": "chineseplus-csv",
+      "purpose": "HSK 3.0, band 6: иероглиф, пиньинь, перевод на русский (HTML-словарная статья)"
+    }
+  ]
+}
