@@ -118,6 +118,7 @@ MANUAL_PAGES = [
     "support/faq.html",
     "support/teacher.html",
     "support/contacts.html",
+    "flashcards/index.html",
 ]
 
 HOME_PAGE = "index.html"

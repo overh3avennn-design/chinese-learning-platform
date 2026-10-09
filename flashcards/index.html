@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Карточки — Китайский язык</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div class="bg-fixed" aria-hidden="true"></div>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <span class="logo-char">中</span>
+        <span>Китайский язык</span>
+      </a>
+      <button class="nav-toggle" aria-label="Меню" aria-expanded="false">☰</button>
+      <nav class="site-nav" aria-label="Основная навигация">
+        <ul>
+          <li><a href="../index.html">Главная</a></li>
+          <li><a href="../library/index.html">Библиотека</a></li>
+          <li><a href="index.html" class="active">Карточки</a></li>
+          <li><a href="../support/teacher.html">Преподаватель</a></li>
+          <li><a href="../support/faq.html">FAQ</a></li>
+          <li><a href="../support/contacts.html">Контакты</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Раздел «Карточки». Пять экранов на одной странице — список колод,
+       страница колоды, изучение, итоги и «Колода выучена»; переключает их js/flashcards.js
+       по адресу (#deck=<id> — страница колоды, #deck=<id>&learn —
+       изучение), поэтому кнопка «Назад» в браузере ведёт на шаг назад:
+       из изучения — к колоде, от колоды — к списку. Колоды лежат в
+       flashcards/decks/. -->
+  <main data-flashcards>
+    <div class="fc-view" data-view="list">
+      <nav class="breadcrumb" aria-label="Навигация">
+        <a href="../index.html">Главная</a> / Карточки
+      </nav>
+      <h1 class="page-title">Карточки</h1>
+      <p class="page-subtitle">Учим слова по колодам: иероглиф — пиньинь — перевод</p>
+
+      <p>
+        Выберите колоду. Перевернуть карточку — нажатием, дальше свайп вправо,
+        если слово знаете, и влево — если нет. Незнакомые слова вернутся в
+        конце, а в следующий раз попадутся раньше остальных.
+      </p>
+
+      <!-- Заглушка будущей функции: блок неактивный, кнопка выключена. -->
+      <section class="fc-soon" aria-label="Скоро: карточки из фотографии">
+        <span class="fc-soon-icon" aria-hidden="true">📷</span>
+        <div class="fc-soon-body">
+          <p class="fc-soon-title">Сфотографируй страницу тетради — и карточки создадутся сами</p>
+          <span class="fc-soon-badge">В разработке</span>
+        </div>
+        <button class="btn btn-secondary fc-soon-btn" type="button" disabled>Сфотографировать</button>
+      </section>
+
+      <section class="fc-info" aria-labelledby="fc-info-title">
+        <h2 class="fc-info-title" id="fc-info-title">Как работает прогресс</h2>
+        <ul class="fc-info-list">
+          <li>Свайп вправо — слово выучено, влево — повторишь ещё раз.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>Колоды</h2>
+        <p class="fc-status" data-deck-status>Загружаю колоды…</p>
+        <div class="card-grid" data-deck-grid></div>
+        <div class="placeholder-note fc-errors" data-deck-errors hidden></div>
+        <p class="placeholder-note" data-storage-note hidden>
+          Браузер не даёт сохранить прогресс (например, в режиме инкогнито) —
+          он продержится, пока открыта эта страница.
+        </p>
+      </section>
+    </div>
+
+    <div class="fc-view fc-deck-page" data-view="deck" hidden>
+      <a class="fc-back" href="#" data-back="">← Назад</a>
+      <h1 class="page-title" data-deck-name></h1>
+      <p class="page-subtitle" data-deck-size></p>
+
+      <div class="fc-deck-summary">
+        <div class="fc-deck-counts">
+          <span class="fc-chip"><span class="fc-dot is-new" aria-hidden="true"></span>Новые <b data-count="new">0</b></span>
+          <span class="fc-chip is-miss"><span class="fc-dot is-learning" aria-hidden="true"></span>Изучаются <b data-count="learning">0</b></span>
+          <span class="fc-chip is-know"><span class="fc-dot is-learned" aria-hidden="true"></span>Выучено <b data-count="learned">0</b></span>
+        </div>
+        <div class="fc-progress" data-deck-progress><span></span></div>
+        <p class="card-meta" data-deck-learned></p>
+      </div>
+
+      <div class="fc-deck-actions">
+        <button class="btn btn-primary fc-learn" type="button" data-learn="due">Учить карточки</button>
+        <button class="btn btn-secondary" type="button" data-learn="missed" disabled>Повторить незнакомые</button>
+      </div>
+
+      <section class="section">
+        <h2>Слова в колоде</h2>
+        <div class="fc-words-bar">
+          <label class="fc-toggle">
+            <input type="checkbox" data-hide-translation>
+            <span class="fc-toggle-track" aria-hidden="true"></span>
+            Скрыть перевод
+          </label>
+          <p class="fc-words-hint" data-hide-hint hidden>Нажмите на слово, чтобы увидеть перевод</p>
+        </div>
+        <ul class="fc-words" data-word-list></ul>
+      </section>
+    </div>
+
+    <div class="fc-view fc-study" data-view="study" hidden>
+      <div class="fc-study-head">
+        <a class="fc-back" href="#" data-back-deck>← Назад</a>
+        <h1 class="fc-study-title" data-deck-title></h1>
+      </div>
+
+      <div class="fc-counter" aria-live="polite">
+        <span class="fc-chip">Осталось <b data-left>0</b></span>
+        <span class="fc-chip is-miss">Не знаю <b data-miss>0</b></span>
+        <span class="fc-chip is-know">Знаю <b data-know>0</b></span>
+      </div>
+
+      <div class="fc-stage" data-stage>
+        <div class="fc-card" data-card tabindex="0" role="button" aria-label="Карточка. Нажмите, чтобы перевернуть">
+          <div class="fc-card-inner">
+            <div class="fc-face fc-front">
+              <span class="fc-hanzi" lang="zh-CN" data-front-hanzi></span>
+              <span class="fc-hint">Нажмите, чтобы перевернуть</span>
+            </div>
+            <div class="fc-face fc-back-side">
+              <span class="fc-hanzi-small" lang="zh-CN" data-back-hanzi></span>
+              <span class="fc-pinyin" data-pinyin></span>
+              <span class="fc-translation" data-translation></span>
+            </div>
+          </div>
+          <span class="fc-tint is-know" aria-hidden="true"><span class="fc-tint-label">Знаю</span></span>
+          <span class="fc-tint is-miss" aria-hidden="true"><span class="fc-tint-label">Не знаю</span></span>
+        </div>
+      </div>
+
+      <div class="fc-controls">
+        <button class="fc-btn is-miss" type="button" data-answer="miss">
+          <span aria-hidden="true">←</span> Не знаю
+        </button>
+        <button class="fc-speak" type="button" data-speak aria-label="Озвучить иероглиф" title="Озвучить" hidden>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+        </button>
+        <button class="fc-btn is-know" type="button" data-answer="know">
+          Знаю <span aria-hidden="true">→</span>
+        </button>
+      </div>
+      <p class="fc-keys">Клавиши: ← не знаю · пробел — перевернуть · → знаю</p>
+    </div>
+
+    <div class="fc-view fc-result" data-view="result" hidden>
+      <nav class="breadcrumb" aria-label="Навигация">
+        <a href="#">Карточки</a> / <a href="#" data-result-deck data-back-deck></a>
+      </nav>
+      <h1 class="page-title">Сессия завершена</h1>
+      <p class="page-subtitle" data-result-summary></p>
+
+      <div class="fc-result-stats">
+        <div class="fc-result-stat">
+          <b data-result-first></b>
+          <span>знали сразу</span>
+        </div>
+        <div class="fc-result-stat is-miss">
+          <b data-result-missed></b>
+          <span>не знали</span>
+        </div>
+        <div class="fc-result-stat is-know">
+          <b data-result-learned></b>
+          <span>выучено в колоде</span>
+        </div>
+      </div>
+
+      <div class="fc-result-learn">
+        <div class="fc-progress fc-result-progress" data-result-progress><span></span></div>
+      </div>
+
+      <section class="section fc-missed" data-missed-block hidden>
+        <h2>Стоит повторить</h2>
+        <ul class="fc-missed-list" data-missed-list></ul>
+      </section>
+
+      <div class="fc-result-actions">
+        <button class="btn btn-primary" type="button" data-again="missed">Повторить только незнакомые</button>
+        <button class="btn btn-secondary" type="button" data-again="all">Пройти колоду заново</button>
+        <a class="btn btn-secondary" href="#" data-back-deck>← Назад к колоде</a>
+      </div>
+      <p class="fc-reset-line">
+        <button class="fc-reset" type="button" data-reset>Сбросить прогресс</button>
+        <span class="fc-reset-done" data-reset-done hidden>Прогресс колоды сброшен — все слова снова новые.</span>
+      </p>
+    </div>
+
+    <!-- «Учить карточки», когда невыученных слов не осталось. -->
+    <div class="fc-view fc-deck-page" data-view="done" hidden>
+      <a class="fc-back" href="#" data-back-deck>← Назад</a>
+      <h1 class="page-title">Колода выучена 🎉</h1>
+      <p class="page-subtitle" data-done-deck></p>
+      <div class="fc-result-actions">
+        <button class="btn btn-primary" type="button" data-learn="all">Пройти всю колоду заново</button>
+      </div>
+    </div>
+  </main>
+  <script src="decks/index.js"></script>
+  <script src="../js/flashcards.js"></script>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <strong class="footer-brand">Китайский язык</strong>
+        <p class="footer-tagline">Образовательная платформа · V1</p>
+      </div>
+      <div class="footer-links">
+        <a href="../library/index.html">Библиотека</a>
+        <a href="index.html">Карточки</a>
+        <a href="../support/faq.html">FAQ</a>
+        <a href="../support/contacts.html">Контакты</a>
+      </div>
+      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    </div>
+  </footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

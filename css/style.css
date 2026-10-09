@@ -9,6 +9,11 @@
      где красный уже стоит фоном, например кнопка «Открыть» под курсором. */
   --color-accent: #f65209;
   --color-accent-soft: #ff7a45;
+  /* Зелёный «Знаю» в карточках — хвоя сосны с той же картинки (оттенок
+     ~150°), высветленная, чтобы читаться на тёмном. Его пара «Не знаю» —
+     то же красное солнце --color-accent. */
+  --color-know: #3cb878;
+  --color-know-soft: #74d6a2;
   --color-bg: #0b1524;
   --color-surface: rgba(18, 30, 48, 0.72);
   --color-surface-solid: #101d31;
@@ -1476,6 +1481,875 @@ body.home .hero-video + main .btn-primary:hover {
   justify-content: center;
 }
 
+/* Раздел «Карточки» (flashcards/index.html, js/flashcards.js). Колоды
+   стоят теми же .card-grid и .card, что модули библиотеки; здесь только
+   то, чего у них нет: полоса прогресса, заглушка будущей функции, экран
+   изучения и итоги сессии. Три экрана переключаются атрибутом hidden. */
+.fc-view[hidden] {
+  display: none;
+}
+
+/* Полоса прогресса колоды: доля выученных слов. */
+.fc-progress {
+  height: 6px;
+  margin-top: 0.9rem;
+  border-radius: 999px;
+  background: rgba(238, 241, 246, 0.1);
+  overflow: hidden;
+}
+
+.fc-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  transition: width 0.4s ease;
+}
+
+.fc-progress.is-done span {
+  background: var(--color-know);
+}
+
+.fc-deck .card-meta {
+  margin-top: 0.5rem;
+}
+
+.fc-status {
+  color: var(--color-text-muted);
+}
+
+.fc-errors p {
+  margin: 0;
+}
+
+.fc-errors p + p {
+  margin-top: 0.5rem;
+}
+
+/* Заглушка будущей функции: пунктир, как у пустых разделов библиотеки,
+   приглушённый текст и выключенная кнопка. */
+.fc-soon {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin: 1.5rem 0 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(16, 29, 49, 0.55);
+  border: 1px dashed rgba(168, 184, 209, 0.35);
+  border-radius: var(--radius);
+}
+
+.fc-soon-icon {
+  flex: none;
+  font-size: 1.75rem;
+  line-height: 1;
+  filter: grayscale(0.35);
+  opacity: 0.8;
+}
+
+.fc-soon-body {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.fc-soon-title {
+  margin: 0 0 0.45rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.fc-soon-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+  background: rgba(246, 82, 9, 0.1);
+  border: 1px solid rgba(246, 82, 9, 0.45);
+  border-radius: 999px;
+}
+
+/* «Как работает прогресс»: короткая справка под заглушкой — объясняет,
+   почему после первого прохода «Выучено» может быть 0. */
+.fc-info {
+  margin: 0 0 2.5rem;
+  padding: 0.9rem 1.25rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.fc-info-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.fc-info-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.fc-info-list li + li {
+  margin-top: 0.2rem;
+}
+
+.fc-info-list b {
+  color: var(--color-text);
+}
+
+.btn:disabled,
+.btn:disabled:hover {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: rgba(238, 241, 246, 0.06);
+}
+
+/* Экран изучения: всё по центру, карточка — в «сцене» фиксированной
+   высоты, чтобы кнопки под ней не прыгали от длины слова. */
+.fc-study {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fc-study-head {
+  align-self: stretch;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.fc-back {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.fc-back:hover {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.fc-study-title {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.3;
+}
+
+.fc-counter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.fc-chip {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.fc-chip b {
+  margin-left: 0.2rem;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-chip.is-miss b {
+  color: var(--color-accent);
+}
+
+.fc-chip.is-know b {
+  color: var(--color-know);
+}
+
+.fc-stage {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  height: clamp(250px, 50vh, 420px);
+}
+
+@supports (height: 1svh) {
+  .fc-stage {
+    height: clamp(250px, 50svh, 420px);
+  }
+}
+
+/* Под карточкой — край следующей: видно, что колода не кончилась. */
+.fc-stage.has-more::before {
+  content: "";
+  position: absolute;
+  inset: 12px 16px -12px;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  opacity: 0.7;
+}
+
+/* Внешний слой карточки ездит за пальцем (translate + rotate), внутренний
+   переворачивается (rotateY) — два transform не мешают друг другу.
+   touch-action: pan-y оставляет странице вертикальную прокрутку, а
+   горизонтальный жест отдаёт скрипту. */
+.fc-card {
+  position: absolute;
+  inset: 0;
+  perspective: 1200px;
+  border-radius: 16px;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.fc-card.is-dragging {
+  cursor: grabbing;
+}
+
+/* Слабый свайп: карточка возвращается с лёгкой пружиной. */
+.fc-card.is-returning {
+  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.25);
+}
+
+.fc-card.is-flying {
+  opacity: 0;
+  transition: transform 0.28s ease-in, opacity 0.28s ease-in;
+}
+
+.fc-card.is-entering {
+  animation: fc-enter 0.28s ease-out;
+}
+
+@keyframes fc-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fc-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.fc-card.is-flipped .fc-card-inner {
+  transform: rotateY(180deg);
+}
+
+.fc-card.no-anim .fc-card-inner {
+  transition: none;
+}
+
+.fc-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: linear-gradient(160deg, #172943 0%, var(--color-surface-solid) 70%);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.fc-front {
+  transform: rotateY(0deg);
+}
+
+.fc-back-side {
+  transform: rotateY(180deg);
+}
+
+.fc-card:focus-visible .fc-face {
+  border-color: var(--color-accent);
+}
+
+.fc-hanzi {
+  font-family: var(--font-chinese);
+  font-size: clamp(4.5rem, 24vw, 7.5rem);
+  line-height: 1.1;
+  color: var(--color-chinese);
+  overflow-wrap: anywhere;
+}
+
+.fc-hanzi.is-long {
+  font-size: clamp(3.25rem, 15vw, 5rem);
+}
+
+.fc-hanzi.is-xlong {
+  font-size: clamp(2.25rem, 10vw, 3.25rem);
+}
+
+.fc-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  opacity: 0.75;
+}
+
+.fc-hanzi-small {
+  font-family: var(--font-chinese);
+  font-size: 1.6rem;
+  line-height: 1.2;
+  color: var(--color-chinese);
+}
+
+.fc-pinyin {
+  font-size: clamp(1.6rem, 7vw, 2.1rem);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.fc-translation {
+  font-size: 1.15rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+
+/* Подсветка при перетаскивании: прозрачность задаёт скрипт по тому,
+   насколько далеко увели карточку. Вправо — зелёный «Знаю», влево —
+   красный «Не знаю». */
+.fc-tint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem;
+  border: 2px solid;
+  border-radius: 16px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fc-tint.is-know {
+  justify-content: flex-start;
+  color: var(--color-know-soft);
+  border-color: var(--color-know);
+  background: rgba(60, 184, 120, 0.16);
+  box-shadow: 0 0 28px rgba(60, 184, 120, 0.45);
+}
+
+.fc-tint.is-miss {
+  justify-content: flex-end;
+  color: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  background: rgba(246, 82, 9, 0.16);
+  box-shadow: 0 0 28px rgba(246, 82, 9, 0.45);
+}
+
+.fc-tint-label {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  transform: rotate(-8deg);
+}
+
+.fc-tint.is-miss .fc-tint-label {
+  transform: rotate(8deg);
+}
+
+.fc-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 400px;
+  margin-top: 1.75rem;
+}
+
+.fc-btn {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 52px;
+  padding: 0 1rem;
+  font: inherit;
+  font-weight: 600;
+  background: var(--color-surface-solid);
+  border: 1px solid;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.fc-btn:active,
+.fc-speak:active {
+  transform: scale(0.96);
+}
+
+.fc-btn.is-miss {
+  color: var(--color-accent-soft);
+  border-color: rgba(246, 82, 9, 0.55);
+}
+
+.fc-btn.is-miss:hover {
+  background: rgba(246, 82, 9, 0.14);
+  border-color: var(--color-accent);
+}
+
+.fc-btn.is-know {
+  color: var(--color-know-soft);
+  border-color: rgba(60, 184, 120, 0.55);
+}
+
+.fc-btn.is-know:hover {
+  background: rgba(60, 184, 120, 0.14);
+  border-color: var(--color-know);
+}
+
+.fc-speak {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  color: var(--color-chinese);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.fc-speak:hover {
+  border-color: var(--color-chinese);
+}
+
+.fc-speak[hidden] {
+  display: none;
+}
+
+.fc-keys {
+  margin: 1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* На телефоне и планшете клавиатуры нет — подсказку прячем. */
+@media (hover: none) {
+  .fc-keys {
+    display: none;
+  }
+}
+
+/* Итоги сессии. */
+.fc-result-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.fc-result-stat {
+  padding: 1rem 0.75rem;
+  text-align: center;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.fc-result-stat b {
+  display: block;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-result-stat span {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.fc-result-stat.is-miss b {
+  color: var(--color-accent);
+}
+
+.fc-result-stat.is-know b {
+  color: var(--color-know);
+}
+
+.fc-result-learn {
+  margin: 0 0 2rem;
+}
+
+.fc-result-progress {
+  margin: 0;
+}
+
+.fc-missed-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fc-missed-list li {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  padding: 0.65rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.fc-missed-hanzi {
+  font-family: var(--font-chinese);
+  font-size: 1.35rem;
+  color: var(--color-chinese);
+}
+
+.fc-missed-pinyin {
+  font-weight: 600;
+}
+
+.fc-missed-translation {
+  color: var(--color-text-muted);
+}
+
+.fc-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.fc-result-actions .btn[hidden] {
+  display: none;
+}
+
+.fc-reset-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin: 1.75rem 0 0;
+  font-size: 0.88rem;
+}
+
+.fc-reset {
+  padding: 0;
+  font: inherit;
+  color: var(--color-text-muted);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.fc-reset:hover {
+  color: var(--color-accent);
+}
+
+.fc-reset-done {
+  color: var(--color-know-soft);
+}
+
+/* Страница колоды — между списком и изучением, как в Quizlet: сводка
+   прогресса, кнопки «Учить» и список слов. Строки списка — в стиле
+   модулей библиотеки (.card): та же плашка, рамка, радиус и тень. */
+.fc-deck-page .fc-back {
+  display: inline-block;
+  padding: 0.35rem 0;
+  margin-bottom: 0.75rem;
+}
+
+.fc-deck-page .page-subtitle {
+  margin-bottom: 1.25rem;
+}
+
+.fc-deck-summary {
+  padding: 1rem 1.25rem;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.fc-deck-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.fc-deck-summary .card-meta {
+  margin-top: 0.5rem;
+}
+
+/* Точка статуса слова: серая — новое, красная — изучается, зелёная —
+   выучено. Та же пара цветов, что у «Не знаю» и «Знаю». */
+.fc-dot {
+  display: inline-block;
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  vertical-align: 0.08em;
+}
+
+.fc-dot.is-learning {
+  background: var(--color-accent);
+}
+
+.fc-dot.is-learned {
+  background: var(--color-know);
+}
+
+.fc-deck-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 2.5rem;
+}
+
+.fc-deck-actions .btn {
+  font-family: inherit;
+}
+
+.fc-learn {
+  padding: 0.95rem 2rem;
+  font-size: 1.05rem;
+}
+
+.fc-words-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.fc-words-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Переключатель «Скрыть перевод»: настоящий чекбокс спрятан, но остаётся
+   в фокусе и в доступности; видна дорожка с бегунком. */
+.fc-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+
+.fc-toggle-track {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  background: rgba(238, 241, 246, 0.1);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.fc-toggle-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  transition: transform 0.15s, background-color 0.15s;
+}
+
+.fc-toggle input:checked + .fc-toggle-track {
+  background: rgba(246, 82, 9, 0.2);
+  border-color: var(--color-accent);
+}
+
+.fc-toggle input:checked + .fc-toggle-track::after {
+  transform: translateX(18px);
+  background: var(--color-accent);
+}
+
+.fc-toggle input:focus-visible + .fc-toggle-track {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.fc-words {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Строка — сетка: иероглиф | текст | озвучка. Колонка иероглифа одной
+   ширины во всех строках (5 знаков размером --fc-hanzi-size), поэтому
+   пиньинь, перевод и статус начинаются с одной линии. */
+.fc-word {
+  --fc-hanzi-size: 1.75rem;
+  --fc-hanzi-gap: 1.75rem;
+  display: grid;
+  grid-template-columns: calc(5 * var(--fc-hanzi-size)) minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 1rem;
+  padding: 0.85rem 0.85rem 0.85rem 1.1rem;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s;
+}
+
+/* Слово длиннее 5 знаков (--fc-hanzi-len ставит flashcards.js) получает
+   шрифт меньше, чтобы уместиться в колонку, а не раздвигать её. */
+.fc-word-hanzi {
+  min-width: 0;
+  font-family: var(--font-chinese);
+  font-size: calc(var(--fc-hanzi-size) * 5 / max(5, var(--fc-hanzi-len, 5)));
+  line-height: 1.2;
+  color: var(--color-chinese);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.fc-word-text {
+  min-width: 0;
+  margin-left: calc(var(--fc-hanzi-gap) - 1rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+}
+
+.fc-word-pinyin {
+  font-weight: 600;
+}
+
+.fc-word-translation {
+  max-width: 100%;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  border-radius: 4px;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.fc-word-status {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.fc-word-status.is-learning {
+  color: var(--color-accent-soft);
+}
+
+.fc-word-status.is-learned {
+  color: var(--color-know-soft);
+}
+
+.fc-word-speak {
+  width: 44px;
+  height: 44px;
+}
+
+.fc-word-speak svg {
+  width: 20px;
+  height: 20px;
+}
+
+.fc-no-voice .fc-word-speak {
+  display: none;
+}
+
+/* Без озвучки третьей колонки нет — не оставляем пустой отступ справа. */
+.fc-no-voice .fc-word {
+  grid-template-columns: calc(5 * var(--fc-hanzi-size)) minmax(0, 1fr);
+}
+
+/* «Скрыть перевод»: на месте перевода — пустая плашка его длины, тап по
+   строке показывает перевод (is-revealed). */
+.fc-words.is-hiding .fc-word {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-words.is-hiding .fc-word:hover {
+  border-color: var(--color-accent);
+}
+
+.fc-words.is-hiding .fc-word:not(.is-revealed) .fc-word-translation {
+  color: transparent;
+  background: rgba(238, 241, 246, 0.1);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.fc-words.is-hiding .fc-word-translation:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 /* Responsive */
 
 /* Laptop — keep the wide composition, pull the gutters in. */
@@ -1682,6 +2556,61 @@ body.home .hero-video + main .btn-primary:hover {
     align-items: flex-start;
   }
 
+  /* Карточки: шапка экрана изучения ниже, кнопки итогов — во всю ширину. */
+  .fc-study-head {
+    margin-bottom: 0.75rem;
+  }
+
+  .fc-study-title {
+    font-size: 1.15rem;
+  }
+
+  .fc-counter {
+    margin-bottom: 1rem;
+  }
+
+  .fc-controls {
+    margin-top: 1.5rem;
+  }
+
+  .fc-result-stats {
+    gap: 0.5rem;
+  }
+
+  .fc-result-stat {
+    padding: 0.75rem 0.4rem;
+  }
+
+  .fc-result-stat b {
+    font-size: 1.4rem;
+  }
+
+  .fc-result-actions .btn {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+
+  /* Страница колоды: кнопки «Учить» во всю ширину, строки слов плотнее. */
+  .fc-deck-actions .btn {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+
+  .fc-deck-summary {
+    padding: 0.9rem 1rem;
+  }
+
+  .fc-word {
+    --fc-hanzi-size: 1.5rem;
+    --fc-hanzi-gap: 1.5rem;
+    column-gap: 0.75rem;
+    padding: 0.75rem 0.6rem 0.75rem 0.9rem;
+  }
+
+  .fc-word-text {
+    margin-left: calc(var(--fc-hanzi-gap) - 0.75rem);
+  }
+
   .hero-video-inner {
     padding: calc(var(--header-height) + 2rem) 1.25rem 1.75rem;
   }
@@ -1767,6 +2696,14 @@ body.home .hero-video + main .btn-primary:hover {
   body.home .site-nav li {
     transform: none;
   }
+
+  /* Карточки переворачиваются и меняются мгновенно (js/flashcards.js
+     тоже пропускает анимацию улёта). */
+  .fc-card-inner,
+  .fc-card.is-returning,
+  .fc-progress span {
+    transition: none;
+  }
 }
 
 /* 375–390px phones: tighten the gutters so the first screen keeps its
@@ -1779,6 +2716,11 @@ body.home .hero-video + main .btn-primary:hover {
 
   body.home .header-inner {
     padding: 0.9rem 1.1rem;
+  }
+
+  /* Колода: колонка иероглифа уже, чтобы тексту справа хватало места. */
+  .fc-word {
+    --fc-hanzi-size: 1.25rem;
   }
 }
 
