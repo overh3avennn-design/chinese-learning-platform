@@ -1,0 +1,933 @@
+/* Главная страница: неподвижное видео-фон, первый экран, разделы и подвал.
+
+   Подключается только в index.html, после общего css/style.css. Всё здесь
+   привязано к body.page-home или к классам hm-* / .container, которых в
+   общих стилях нет, поэтому остальные страницы этот файл не задевает. */
+
+body.page-home {
+  --hm-text: #f4f3f0;
+  --hm-muted: rgba(244, 243, 240, 0.8);
+  --hm-gold: #cdb079;
+  --hm-gold-hover: #e3c893;
+  --hm-line: rgba(244, 243, 240, 0.28);
+  --hm-bg: #1f2024;
+  --hm-gutter: 56px;
+  /* Боковое поле первого экрана: не меньше --hm-gutter, а на окне шире
+     1440px (или при уменьшенном масштабе) содержимое держится колонкой
+     1328px по центру и не разъезжается к краям. Проценты считаются от
+     ширины первого экрана. */
+  --hm-side: max(var(--hm-gutter), calc((100% - 1328px) / 2));
+  --font-golos: "Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-cormorant: "Cormorant Garamond", Georgia, serif;
+  --font-lora: "Lora", Georgia, serif;
+  --font-hanzi: "Noto Serif SC", "Songti SC", "SimSun", serif;
+
+  /* Цвет виден только, пока видео не загрузилось. */
+  background-color: var(--hm-bg);
+  color: var(--hm-text);
+}
+
+body.page-home a:focus-visible,
+body.page-home button:focus-visible {
+  outline: 2px solid var(--hm-gold);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------- первый экран */
+
+.hm-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: max(720px, 100vh);
+  min-height: max(720px, 100svh);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+}
+
+/* ----------------------------------------------------- видео-фон страницы */
+
+/* Видео — фон всей главной и стоит на месте: fixed на самом <video>, а не
+   background-attachment: fixed, который не работает на iPhone. Первый
+   экран, разделы и подвал прозрачные и едут поверх него. */
+video.bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+
+/* Видео светлое (тушь на белой бумаге), поэтому поверх него ровное
+   неподвижное затемнение. При 0.45 абзацы на светлых местах кадра
+   сливаются; 0.66 — тон макета и прежнего первого экрана, контраст
+   текста не ниже 4.5:1. */
+.hm-bg-shade {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: rgba(14, 16, 19, 0.66);
+}
+
+/* ------------------------------------------------------------------ шапка */
+
+.hm-header {
+  position: relative;
+  z-index: 3;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 var(--hm-side);
+  border-bottom: 1px solid var(--hm-line);
+}
+
+.hm-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-height: 44px;
+  color: var(--hm-text);
+  font-family: var(--font-cormorant);
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hm-logo:hover {
+  text-decoration: none;
+}
+
+.hm-logo-char {
+  font-family: var(--font-hanzi);
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--hm-gold);
+}
+
+.hm-menu {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.hm-nav ul {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hm-nav a {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-family: var(--font-cormorant);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--hm-muted);
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.hm-nav a:hover {
+  text-decoration: none;
+  color: var(--hm-text);
+  background: rgba(244, 243, 240, 0.08);
+}
+
+.hm-nav a[aria-current="page"] {
+  color: #fff;
+  background: rgba(244, 243, 240, 0.16);
+}
+
+.hm-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 24px;
+  border-left: 1px solid rgba(244, 243, 240, 0.22);
+}
+
+.hm-tg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: var(--hm-text);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.hm-tg:hover {
+  color: var(--hm-gold-hover);
+  background: rgba(244, 243, 240, 0.08);
+}
+
+.hm-cta {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid rgba(244, 243, 240, 0.6);
+  border-radius: 4px;
+  font-family: var(--font-golos);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--hm-text);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.hm-cta:hover {
+  text-decoration: none;
+  border-color: var(--hm-text);
+  background: rgba(244, 243, 240, 0.1);
+}
+
+/* Бургер виден только на узком экране (см. медиазапросы ниже). */
+.hm-burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid rgba(244, 243, 240, 0.3);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--hm-text);
+  cursor: pointer;
+}
+
+.hm-burger-close,
+.hm-burger[aria-expanded="true"] .hm-burger-open {
+  display: none;
+}
+
+.hm-burger[aria-expanded="true"] .hm-burger-close {
+  display: block;
+}
+
+/* ------------------------------------------------------------------- hero */
+
+/* Две колонки: слева 中文, справа абзац с кнопками, прижатый к низу
+   иероглифов. Весь блок привязан к низу экрана — стоит в 40px над нижней
+   полосой, а свободное место на высоком окне уходит вверх. Верхний
+   отступ остаётся минимальным зазором под шапкой. */
+.hm-body {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 450px;
+  column-gap: 48px;
+  align-items: end;
+  align-content: end;
+  padding: clamp(40px, 14.9vh, 134px) var(--hm-side) 40px;
+}
+
+.hm-title {
+  margin: 0;
+  font-weight: 400;
+}
+
+.hm-welcome {
+  display: block;
+  padding-left: 14px;
+  font-family: "Imperial Script", "Great Vibes", cursive;
+  font-weight: 400;
+  font-size: 58px;
+  line-height: 1.2;
+  color: rgba(244, 243, 240, 0.9);
+}
+
+.hm-hanzi {
+  display: block;
+  font-family: var(--font-hanzi);
+  font-weight: 900;
+  /* Пока справа колонка 450px, иероглифы ужимаются так, чтобы на неё
+     не наезжать. */
+  font-size: clamp(160px, calc((100vw - 620px) / 2), 360px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: var(--hm-text);
+  -webkit-mask-image: linear-gradient(to bottom, #000 58%, rgba(0, 0, 0, 0.25) 100%);
+  mask-image: linear-gradient(to bottom, #000 58%, rgba(0, 0, 0, 0.25) 100%);
+}
+
+.hm-aside {
+  max-width: 450px;
+  margin-bottom: 22px;
+}
+
+.hm-lead {
+  margin: 0;
+  font-family: var(--font-golos);
+  font-weight: 400;
+  font-size: 19px;
+  line-height: 1.6;
+  color: rgba(244, 243, 240, 0.92);
+}
+
+.hm-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+  margin-top: 30px;
+}
+
+.hm-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 26px;
+  border-radius: 4px;
+  background: #f4f3f0;
+  color: #15171a;
+  font-family: var(--font-golos);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.hm-btn:hover {
+  text-decoration: none;
+  background: #fff;
+}
+
+.hm-trial {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--hm-text);
+  font-family: var(--font-golos);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.hm-trial span {
+  text-decoration: underline;
+  text-decoration-color: var(--hm-gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 7px;
+}
+
+.hm-trial svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.hm-trial:hover {
+  text-decoration: none;
+  color: var(--hm-gold-hover);
+}
+
+.hm-trial:hover span {
+  text-decoration-color: var(--hm-gold-hover);
+}
+
+.hm-trial:hover svg {
+  transform: translateX(3px);
+}
+
+/* ---------------------------------------------------- нижняя полоса экрана */
+
+.hm-strip {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-height: 150px;
+  margin: 0 var(--hm-side);
+  border-top: 1px solid rgba(244, 243, 240, 0.3);
+}
+
+.hm-strip-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 40px 28px;
+  border-left: 1px solid rgba(244, 243, 240, 0.3);
+  color: inherit;
+}
+
+.hm-strip-item:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.hm-strip-item:last-child {
+  padding-right: 0;
+}
+
+.hm-strip-item:hover {
+  text-decoration: none;
+}
+
+.hm-strip-item h2 {
+  margin: 0;
+  font-family: var(--font-lora);
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  transition: color 0.2s ease;
+}
+
+.hm-strip-item:hover h2 {
+  color: var(--hm-gold-hover);
+}
+
+.hm-strip-item p {
+  margin: 0;
+  font-family: var(--font-lora);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(244, 243, 240, 0.85);
+}
+
+/* Мягкое появление первого экрана; стоит на паузе, пока видна заставка. */
+@keyframes hm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hm-title,
+.hm-aside,
+.hm-strip {
+  animation: hm-rise 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.hm-title { animation-delay: 0.15s; }
+.hm-aside { animation-delay: 0.3s; }
+.hm-strip { animation-delay: 0.45s; }
+
+.is-loading .hm-title,
+.is-loading .hm-aside,
+.is-loading .hm-strip {
+  animation-play-state: paused;
+}
+
+/* --------------------------------------------------- разделы под экраном */
+
+/* Одна центрированная колонка для разделов и подвала: на широком экране и
+   при уменьшении масштаба по бокам остаётся фон, текст к краям не тянется. */
+body.page-home .container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* Общий style.css задаёт main ширину и отступы внутренних страниц —
+   здесь колонку держит .container. */
+body.page-home .hm-main {
+  max-width: none;
+  margin: 0;
+  padding: 120px 0 110px;
+}
+
+.hm-section + .hm-section {
+  margin-top: 100px;
+}
+
+.hm-section h2 {
+  margin: 0 0 22px;
+  font-family: var(--font-cormorant);
+  font-weight: 600;
+  font-size: 50px;
+  line-height: 1.05;
+  color: #fff;
+}
+
+.hm-section p {
+  max-width: 940px;
+  margin: 0;
+  font-family: var(--font-golos);
+  font-weight: 400;
+  font-size: 19px;
+  line-height: 1.6;
+  color: rgba(244, 243, 240, 0.88);
+}
+
+/* Строчный блок, а не flex: если текст переносится, стрелка остаётся
+   сразу за последним словом, а не уезжает к краю. Отступы по 10px дают
+   область нажатия 44px, поэтому margin-top 16px = видимые 26px от абзаца. */
+.hm-more {
+  display: inline-block;
+  padding: 10px 0;
+  margin-top: 16px;
+  font-family: var(--font-golos);
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.35;
+  color: var(--hm-text);
+  transition: color 0.2s ease;
+}
+
+.hm-more span {
+  text-decoration: underline;
+  text-decoration-color: var(--hm-gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 7px;
+}
+
+.hm-more svg {
+  margin-left: 6px;
+  vertical-align: -4px;
+  transition: transform 0.2s ease;
+}
+
+.hm-more:hover {
+  text-decoration: none;
+  color: var(--hm-gold-hover);
+}
+
+.hm-more:hover span {
+  text-decoration-color: var(--hm-gold-hover);
+}
+
+.hm-more:hover svg {
+  transform: translateX(3px);
+}
+
+/* Контакты: одна строка Telegram и декоративные 你好 у правого нижнего
+   края раздела, под текстом. */
+.hm-contacts {
+  position: relative;
+  isolation: isolate;
+}
+
+.hm-deco {
+  position: absolute;
+  right: 0;
+  bottom: -40px;
+  z-index: -1;
+  font-family: var(--font-hanzi);
+  font-weight: 900;
+  font-size: 230px;
+  line-height: 1;
+  white-space: nowrap;
+  color: rgba(244, 243, 240, 0.05);
+  pointer-events: none;
+  user-select: none;
+}
+
+.hm-section .hm-tg-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  color: rgba(244, 243, 240, 0.88);
+}
+
+.hm-tg-line svg {
+  flex-shrink: 0;
+}
+
+.hm-tg-line a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--hm-gold);
+  transition: color 0.2s ease;
+}
+
+.hm-tg-line a:hover {
+  text-decoration: none;
+  color: var(--hm-gold-hover);
+}
+
+/* ----------------------------------------------------------------- подвал */
+
+.hm-footer {
+  border-top: 1px solid rgba(244, 243, 240, 0.28);
+  color: var(--hm-text);
+}
+
+.hm-footer-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 128px;
+}
+
+.hm-footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.hm-footer-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  font-family: var(--font-cormorant);
+  font-weight: 600;
+  font-size: 27px;
+  line-height: 1;
+  color: var(--hm-text);
+}
+
+.hm-footer-logo:hover {
+  text-decoration: none;
+}
+
+.hm-footer-tagline {
+  margin: 0;
+  font-family: var(--font-golos);
+  font-size: 16px;
+  line-height: 1.4;
+  color: rgba(244, 243, 240, 0.7);
+}
+
+.hm-footer-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hm-footer-nav a {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-family: var(--font-cormorant);
+  font-weight: 600;
+  font-size: 21px;
+  line-height: 1;
+  color: rgba(244, 243, 240, 0.8);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.hm-footer-nav a:hover {
+  text-decoration: none;
+  color: var(--hm-text);
+  background: rgba(244, 243, 240, 0.08);
+}
+
+.hm-footer-bottom {
+  display: flex;
+  align-items: center;
+  min-height: 64px;
+  border-top: 1px solid rgba(244, 243, 240, 0.14);
+}
+
+.hm-footer-bottom p {
+  margin: 0;
+  font-family: var(--font-golos);
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(244, 243, 240, 0.62);
+}
+
+/* ----------------------------------------------------------------- адаптив */
+
+/* Широкий ноутбук: поля и меню немного теснее, чтобы шапка влезала. */
+@media (max-width: 1280px) {
+  body.page-home {
+    --hm-gutter: 40px;
+  }
+
+  .hm-nav a {
+    padding: 0 14px;
+  }
+
+  .hm-menu {
+    gap: 20px;
+  }
+
+  .hm-actions {
+    padding-left: 20px;
+  }
+}
+
+/* Меню и кнопки ужимаются: в полном размере шапке с шестью пунктами
+   меню нужно ~1360px. */
+@media (max-width: 1360px) {
+  .hm-menu {
+    gap: 14px;
+  }
+
+  .hm-nav ul {
+    gap: 2px;
+  }
+
+  .hm-nav a {
+    padding: 0 10px;
+    font-size: 17px;
+  }
+
+  .hm-actions {
+    gap: 6px;
+    padding-left: 14px;
+  }
+
+  .hm-cta {
+    padding: 0 14px;
+    font-size: 14px;
+  }
+}
+
+/* Поля и логотип — теснее. */
+@media (max-width: 1180px) {
+  body.page-home {
+    --hm-gutter: 32px;
+  }
+
+  .hm-header {
+    gap: 16px;
+  }
+
+  .hm-logo {
+    font-size: 22px;
+    gap: 10px;
+  }
+
+  .hm-logo-char {
+    font-size: 25px;
+  }
+}
+
+/* Планшет: правая колонка уходит под 中文. */
+@media (max-width: 1100px) {
+  .hm-body {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: clamp(40px, 9vh, 96px);
+  }
+
+  .hm-hanzi {
+    font-size: clamp(160px, 28vw, 300px);
+  }
+
+  .hm-aside {
+    max-width: 520px;
+    margin: 28px 0 0;
+  }
+
+  .hm-strip-item {
+    padding: 22px 24px 26px;
+  }
+}
+
+/* Уже ~1080px меню с кнопками в строку не помещается — уходит в бургер. */
+@media (max-width: 1080px) {
+  .hm-burger {
+    display: inline-flex;
+  }
+
+  .hm-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px var(--hm-gutter) 20px;
+    background: rgba(24, 25, 29, 0.97);
+    border-bottom: 1px solid var(--hm-line);
+  }
+
+  .hm-menu.is-open {
+    display: flex;
+  }
+
+  .hm-nav ul {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hm-nav a {
+    display: flex;
+    height: 48px;
+    padding: 0 16px;
+    font-size: 20px;
+  }
+
+  .hm-actions {
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 0 0;
+    border-left: 0;
+    border-top: 1px solid rgba(244, 243, 240, 0.22);
+  }
+
+  .hm-cta {
+    padding: 0 18px;
+    font-size: 15px;
+  }
+}
+
+/* Телефон: поля 16px, 中文 поменьше, блоки полосы — столбиком. */
+@media (max-width: 768px) {
+  body.page-home {
+    --hm-gutter: 16px;
+  }
+
+  .hm-body {
+    padding: 48px var(--hm-gutter) 36px;
+  }
+
+  .hm-welcome {
+    padding-left: 6px;
+    font-size: clamp(34px, 8.5vw, 52px);
+  }
+
+  .hm-hanzi {
+    font-size: clamp(160px, 46vw, 200px);
+  }
+
+  .hm-lead {
+    font-size: 17px;
+  }
+
+  .hm-strip {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .hm-strip-item,
+  .hm-strip-item:first-child,
+  .hm-strip-item:last-child {
+    padding: 18px 0 20px;
+    border-left: 0;
+  }
+
+  .hm-strip-item + .hm-strip-item {
+    border-top: 1px solid rgba(244, 243, 240, 0.3);
+  }
+
+  .hm-strip-item h2 {
+    font-size: 16px;
+  }
+
+  body.page-home .container {
+    padding: 0 16px;
+  }
+
+  body.page-home .hm-main {
+    padding: 80px 0 72px;
+  }
+
+  .hm-section + .hm-section {
+    margin-top: 64px;
+  }
+
+  .hm-section h2 {
+    margin-bottom: 18px;
+    font-size: 36px;
+  }
+
+  .hm-section p {
+    font-size: 17px;
+  }
+
+  .hm-more {
+    margin-top: 10px;
+    font-size: 16px;
+  }
+
+  .hm-deco {
+    display: none;
+  }
+
+  .hm-footer-top {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 16px;
+    padding: 28px 0;
+  }
+
+  /* Ссылки подвала выровнены по тексту логотипа, а не по краю «пилюли». */
+  .hm-footer-nav ul {
+    margin-left: -18px;
+  }
+
+  .hm-footer-bottom {
+    padding: 16px 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .hm-logo {
+    font-size: 20px;
+  }
+
+  .hm-actions-row {
+    gap: 12px 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Общий style.css прячет видео — вместо него неподвижный постер. */
+  body.page-home::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: url("../images/hero-poster.jpg") center / cover;
+  }
+
+  .hm-title,
+  .hm-aside,
+  .hm-strip {
+    animation: none;
+  }
+
+  .hm-nav a,
+  .hm-tg,
+  .hm-cta,
+  .hm-btn,
+  .hm-trial,
+  .hm-trial svg,
+  .hm-strip-item h2,
+  .hm-more,
+  .hm-more svg,
+  .hm-tg-line a,
+  .hm-footer-nav a {
+    transition: none;
+  }
+}
