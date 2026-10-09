@@ -1,7 +1,7 @@
 /* Весь скрипт сайта одним файлом: меню, линия под шапкой на главной,
-   шапка, которая прячется при прокрутке, и прелоадер. Каждый блок сам
-   проверяет, есть ли на странице то, с чем он работает, поэтому файл
-   подключается ко всем страницам одинаково.
+   шапка, которая прячется при прокрутке, заглушки вместо обложек и
+   прелоадер. Каждый блок сам проверяет, есть ли на странице то, с чем он
+   работает, поэтому файл подключается ко всем страницам одинаково.
    Анимаций скролла на сайте нет: колесо, клавиатура и якорные ссылки
    работают нативно, фон под содержимым не движется. */
 (function () {
@@ -101,6 +101,32 @@
     }, { passive: true });
     header.addEventListener("focusin", function () {
       setHidden(false);
+    });
+  }
+
+  // ------------------------------------------- заглушка вместо обложки
+  // Обложки материалов (images/previews/) лежат только локально, в git их
+  // нет. Если картинка не загрузилась, на её месте та же плашка с
+  // расширением файла, что ставит scripts/generate_pages.py, когда обложки
+  // нет совсем.
+  function initCoverFallback() {
+    function fallback(img) {
+      var cover = img.closest(".material-cover");
+      if (!cover) return;
+      var ext = (cover.getAttribute("href") || "").split(/[?#]/)[0].split(".");
+      var span = document.createElement("span");
+      span.className = "material-fallback";
+      span.textContent = ext.length > 1 ? ext.pop().toUpperCase() : "Файл";
+      img.replaceWith(span);
+    }
+
+    // Ошибка загрузки не всплывает — ловим её на фазе перехвата.
+    document.addEventListener("error", function (e) {
+      if (e.target.tagName === "IMG") fallback(e.target);
+    }, true);
+    // Картинки, которые не загрузились ещё до запуска скрипта.
+    Array.prototype.forEach.call(document.querySelectorAll(".material-cover img"), function (img) {
+      if (img.complete && !img.naturalWidth) fallback(img);
     });
   }
 
@@ -379,6 +405,7 @@
   initNav();
   initHeaderBorder();
   initHeaderHide();
+  initCoverFallback();
   initPreloader();
   initYandexFilms();
 })();
