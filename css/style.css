@@ -107,18 +107,29 @@ img {
   height: auto;
 }
 
-/* Header — fixed and transparent so it floats directly over the hero
-   video (and over the fixed background on inner pages). Pages without
-   a hero compensate with extra top padding on `main` (see below), so
-   the transparent bar never covers a page's heading. */
+/* Header — fixed. On inner pages it is a solid bar in the same navy as
+   the blocks and cards (--color-surface-solid), with their border and
+   shadow, so the background picture no longer shows through it. Pages
+   compensate with extra top padding on `main` (see below), so the bar
+   never covers a page's heading. */
 .site-header {
-  background: transparent;
+  background: var(--color-surface-solid);
   border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* При прокрутке вниз шапка уезжает вверх, при небольшой прокрутке вверх
+   возвращается (класс ставит js/main.js). Тень убираем, чтобы её край не
+   торчал из-под верхней кромки окна. */
+.site-header.is-hidden {
+  transform: translateY(-100%);
+  box-shadow: none;
 }
 
 .header-inner {
@@ -2494,8 +2505,9 @@ body.home .hero-video + main .btn-primary:hover {
     top: 100%;
     left: 0;
     right: 0;
-    background: rgba(9, 15, 26, 0.96);
+    background: var(--color-surface-solid);
     border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow);
     padding: 1rem 1.25rem;
   }
 
@@ -2702,6 +2714,11 @@ body.home .hero-video + main .btn-primary:hover {
   .fc-card-inner,
   .fc-card.is-returning,
   .fc-progress span {
+    transition: none;
+  }
+
+  /* Шапка прячется и появляется без выезда. */
+  .site-header {
     transition: none;
   }
 }

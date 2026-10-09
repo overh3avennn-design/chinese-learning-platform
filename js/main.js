@@ -1,6 +1,7 @@
-/* Весь скрипт сайта одним файлом: меню, линия под шапкой на главной и
-   прелоадер. Каждый блок сам проверяет, есть ли на странице то, с чем он
-   работает, поэтому файл подключается ко всем страницам одинаково.
+/* Весь скрипт сайта одним файлом: меню, линия под шапкой на главной,
+   шапка, которая прячется при прокрутке, и прелоадер. Каждый блок сам
+   проверяет, есть ли на странице то, с чем он работает, поэтому файл
+   подключается ко всем страницам одинаково.
    Анимаций скролла на сайте нет: колесо, клавиатура и якорные ссылки
    работают нативно, фон под содержимым не движется. */
 (function () {
@@ -51,6 +52,56 @@
     window.addEventListener("scroll", requestSync, { passive: true });
     window.addEventListener("resize", requestSync, { passive: true });
     sync();
+  }
+
+  // ------------------------------------------- шапка прячется при прокрутке
+  // Прокрутка вниз прячет шапку внутренних страниц, небольшая прокрутка
+  // вверх (SHOW_AFTER пикселей подряд) возвращает. У самого верха страницы
+  // и при открытом мобильном меню шапка видна всегда, а также когда в неё
+  // приходит фокус с клавиатуры.
+  function initHeaderHide() {
+    var header = document.querySelector(".site-header");
+    if (!header || document.querySelector(".hero-video")) return;
+
+    var SHOW_AFTER = 10;
+    var nav = header.querySelector(".site-nav");
+    var lastY = scrollY();
+    var upDistance = 0;
+    var raf = null;
+
+    // Позиция без «резинки» iOS: за края страницы не выходит.
+    function scrollY() {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      return Math.min(Math.max(window.pageYOffset, 0), Math.max(max, 0));
+    }
+
+    function setHidden(hidden) {
+      header.classList.toggle("is-hidden", hidden);
+    }
+
+    function sync() {
+      raf = null;
+      var y = scrollY();
+      var dy = y - lastY;
+      lastY = y;
+      if (y <= header.offsetHeight || (nav && nav.classList.contains("open"))) {
+        upDistance = 0;
+        setHidden(false);
+      } else if (dy > 0) {
+        upDistance = 0;
+        setHidden(true);
+      } else if (dy < 0) {
+        upDistance -= dy;
+        if (upDistance >= SHOW_AFTER) setHidden(false);
+      }
+    }
+
+    window.addEventListener("scroll", function () {
+      if (raf === null) raf = requestAnimationFrame(sync);
+    }, { passive: true });
+    header.addEventListener("focusin", function () {
+      setHidden(false);
+    });
   }
 
   // ------------------------------------------------------- прелоадер
@@ -327,6 +378,7 @@
 
   initNav();
   initHeaderBorder();
+  initHeaderHide();
   initPreloader();
   initYandexFilms();
 })();
