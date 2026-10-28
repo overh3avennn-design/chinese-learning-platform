@@ -1,5 +1,6 @@
 /* Весь скрипт сайта одним файлом: заглушки вместо обложек, прелоадер,
-   фильмы с Яндекс Диска, кнопка «назад» и форма обратной связи. Шапка —
+   фильмы с Яндекс Диска, кнопка «назад», форма обратной связи и работа
+   внутри Telegram (Mini App бота @chinese_free_bot). Шапка —
    отдельный компонент components/site-header. Каждый блок сам проверяет,
    есть ли на странице то, с чем он работает, поэтому файл подключается ко
    всем страницам одинаково.
@@ -387,9 +388,85 @@
     });
   }
 
+  // ----------------------------------------------- Telegram Mini App
+  // Сайт открывается и как приложение внутри Telegram — кнопкой в боте
+  // @chinese_free_bot. Telegram передаёт данные запуска в адресе первой
+  // страницы (#tgWebAppData=…), дальше по сайту признак несёт
+  // sessionStorage. Только тогда подгружается библиотека Telegram: обычные
+  // посетители её не скачивают. Внутри Telegram приложение разворачивается
+  // во весь экран, шапка Telegram красится под фон страницы, вместо жеста
+  // «смахнуть вниз» (он закрывал бы приложение посреди прокрутки) —
+  // системная кнопка «Назад», а внешние ссылки (Яндекс Диск, t.me)
+  // открываются средствами Telegram: target="_blank" во встроенном
+  // браузере Telegram работает не везде.
+  function initTelegramApp() {
+    var FLAG = "tg-mini-app";
+    var START = "tg-mini-app-start";
+    var here = location.href.replace(/#.*$/, "");
+    var launched = /[#&]tgWebApp(Data|Version|Platform)=/.test(location.hash);
+    var inApp = launched;
+    var start = here;
+    try {
+      if (launched) {
+        sessionStorage.setItem(FLAG, "1");
+        sessionStorage.setItem(START, here);
+      }
+      inApp = sessionStorage.getItem(FLAG) === "1";
+      start = sessionStorage.getItem(START) || here;
+    } catch (e) {}
+    if (!inApp) return;
+
+    var sdk = document.createElement("script");
+    sdk.src = "https://telegram.org/js/telegram-web-app.js";
+    sdk.onload = function () {
+      var app = window.Telegram && window.Telegram.WebApp;
+      if (app && app.platform !== "unknown") setup(app);
+    };
+    document.head.appendChild(sdk);
+
+    // "rgb(11, 21, 36)" -> "#0b1524": Telegram принимает цвет только так.
+    function hex(color) {
+      var rgb = (color.match(/\d+/g) || []).slice(0, 3);
+      if (rgb.length < 3) return null;
+      return "#" + rgb.map(function (n) {
+        return ("0" + Number(n).toString(16)).slice(-2);
+      }).join("");
+    }
+
+    function setup(app) {
+      app.ready();
+      app.expand();
+      if (app.isVersionAtLeast("7.7")) app.disableVerticalSwipes();
+
+      var bg = hex(getComputedStyle(document.body).backgroundColor);
+      if (bg && app.isVersionAtLeast("6.9")) app.setHeaderColor(bg);
+      if (bg && app.isVersionAtLeast("6.1")) app.setBackgroundColor(bg);
+
+      if (app.isVersionAtLeast("6.1")) {
+        if (here !== start) {
+          app.BackButton.onClick(function () { history.back(); });
+          app.BackButton.show();
+        }
+
+        document.addEventListener("click", function (e) {
+          var link = e.target.closest && e.target.closest("a[href]");
+          if (!link || e.defaultPrevented || !/^https?:$/.test(link.protocol)) return;
+          if (link.hostname === "t.me") {
+            e.preventDefault();
+            app.openTelegramLink(link.href);
+          } else if (link.origin !== location.origin) {
+            e.preventDefault();
+            app.openLink(link.href);
+          }
+        });
+      }
+    }
+  }
+
   initCoverFallback();
   initPreloader();
   initYandexFilms();
   initBackLink();
   initContactForm();
+  initTelegramApp();
 })();
