@@ -12,28 +12,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../components/site-header/header.css">
 </head>
 <body>
+  <script src="../components/site-header/header.js"></script>
   <div class="bg-fixed" aria-hidden="true"></div>
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="../index.html" class="logo">
-        <span class="logo-char">中</span>
-        <span>Китайский язык</span>
-      </a>
-      <button class="nav-toggle" aria-label="Меню" aria-expanded="false">☰</button>
-      <nav class="site-nav" aria-label="Основная навигация">
-        <ul>
-          <li><a href="../index.html">Главная</a></li>
-          <li><a href="index.html" class="active">Библиотека</a></li>
-          <li><a href="../flashcards/index.html">Карточки</a></li>
-          <li><a href="../support/teacher.html">Преподаватель</a></li>
-          <li><a href="../support/faq.html">FAQ</a></li>
-          <li><a href="../support/contacts.html">Контакты</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
 
   <main>
     <nav class="breadcrumb" aria-label="Навигация">
@@ -95,77 +78,86 @@
       <h2>Дополнительно</h2>
       <div class="card-grid">
         <article class="card">
-          <h3><a href="additional/index.html">Дополнительные материалы</a></h3>
-          <p>Справочники, пиньинь, каллиграфия, ресурсы и книги.</p>
+          <h3><a href="textbooks/index.html">Учебники</a></h3>
+          <p>Рукодельникова, практический курс, «汉语教程» и «汉语口语速成».</p>
+          <p class="card-meta">4 курса · PDF</p>
         </article>
         <article class="card">
-          <h3><a href="practice/index.html">Практика и контекст</a></h3>
-          <p>Чтение, диалоги, аудирование и письменные упражнения.</p>
+          <h3><a href="materials/index.html">Материалы</a></h3>
+          <p>Материалы к занятиям, грамматика, тест на определение уровня и билеты к экзамену.</p>
+          <p class="card-meta">PDF · DOCX · презентации</p>
+        </article>
+        <article class="card">
+          <h3><a href="culture/index.html">Культура Китая</a></h3>
+          <p>История, философия, традиции и современный Китай. Фильмы — прямо на сайте.</p>
         </article>
         <article class="card">
           <h3><a href="roadmap.html">Путь обучения</a></h3>
           <p>Рекомендуемая последовательность от нуля до HSK 6.</p>
         </article>
         <article class="card">
-          <h3><a href="journals/index.html">Журналы</a></h3>
-          <p>Диснеевские журналы для чтения «我会自己读», уровни 1–6.</p>
-        </article>
-        <article class="card">
-          <h3><a href="textbooks/rukodelnikova.html">Рукодельникова М.Б. «Китайский язык»</a></h3>
-          <p>Школьный учебник — с 5 по 9 класс.</p>
-          <p class="card-meta">5 учебников · PDF</p>
-        </article>
-        <article class="card">
-          <h3><a href="textbooks/practical-course.html">Практический курс китайского языка</a></h3>
-          <p>Старый практический курс (Кондрашевский) и Новый практический курс (НПККЯ).</p>
-          <p class="card-meta">Учебник + сборник упражнений</p>
-        </article>
-        <article class="card">
-          <h3><a href="textbooks/hanyu-jiaocheng.html">Курс китайского языка «汉语教程»</a></h3>
-          <p>Учебник Ян Цзичжоу (Пекинский университет языка и культуры), русская версия.</p>
-          <p class="card-meta">Первый том, часть 1 · PDF</p>
-        </article>
-        <article class="card">
-          <h3><a href="textbooks/spoken-chinese.html">Short-term Spoken Chinese «汉语口语速成»</a></h3>
-          <p>Серия учебников разговорной речи Ма Цзяньфэя (Пекинский университет языка и культуры).</p>
-          <p class="card-meta">提高篇 и 中级篇（上） · PDF</p>
-        </article>
-        <article class="card">
-          <h3><a href="textbooks/materials.html">Материалы к занятиям</a></h3>
-          <p>Лексика урока, презентации, тест на определение уровня.</p>
-          <p class="card-meta">PDF · презентации · изображения</p>
-        </article>
-        <article class="card">
-          <h3><a href="textbooks/exam-tickets.html">Билеты к экзамену</a></h3>
-          <p>Тексты с пиньинь для пересказа и подготовки к устному экзамену.</p>
-          <p class="card-meta">DOCX</p>
-        </article>
-        <article class="card">
-          <h3><a href="culture/index.html">Культура Китая</a></h3>
-          <p>История, философия, традиции и современный Китай. Фильмы — прямо на сайте.</p>
+          <h3><a href="additional/resources.html?from=library">Полезные ресурсы</a></h3>
+          <p>Сайты, приложения, YouTube и подкасты.</p>
         </article>
       </div>
 
       <div class="level-section">
-        <h3><a href="additional/books.html">Книги</a></h3>
-        <p class="level-section-desc">Книги о языке и культуре: идиомы, пословицы, чтение.</p>
-        <div class="material-grid">
-          <article class="material-card">
-            <a class="material-cover" href="../library/additional/chengyu-100.pdf" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true"><img src="../images/previews/chengyu-100.jpg" alt="" loading="lazy"></a>
-            <div class="material-body">
-              <h3 class="material-title"><a href="../library/additional/chengyu-100.pdf" target="_blank" rel="noopener">成语 100 — китайские идиомы и устойчивые выражения</a></h3>
-              <p class="material-desc">И Биньюн (尹斌庸), серия «博古通今学汉语 · Жемчужины китайского языка». К каждой идиоме — история происхождения на китайском и русском, иллюстрация и пояснения к трудным словам.</p>
-              <div class="material-foot">
-                <span class="material-type">207 стр. · PDF</span>
-                <span class="material-actions">
-                  <a class="material-action is-open" href="../library/additional/chengyu-100.pdf" target="_blank" rel="noopener">Открыть</a>
-                  <a class="material-action" href="../library/additional/chengyu-100.pdf" download>Скачать</a>
-                </span>
-              </div>
-            </div>
+        <h3>Все разделы</h3>
+        <p class="level-section-desc">Учебники, материалы к занятиям, журналы, культура и справочники — каждая подборка отдельной карточкой.</p>
+        <div class="card-grid">
+          <article class="card">
+            <h3><a href="additional/index.html">Дополнительные материалы</a></h3>
+            <p>Справочники, пиньинь, каллиграфия, ресурсы и книги.</p>
+          </article>
+          <article class="card">
+            <h3><a href="practice/index.html">Практика и контекст</a></h3>
+            <p>Чтение, диалоги, аудирование и письменные упражнения.</p>
+          </article>
+          <article class="card">
+            <h3><a href="journals/index.html">Журналы</a></h3>
+            <p>Диснеевские журналы для чтения «我会自己读», уровни 1–6.</p>
+          </article>
+          <article class="card">
+            <h3><a href="grammar/index.html?from=library">Грамматика</a></h3>
+            <p>Разборы грамматических тем с примерами и упражнениями.</p>
+          </article>
+          <article class="card">
+            <h3><a href="textbooks/rukodelnikova.html?from=library">Рукодельникова М.Б. «Китайский язык»</a></h3>
+            <p>Школьный учебник — с 5 по 9 класс.</p>
+            <p class="card-meta">5 учебников · PDF</p>
+          </article>
+          <article class="card">
+            <h3><a href="textbooks/practical-course.html?from=library">Практический курс китайского языка</a></h3>
+            <p>Старый практический курс (Кондрашевский) и Новый практический курс (НПККЯ).</p>
+            <p class="card-meta">Учебник + сборник упражнений</p>
+          </article>
+          <article class="card">
+            <h3><a href="textbooks/hanyu-jiaocheng.html?from=library">Курс китайского языка «汉语教程»</a></h3>
+            <p>Учебник Ян Цзичжоу (Пекинский университет языка и культуры), русская версия.</p>
+            <p class="card-meta">Первый том, часть 1 · PDF</p>
+          </article>
+          <article class="card">
+            <h3><a href="textbooks/spoken-chinese.html?from=library">Short-term Spoken Chinese «汉语口语速成»</a></h3>
+            <p>Серия учебников разговорной речи Ма Цзяньфэя (Пекинский университет языка и культуры).</p>
+            <p class="card-meta">提高篇 и 中级篇（上） · PDF</p>
+          </article>
+          <article class="card">
+            <h3><a href="textbooks/materials.html?from=library">Материалы к занятиям</a></h3>
+            <p>Лексика урока, презентации, тест на определение уровня.</p>
+            <p class="card-meta">PDF · презентации · изображения</p>
+          </article>
+          <article class="card">
+            <h3><a href="textbooks/exam-tickets.html?from=library">Билеты к экзамену</a></h3>
+            <p>Тексты с пиньинь для пересказа и подготовки к устному экзамену.</p>
+            <p class="card-meta">DOCX</p>
+          </article>
+          <article class="card">
+            <h3><a href="culture/index.html">Культура Китая</a></h3>
+            <p>История, философия, традиции и современный Китай. Фильмы — прямо на сайте.</p>
           </article>
         </div>
       </div>
+
     </section>
   </main>
 
@@ -178,7 +170,6 @@
       <div class="footer-links">
         <a href="index.html">Библиотека</a>
         <a href="../flashcards/index.html">Карточки</a>
-        <a href="../support/faq.html">FAQ</a>
         <a href="../support/contacts.html">Контакты</a>
       </div>
       <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>

@@ -12,28 +12,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../components/site-header/header.css">
 </head>
 <body>
+  <script src="../../components/site-header/header.js"></script>
   <div class="bg-fixed" aria-hidden="true"></div>
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="../../index.html" class="logo">
-        <span class="logo-char">中</span>
-        <span>Китайский язык</span>
-      </a>
-      <button class="nav-toggle" aria-label="Меню" aria-expanded="false">☰</button>
-      <nav class="site-nav" aria-label="Основная навигация">
-        <ul>
-          <li><a href="../../index.html">Главная</a></li>
-          <li><a href="../../library/index.html" class="active">Библиотека</a></li>
-          <li><a href="../../flashcards/index.html">Карточки</a></li>
-          <li><a href="../../support/teacher.html">Преподаватель</a></li>
-          <li><a href="../../support/faq.html">FAQ</a></li>
-          <li><a href="../../support/contacts.html">Контакты</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
 
   <main>
     <nav class="breadcrumb"><a href="../../index.html">Главная</a> / <a href="../index.html">Библиотека</a> / <a href="index.html">Дополнительные</a> / Каллиграфия</nav>
@@ -41,6 +24,10 @@
     <p class="page-subtitle">Дополнительные материалы · Все уровни</p>
     <p>Техника письма кистью и упражнения.</p>
     <div class="placeholder-note">Добавьте материалы в этот раздел: справочники, статьи, ссылки на видео.</div>
+
+    <nav class="nav-next">
+      <a href="index.html" class="btn btn-secondary">← Дополнительные материалы</a>
+    </nav>
   </main>
 
   <footer class="site-footer">
@@ -52,7 +39,6 @@
       <div class="footer-links">
         <a href="../../library/index.html">Библиотека</a>
         <a href="../../flashcards/index.html">Карточки</a>
-        <a href="../../support/faq.html">FAQ</a>
         <a href="../../support/contacts.html">Контакты</a>
       </div>
       <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>

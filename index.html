@@ -18,9 +18,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400&text=%E6%AC%A2%E8%BF%8E&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="components/site-header/header.css">
   <script>document.documentElement.classList.add("is-loading");</script>
 </head>
 <body class="page-home">
+  <script src="components/site-header/header.js"></script>
   <div class="preloader" aria-hidden="true">
     <span class="preloader-mark">欢迎</span>
   </div>
@@ -31,40 +33,9 @@
   </video>
   <div class="hm-bg-shade" aria-hidden="true"></div>
 
-  <!-- Первый экран главной. Стили — css/home.css, бургер — js/home.js;
-       классы hm-* не пересекаются с общими стилями остальных страниц. -->
+  <!-- Первый экран главной. Стили — css/home.css; классы hm-* не
+       пересекаются с общими стилями остальных страниц. -->
   <section class="hm-hero">
-    <header class="hm-header">
-      <a href="index.html" class="hm-logo">
-        <span class="hm-logo-char" lang="zh-CN" aria-hidden="true">中</span>
-        <span>Китайский язык</span>
-      </a>
-
-      <button class="hm-burger" type="button" aria-controls="hm-menu" aria-expanded="false" aria-label="Открыть меню">
-        <svg class="hm-burger-open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-        <svg class="hm-burger-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-      </button>
-
-      <div class="hm-menu" id="hm-menu">
-        <nav class="hm-nav" aria-label="Основное меню">
-          <ul>
-            <li><a href="index.html" aria-current="page">Главная</a></li>
-            <li><a href="library/index.html">Библиотека</a></li>
-            <li><a href="flashcards/index.html">Карточки</a></li>
-            <li><a href="support/teacher.html">Преподаватель</a></li>
-            <li><a href="support/faq.html">FAQ</a></li>
-            <li><a href="support/contacts.html">Контакты</a></li>
-          </ul>
-        </nav>
-        <div class="hm-actions">
-          <a class="hm-tg" href="https://t.me/kski12" target="_blank" rel="noopener" aria-label="Telegram">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 3.5 2.8 10.7c-.8.3-.8 1.4 0 1.7l4.7 1.6 1.8 5.6c.2.7 1.1.9 1.6.4l2.7-2.6 4.9 3.6c.6.4 1.4.1 1.6-.6L22.9 5c.2-1-.6-1.8-1.4-1.5Z"/><path d="m7.5 14 11-7.5-8.3 9.2"/></svg>
-          </a>
-          <a class="hm-cta" href="support/contacts.html">Записаться на урок</a>
-        </div>
-      </div>
-    </header>
-
     <div class="hm-body">
       <h1 class="hm-title">
         <span class="hm-welcome">Добро пожаловать в</span>
@@ -73,8 +44,10 @@
 
       <div class="hm-aside">
         <p class="hm-lead">
-          Материалы по уровням HSK, практика говорения и учебники — собраны
-          в одном месте, чтобы учиться последовательно и без лишней суеты.
+          За китайским языком стоят тысячелетия истории, мудрости и опыта.
+          Я хочу, чтобы этот путь был открыт каждому: материалы по уровням HSK,
+          культура Китая и учебники — в одном месте. 
+          </br>Для изучения нужно только ваше желание, а сайт постарается обеспечить удобство.
         </p>
         <div class="hm-actions-row">
           <a href="library/index.html" class="hm-btn">Открыть библиотеку</a>
@@ -153,7 +126,6 @@
           <ul>
             <li><a href="library/index.html">Библиотека</a></li>
             <li><a href="flashcards/index.html">Карточки</a></li>
-            <li><a href="support/faq.html">FAQ</a></li>
             <li><a href="support/contacts.html">Контакты</a></li>
           </ul>
         </nav>
@@ -165,6 +137,5 @@
   </footer>
 
   <script src="js/main.js"></script>
-  <script src="js/home.js"></script>
 </body>
 </html>

@@ -16,6 +16,13 @@ desktop.ini
 __pycache__/
 *.pyc
 
+# Служебные файлы wrangler и локальные секреты воркера (токен бота).
+.wrangler/
+.dev.vars
+
+# Локальные секреты скриптов: токен Яндекс Диска (YANDEX_DISK_TOKEN).
+.env
+
 # Исходные файлы источников (кэш scripts/fetch_data.py) — только локально,
 # в git идёт нормализованный data/vocab/.
 data/raw/
@@ -26,6 +33,10 @@ data/raw/
 library/**
 !library/**/
 !library/**/*.html
+# Упражнения «Практики говорения» — картинки в тексте страницы, а не файлы
+# для скачивания: на Диск их не перенести, поэтому они идут в git.
+!library/practice/speaking-*.jpg
+!library/practice/speaking-*.png
 
 # Обложки материалов (собирает scripts/make_previews.py) — только локально.
 # Без них страницы показывают плашку с расширением файла (js/main.js).

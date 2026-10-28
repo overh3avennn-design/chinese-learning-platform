@@ -1,108 +1,12 @@
-/* Весь скрипт сайта одним файлом: меню, линия под шапкой на главной,
-   шапка, которая прячется при прокрутке, заглушки вместо обложек и
-   прелоадер. Каждый блок сам проверяет, есть ли на странице то, с чем он
-   работает, поэтому файл подключается ко всем страницам одинаково.
+/* Весь скрипт сайта одним файлом: заглушки вместо обложек, прелоадер,
+   фильмы с Яндекс Диска, кнопка «назад» и форма обратной связи. Шапка —
+   отдельный компонент components/site-header. Каждый блок сам проверяет,
+   есть ли на странице то, с чем он работает, поэтому файл подключается ко
+   всем страницам одинаково.
    Анимаций скролла на сайте нет: колесо, клавиатура и якорные ссылки
    работают нативно, фон под содержимым не движется. */
 (function () {
   "use strict";
-
-  // ------------------------------------------------------------ меню
-  function initNav() {
-    var toggle = document.querySelector(".nav-toggle");
-    var nav = document.querySelector(".site-nav");
-    if (!toggle || !nav) return;
-
-    toggle.addEventListener("click", function () {
-      var isOpen = nav.classList.toggle("open");
-      toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    });
-
-    document.addEventListener("click", function (e) {
-      if (nav.contains(e.target) || toggle.contains(e.target)) return;
-      nav.classList.remove("open");
-      toggle.setAttribute("aria-expanded", "false");
-    });
-  }
-
-  // -------------------------------------------- линия под шапкой (главная)
-  // Hero-видео есть только на главной; на остальных страницах линия под
-  // шапкой видна всегда (см. css/style.css). Здесь она появляется тогда,
-  // когда фиксированная шапка ушла за пределы видео — то есть оказалась
-  // над обычным фоном, а не над кадром.
-  function initHeaderBorder() {
-    var header = document.querySelector(".site-header");
-    var hero = document.querySelector(".hero-video");
-    if (!header || !hero) return;
-
-    var raf = null;
-
-    function sync() {
-      raf = null;
-      header.classList.toggle(
-        "is-past-hero",
-        hero.getBoundingClientRect().bottom <= header.offsetHeight
-      );
-    }
-
-    function requestSync() {
-      if (raf === null) raf = requestAnimationFrame(sync);
-    }
-
-    window.addEventListener("scroll", requestSync, { passive: true });
-    window.addEventListener("resize", requestSync, { passive: true });
-    sync();
-  }
-
-  // ------------------------------------------- шапка прячется при прокрутке
-  // Прокрутка вниз прячет шапку внутренних страниц, небольшая прокрутка
-  // вверх (SHOW_AFTER пикселей подряд) возвращает. У самого верха страницы
-  // и при открытом мобильном меню шапка видна всегда, а также когда в неё
-  // приходит фокус с клавиатуры.
-  function initHeaderHide() {
-    var header = document.querySelector(".site-header");
-    if (!header || document.querySelector(".hero-video")) return;
-
-    var SHOW_AFTER = 10;
-    var nav = header.querySelector(".site-nav");
-    var lastY = scrollY();
-    var upDistance = 0;
-    var raf = null;
-
-    // Позиция без «резинки» iOS: за края страницы не выходит.
-    function scrollY() {
-      var max = document.documentElement.scrollHeight - window.innerHeight;
-      return Math.min(Math.max(window.pageYOffset, 0), Math.max(max, 0));
-    }
-
-    function setHidden(hidden) {
-      header.classList.toggle("is-hidden", hidden);
-    }
-
-    function sync() {
-      raf = null;
-      var y = scrollY();
-      var dy = y - lastY;
-      lastY = y;
-      if (y <= header.offsetHeight || (nav && nav.classList.contains("open"))) {
-        upDistance = 0;
-        setHidden(false);
-      } else if (dy > 0) {
-        upDistance = 0;
-        setHidden(true);
-      } else if (dy < 0) {
-        upDistance -= dy;
-        if (upDistance >= SHOW_AFTER) setHidden(false);
-      }
-    }
-
-    window.addEventListener("scroll", function () {
-      if (raf === null) raf = requestAnimationFrame(sync);
-    }, { passive: true });
-    header.addEventListener("focusin", function () {
-      setHidden(false);
-    });
-  }
 
   // ------------------------------------------- заглушка вместо обложки
   // Обложки материалов (images/previews/) лежат только локально, в git их
@@ -113,10 +17,13 @@
     function fallback(img) {
       var cover = img.closest(".material-cover");
       if (!cover) return;
-      var ext = (cover.getAttribute("href") || "").split(/[?#]/)[0].split(".");
+      // Расширение ставит генератор в data-ext: у ссылки на Яндекс Диск
+      // (disk.yandex.ru/i/…) его в адресе нет.
+      var ext = cover.getAttribute("data-ext") ||
+        (cover.getAttribute("href") || "").split(/[?#]/)[0].split(".").slice(1).pop();
       var span = document.createElement("span");
       span.className = "material-fallback";
-      span.textContent = ext.length > 1 ? ext.pop().toUpperCase() : "Файл";
+      span.textContent = ext ? ext.toUpperCase() : "Файл";
       img.replaceWith(span);
     }
 
@@ -402,10 +309,87 @@
       });
   }
 
-  initNav();
-  initHeaderBorder();
-  initHeaderHide();
+  // ------------------------------------------------- кнопка «назад»
+  // Часть разделов открывается двумя путями: с главной библиотеки (блок
+  // «Все разделы») и из своего раздела-родителя («Учебники», «Материалы»).
+  // В разметке «назад» ведёт к родителю. Карточки на главной библиотеки
+  // добавляют к адресу ?from=library — тогда кнопка возвращает в
+  // библиотеку. Адрес библиотеки берём из хлебных крошек страницы.
+  function initBackLink() {
+    if (new URLSearchParams(location.search).get("from") !== "library") return;
+
+    var back = Array.prototype.find.call(document.querySelectorAll(".nav-next a"), function (a) {
+      return a.textContent.trim().charAt(0) === "←";
+    });
+    var library = Array.prototype.find.call(document.querySelectorAll(".breadcrumb a"), function (a) {
+      return a.textContent.trim() === "Библиотека";
+    });
+    if (!back || !library) return;
+
+    back.setAttribute("href", library.getAttribute("href"));
+    back.textContent = "← Библиотека";
+  }
+
+  // ------------------------------------- форма обратной связи
+  // Заявку с support/contacts.html принимает посредник на Cloudflare
+  // (worker/telegram-form.js): он сохраняет её и возвращает ссылку на
+  // бота с кодом заявки. Ученик открывает бота, жмёт «Старт», и бот
+  // пересылает заявку преподавателю вместе с Telegram ученика. Адрес
+  // посредника — в data-endpoint формы. Токен бота хранится только у
+  // посредника: на странице его увидел бы любой посетитель.
+  function initContactForm() {
+    var form = document.getElementById("contact-form");
+    if (!form) return;
+
+    var endpoint = form.getAttribute("data-endpoint");
+    var button = form.querySelector("button[type=submit]");
+    var status = form.querySelector(".contact-status");
+    var next = form.querySelector(".contact-next");
+    var FALLBACK = "Напиши мне напрямую в Telegram: @kski12.";
+
+    function show(text, isError) {
+      status.hidden = false;
+      status.textContent = text;
+      status.classList.toggle("is-error", !!isError);
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      next.hidden = true;
+      if (!endpoint) {
+        show("Форма пока не подключена. " + FALLBACK, true);
+        return;
+      }
+
+      button.disabled = true;
+      show("Отправляю…");
+      fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(new FormData(form)))
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error(res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          form.reset();
+          status.hidden = true;
+          next.querySelector("a").href = data.link;
+          next.hidden = false;
+        })
+        .catch(function () {
+          show("Не получилось отправить заявку. " + FALLBACK, true);
+        })
+        .then(function () {
+          button.disabled = false;
+        });
+    });
+  }
+
   initCoverFallback();
   initPreloader();
   initYandexFilms();
+  initBackLink();
+  initContactForm();
 })();

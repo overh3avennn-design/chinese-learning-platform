@@ -15,4 +15,6 @@ window.DECK_FILES = [
   "klim-7-3-3.js",
   "01-10-conf.js",
   "6-5-1-i.js",
+  "21-10-conf.js",
+  "klim-tekst-3.js",
 ];

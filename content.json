@@ -3,11 +3,11 @@
     {"label": "Главная", "href": "index.html", "id": "home"},
     {"label": "Библиотека", "href": "library/index.html", "id": "library"},
     {"label": "Карточки", "href": "flashcards/index.html", "id": "flashcards"},
+    {"label": "ИИ-помощник", "href": "assistant/index.html", "id": "assistant"},
     {"label": "Преподаватель", "href": "support/teacher.html", "id": "teacher"},
-    {"label": "FAQ", "href": "support/faq.html", "id": "faq"},
     {"label": "Контакты", "href": "support/contacts.html", "id": "contacts"}
   ],
-  "footer_links": ["library", "flashcards", "faq", "contacts"],
+  "footer_links": ["library", "flashcards", "contacts"],
   "hsk_sections": [
     {"id": "phonetics", "title": "Фонетика и произношение", "file": "phonetics.html", "desc": "Правильное произношение звуков, тоны и слоги пиньинь."},
     {"id": "grammar", "title": "Основная грамматика", "file": "grammar.html", "desc": "Базовые грамматические конструкции и их использование в речи."},

@@ -12,85 +12,97 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../components/site-header/header.css">
 </head>
 <body>
+  <script src="../components/site-header/header.js"></script>
   <div class="bg-fixed" aria-hidden="true"></div>
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="../index.html" class="logo">
-        <span class="logo-char">中</span>
-        <span>Китайский язык</span>
-      </a>
-      <button class="nav-toggle" aria-label="Меню" aria-expanded="false">☰</button>
-      <nav class="site-nav" aria-label="Основная навигация">
-        <ul>
-          <li><a href="../index.html">Главная</a></li>
-          <li><a href="../library/index.html">Библиотека</a></li>
-          <li><a href="../flashcards/index.html">Карточки</a></li>
-          <li><a href="teacher.html">Преподаватель</a></li>
-          <li><a href="faq.html">FAQ</a></li>
-          <li><a href="contacts.html" class="active">Контакты</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
 
   <main>
     <nav class="breadcrumb" aria-label="Навигация">
       <a href="../index.html">Главная</a> / Контакты
     </nav>
     <h1 class="page-title">Контакты</h1>
-    <p class="page-subtitle">Свяжитесь со мной для записи на занятие или по любым вопросам</p>
+    <p class="page-subtitle">Напиши мне, чтобы записаться на занятие или задать любой вопрос</p>
 
     <div class="contact-grid">
       <div class="contact-info">
-        <h2>Способы связи</h2>
-        <dl>
-          <dt>Email</dt>
-          <dd><a href="mailto:teacher@example.com">teacher@example.com</a></dd>
+        <h2>Telegram</h2>
+        <p class="contact-tg"><a href="https://t.me/kski12" target="_blank" rel="noopener">@kski12</a></p>
 
-          <dt>Telegram</dt>
-          <dd><a href="https://t.me/your_username">@your_username</a></dd>
-
-          <dt>WhatsApp</dt>
-          <dd><a href="https://wa.me/79001234567">+7 (900) 123-45-67</a></dd>
-
-          <dt>Телефон</dt>
-          <dd>+7 (900) 123-45-67</dd>
-        </dl>
-
-        <p class="note-small">
-          <em>Замените контактные данные на свои реальные.</em>
-        </p>
+        <div class="contact-steps">
+          <h2>Как начать</h2>
+          <ol>
+            <li><strong>Напиши мне</strong> — в Telegram или через форму.</li>
+            <li><strong>Договоримся о пробном занятии</strong> — оно бесплатное, 30–40 минут, онлайн.</li>
+            <li><strong>Посмотрим твой уровень</strong> — и решим, как заниматься дальше.</li>
+          </ol>
+          <p class="note-small">Обычно отвечаю в течение дня.</p>
+        </div>
       </div>
 
       <div class="contact-form">
         <h2>Форма обратной связи</h2>
-        <form action="mailto:teacher@example.com" method="post" enctype="text/plain">
-          <label for="name">Ваше имя</label>
-          <input type="text" id="name" name="name" required placeholder="Как к вам обращаться">
-
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" required placeholder="your@email.com">
+        <p class="contact-lead">Не знаешь, с чего начать? Просто напиши — разберёмся.</p>
+        <!-- data-endpoint — адрес посредника worker/telegram-form.js на
+             Cloudflare. Если он пустой, форма предлагает написать в Telegram. -->
+        <form id="contact-form" data-endpoint="https://chinese-form.overh3avennn.workers.dev">
+          <label for="name">Имя</label>
+          <input type="text" id="name" name="name" required maxlength="100" placeholder="Как к тебе обращаться">
 
           <label for="subject">Тема</label>
           <select id="subject" name="subject">
             <option value="trial">Запись на пробное занятие</option>
-            <option value="question">Вопрос по материалам</option>
+            <option value="question">Вопрос о занятиях</option>
+            <option value="hsk">Подготовка к HSK</option>
             <option value="other">Другое</option>
           </select>
 
           <label for="message">Сообщение</label>
-          <textarea id="message" name="message" required placeholder="Расскажите о ваших целях и текущем уровне..."></textarea>
+          <textarea id="message" name="message" required maxlength="2000" placeholder="Расскажи о своих целях и текущем уровне..."></textarea>
+
+          <!-- Ловушка для спам-ботов: человек это поле не видит и не заполняет. -->
+          <div class="contact-hp" aria-hidden="true">
+            <label for="website">Не заполняй это поле</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
 
           <button type="submit" class="btn btn-primary">Отправить</button>
+          <p class="contact-status" role="status" hidden></p>
+
+          <!-- Последний шаг: ссылку на бота с кодом заявки подставляет js/main.js. -->
+          <div class="contact-next" hidden>
+            <p>Остался один шаг: открой бота и нажми «Старт». Он пришлёт мне заявку вместе с твоим Telegram.</p>
+            <a class="btn btn-primary" href="https://t.me/chinese_free_bot" target="_blank" rel="noopener">Открыть Telegram</a>
+          </div>
         </form>
-        <p class="note-small">
-          Форма откроет ваш почтовый клиент. Для полноценной отправки без почтового клиента
-          потребуется backend (V2+).
-        </p>
+        <p class="note-small"></p>
       </div>
     </div>
+
+    <section class="contact-faq" aria-labelledby="faq-title">
+      <h2 id="faq-title">Частые вопросы</h2>
+      <details>
+        <summary>Можно начать с нуля?</summary>
+        <p>Да, большинство так и начинает.</p>
+      </details>
+      <details>
+        <summary>Сколько стоит занятие?</summary>
+        <p>От 1000 руб. Напиши — расскажу.</p>
+      </details>
+      <details>
+        <summary>Как проходят уроки?</summary>
+        <p>Онлайн, через Zoom или Я.Телемост, 60 минут.</p>
+      </details>
+      <details>
+        <summary>Помогаешь готовиться к HSK?</summary>
+        <p>Да. У меня HSK 4 и HSKK, формат экзамена знаю изнутри.</p>
+      </details>
+      <details>
+        <summary>Нужно что-то покупать?</summary>
+        <p>Нет, все материалы есть в <a href="../library/index.html">библиотеке</a> на сайте.</p>
+      </details>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -102,7 +114,6 @@
       <div class="footer-links">
         <a href="../library/index.html">Библиотека</a>
         <a href="../flashcards/index.html">Карточки</a>
-        <a href="faq.html">FAQ</a>
         <a href="contacts.html">Контакты</a>
       </div>
       <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>

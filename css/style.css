@@ -52,7 +52,8 @@
 
 /* Анимаций скролла на сайте нет: колесо, клавиатура, полоса прокрутки и
    якорные ссылки работают нативно. scroll-padding-top не анимация — он
-   просто отводит якорю место под фиксированной шапкой. */
+   просто отводит якорю место под закреплённой шапкой (66px, см.
+   components/site-header/header.css). */
 html {
   scroll-padding-top: 76px;
 }
@@ -107,186 +108,9 @@ img {
   height: auto;
 }
 
-/* Header — fixed. On inner pages it is a solid bar in the same navy as
-   the blocks and cards (--color-surface-solid), with their border and
-   shadow, so the background picture no longer shows through it. Pages
-   compensate with extra top padding on `main` (see below), so the bar
-   never covers a page's heading. */
-.site-header {
-  background: var(--color-surface-solid);
-  border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-/* При прокрутке вниз шапка уезжает вверх, при небольшой прокрутке вверх
-   возвращается (класс ставит js/main.js). Тень убираем, чтобы её край не
-   торчал из-под верхней кромки окна. */
-.site-header.is-hidden {
-  transform: translateY(-100%);
-  box-shadow: none;
-}
-
-.header-inner {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0.75rem 1.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--color-text);
-  text-decoration: none;
-  text-shadow: var(--shadow-text);
-}
-
-.logo:hover {
-  text-decoration: none;
-}
-
-.logo-char {
-  font-family: var(--font-chinese);
-  font-size: 1.5rem;
-  color: var(--color-primary);
-}
-
-.site-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  gap: 0.35rem;
-  flex-wrap: wrap;
-}
-
-.site-nav a {
-  display: inline-block;
-  color: var(--color-text-muted);
-  font-size: 0.95rem;
-  font-weight: 500;
-  text-shadow: var(--shadow-text);
-  padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  transition: background 0.15s, color 0.15s;
-}
-
-/* Active/hover state is a solid pill (not just a text-color swap) so it
-   stays readable over both the light and dark parts of the hero video,
-   and over the fixed background on inner pages. */
-.site-nav a:hover,
-.site-nav a.active {
-  background: var(--color-primary);
-  color: #fff;
-  text-decoration: none;
-  text-shadow: none;
-}
-
-.nav-toggle {
-  display: none;
-  background: none;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 0.4rem 0.6rem;
-  cursor: pointer;
-  font-size: 1.1rem;
-  color: var(--color-text);
-}
-
-/* On the homepage the header is part of the first screen: a wide,
-   transparent bar over the video with a hairline under it and a soft
-   gradient so the links stay readable on bright frames. Inner pages
-   keep the narrow 960px bar untouched. */
-body.home .site-header {
-  border-bottom: 1px solid rgba(238, 241, 246, 0.14);
-  background: linear-gradient(180deg, rgba(6, 10, 18, 0.55) 0%, rgba(6, 10, 18, 0) 100%);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-/* Past the hero the header takes the paper color of the section below
-   it, so the bar reads as part of it; its text switches to dark ink. */
-body.home .site-header.is-past-hero {
-  border-bottom: 1px solid var(--paper-line);
-  background:
-    var(--paper-edges),
-    rgba(169, 170, 169, 0.96);
-}
-
-body.home .site-header.is-past-hero .logo,
-body.home .site-header.is-past-hero .logo-char,
-body.home .site-header.is-past-hero .nav-toggle {
-  color: var(--ink);
-  text-shadow: none;
-}
-
-body.home .site-header.is-past-hero .nav-toggle {
-  border-color: rgba(0, 0, 0, 0.3);
-}
-
-body.home .site-header.is-past-hero .site-nav a {
-  color: rgba(31, 32, 34, 0.7);
-  text-shadow: none;
-}
-
-body.home .site-header.is-past-hero .site-nav a:hover,
-body.home .site-header.is-past-hero .site-nav a.active {
-  color: var(--ink);
-}
-
-body.home .site-header.is-past-hero .nav-cta {
-  color: var(--ink);
-  border-color: rgba(0, 0, 0, 0.35);
-  background: rgba(0, 0, 0, 0.04);
-}
-
-body.home .site-header.is-past-hero .nav-cta:hover {
-  color: #f2f2f0;
-  border-color: var(--ink);
-  background: var(--ink);
-}
-
-body.home .header-inner {
-  max-width: var(--hero-max);
-  padding: 1.1rem 1.25rem;
-  gap: 2rem;
-}
-
-body.home .logo {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 0.95rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-body.home .logo-char {
-  color: var(--color-chinese);
-  font-size: 1.45rem;
-  letter-spacing: 0;
-}
-
-body.home .site-nav ul {
-  gap: 0.35rem;
-}
-
-/* Одна и та же капитель первого экрана: меню главной, кнопка в hero и
-   ссылка рядом с ней. Правило стоит раньше самих блоков, поэтому каждый
-   из них может переопределить что угодно из этого набора. */
-body.home .site-nav a,
+/* Одна и та же капитель первого экрана: кнопка в hero и ссылка рядом с
+   ней. Правило стоит раньше самих блоков, поэтому каждый из них может
+   переопределить что угодно из этого набора. */
 .hero-video-actions .btn-primary,
 .hero-link {
   font-family: var(--font-display);
@@ -296,75 +120,11 @@ body.home .site-nav a,
   text-transform: uppercase;
 }
 
-/* No pills on the homepage — the nav reads as plain editorial type with
-   a hairline that grows under the current item. */
-body.home .site-nav a {
-  color: rgba(238, 241, 246, 0.72);
-  padding: 0.5rem 0.9rem;
-  border-radius: 0;
-  position: relative;
-}
-
-body.home .site-nav a::after {
-  content: "";
-  position: absolute;
-  left: 0.9rem;
-  right: 0.9rem;
-  bottom: 0.15rem;
-  height: 1px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.25s ease;
-}
-
-body.home .site-nav a:hover,
-body.home .site-nav a.active {
-  background: none;
-  color: #fff;
-  text-shadow: var(--shadow-text);
-}
-
-body.home .site-nav a:hover::after,
-body.home .site-nav a.active::after {
-  transform: scaleX(1);
-}
-
-/* Contact call-to-action pinned to the right of the homepage nav. */
-.nav-cta {
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-text);
-  white-space: nowrap;
-  padding: 0.6rem 1.35rem;
-  border: 1px solid rgba(238, 241, 246, 0.35);
-  border-radius: 999px;
-  background: rgba(238, 241, 246, 0.06);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
-}
-
-.nav-cta:hover {
-  background: rgba(238, 241, 246, 0.92);
-  border-color: rgba(238, 241, 246, 0.92);
-  color: #0b1524;
-  text-decoration: none;
-}
-
-body.home .nav-toggle {
-  border-color: rgba(238, 241, 246, 0.3);
-  color: var(--color-text);
-}
-
 /* Main layout */
 main {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: calc(var(--header-height) + 2rem) 1.25rem 3rem;
+  padding: 2rem 1.25rem 3rem;
 }
 
 /* The homepage's hero video sits before `main` and fills the full
@@ -910,7 +670,8 @@ body.home .hero-video + main .btn-primary:hover {
   color: var(--color-text-muted);
 }
 
-.level-section .material-grid {
+.level-section .material-grid,
+.level-section .card-grid {
   margin-top: 0.85rem;
 }
 
@@ -1325,26 +1086,6 @@ body.home .hero-video + main .btn-primary:hover {
   margin: 1rem 0;
 }
 
-/* FAQ */
-.faq-item {
-  border-bottom: 1px solid var(--color-border);
-  padding: 1.25rem 0;
-}
-
-.faq-item:first-child {
-  padding-top: 0;
-}
-
-.faq-item h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.05rem;
-}
-
-.faq-item p {
-  margin: 0;
-  color: var(--color-text-muted);
-}
-
 /* Contact form */
 .contact-grid {
   display: grid;
@@ -1352,22 +1093,51 @@ body.home .hero-video + main .btn-primary:hover {
   gap: 2rem;
 }
 
-.contact-info dl {
-  margin: 0;
-}
-
-.contact-info dt {
-  font-weight: 600;
-  margin-top: 1rem;
-}
-
-.contact-info dt:first-child {
-  margin-top: 0;
-}
-
-.contact-info dd {
-  margin: 0.25rem 0 0;
+.contact-info p {
+  margin: 0 0 1.25rem;
   color: var(--color-text-muted);
+}
+
+/* Ник в Telegram — обычная ссылка на личку, чуть крупнее текста. */
+.contact-info .contact-tg {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+/* Ловушка для спам-ботов: поле есть в форме, но человек его не видит. */
+.contact-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Итог отправки под кнопкой: «отправляю» или ошибка. */
+.contact-status {
+  margin: 1rem 0 0;
+  color: var(--color-text-muted);
+}
+
+/* Последний шаг после отправки: открыть бота и нажать «Старт». */
+.contact-next {
+  margin-top: 1rem;
+  padding: 1rem 1.15rem;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--color-surface);
+}
+
+.contact-next p {
+  margin: 0 0 0.85rem;
+}
+
+.contact-status.is-error {
+  padding: 0.75rem 1rem;
+  color: var(--color-text);
+  background: rgba(246, 82, 9, 0.10);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
 }
 
 .contact-form label {
@@ -1394,6 +1164,137 @@ body.home .hero-video + main .btn-primary:hover {
 .contact-form textarea {
   min-height: 120px;
   resize: vertical;
+}
+
+/* Подпись под заголовком формы. */
+.contact-lead {
+  margin: 0 0 1.25rem;
+  color: var(--color-text-muted);
+}
+
+/* «Как начать» под Telegram: та же полупрозрачная подложка с красной
+   чертой слева, что у последнего шага под формой (.contact-next). */
+.contact-steps {
+  margin-top: 2rem;
+  padding: 1.15rem 1.25rem;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--color-surface);
+}
+
+.contact-steps h2 {
+  margin: 0 0 1rem;
+}
+
+.contact-steps ol {
+  list-style: none;
+  counter-reset: step;
+  margin: 0;
+  padding: 0;
+}
+
+.contact-steps li {
+  counter-increment: step;
+  position: relative;
+  min-height: 1.9rem;
+  margin-bottom: 0.9rem;
+  padding-left: 2.75rem;
+  color: var(--color-text-muted);
+}
+
+.contact-steps li:last-child {
+  margin-bottom: 0;
+}
+
+/* Номер шага — красный кружок слева от текста. */
+.contact-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 50%;
+  color: var(--color-accent);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.contact-steps strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.contact-steps .note-small {
+  margin: 1rem 0 0;
+}
+
+/* Частые вопросы под обеими колонками. Каждый вопрос — <details> на той же
+   подложке, ответ раскрывается по клику без скриптов. */
+.contact-faq {
+  margin-top: 3rem;
+}
+
+.contact-faq h2 {
+  margin: 0 0 1rem;
+}
+
+.contact-faq details {
+  margin-bottom: 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+/* У раскрытого вопроса появляется та же красная черта слева. */
+.contact-faq details[open] {
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.contact-faq summary {
+  position: relative;
+  padding: 0.9rem 3rem 0.9rem 1.25rem;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.contact-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.contact-faq summary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* Плюс справа; у раскрытого вопроса он поворачивается в крестик. */
+.contact-faq summary::after {
+  content: "+";
+  position: absolute;
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--color-accent);
+  transition: transform 0.2s ease;
+}
+
+.contact-faq details[open] summary::after {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.contact-faq details p {
+  margin: 0;
+  padding: 0 1.25rem 1rem;
+  color: var(--color-text-muted);
 }
 
 /* Мелкая сноска под блоком: примечание к контактам, к форме. Раньше эти
@@ -1467,7 +1368,9 @@ body.home .hero-video + main .btn-primary:hover {
   counter-reset: step;
 }
 
-.steps-list li {
+/* Только прямые пункты: вложенный список внутри шага (примеры задач на
+   support/teacher.html) не должен получать номер и линию. */
+.steps-list > li {
   counter-increment: step;
   padding: 0.75rem 0 0.75rem 2.5rem;
   position: relative;
@@ -1475,7 +1378,7 @@ body.home .hero-video + main .btn-primary:hover {
   margin-left: 0.75rem;
 }
 
-.steps-list li::before {
+.steps-list > li::before {
   content: counter(step);
   position: absolute;
   left: -0.85rem;
@@ -1490,6 +1393,69 @@ body.home .hero-video + main .btn-primary:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Шаги с описанием: заголовок шага отдельной строкой, текст под ним. */
+.steps-list--detailed > li {
+  padding-bottom: 1.25rem;
+}
+
+.steps-list--detailed > li > strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 1.05rem;
+}
+
+/* Список через тире вместо точек; тире — акцентным красным. */
+.dash-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.dash-list li {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.dash-list li + li {
+  margin-top: 0.35rem;
+}
+
+.dash-list li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--color-accent);
+}
+
+/* Вступление на странице «О преподавателе»: крупный первый абзац,
+   список через тире и обещание в рамке с красной полосой. Строки
+   ограничены ~68 знаками, чтобы текст не тянулся на всю ширину main. */
+.teacher-intro p,
+.teacher-intro .dash-list {
+  max-width: 68ch;
+}
+
+.teacher-intro p {
+  margin: 0 0 1rem;
+}
+
+.teacher-intro .dash-list {
+  margin: -0.5rem 0 1.5rem;
+}
+
+.teacher-lead {
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
+
+.teacher-intro .teacher-promise {
+  margin: 1.5rem 0 0;
+  padding: 0.9rem 1.15rem;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--color-surface);
 }
 
 /* Раздел «Карточки» (flashcards/index.html, js/flashcards.js). Колоды
@@ -2292,6 +2258,7 @@ body.home .hero-video + main .btn-primary:hover {
 
 .fc-word-pinyin {
   font-weight: 600;
+  border-radius: 4px;
 }
 
 .fc-word-translation {
@@ -2338,8 +2305,8 @@ body.home .hero-video + main .btn-primary:hover {
   grid-template-columns: calc(5 * var(--fc-hanzi-size)) minmax(0, 1fr);
 }
 
-/* «Скрыть перевод»: на месте перевода — пустая плашка его длины, тап по
-   строке показывает перевод (is-revealed). */
+/* «Узнать иероглифы»: на месте пиньиня и перевода — пустые плашки их длины,
+   тап по строке показывает их (is-revealed). */
 .fc-words.is-hiding .fc-word {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -2349,6 +2316,7 @@ body.home .hero-video + main .btn-primary:hover {
   border-color: var(--color-accent);
 }
 
+.fc-words.is-hiding .fc-word:not(.is-revealed) .fc-word-pinyin,
 .fc-words.is-hiding .fc-word:not(.is-revealed) .fc-word-translation {
   color: transparent;
   background: rgba(238, 241, 246, 0.1);
@@ -2361,15 +2329,28 @@ body.home .hero-video + main .btn-primary:hover {
   outline-offset: 2px;
 }
 
+/* Раздел «ИИ-помощник» (assistant/index.html) — пока заглушка: заголовок,
+   строка о том, что раздел в разработке, и кнопка в библиотеку, всё по
+   центру. Блок вытянут почти на весь экран, чтобы текст стоял посередине,
+   а футер — у нижнего края окна; 22rem — шапка, поля main и футер. */
+.assistant-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: max(16rem, calc(100vh - 22rem));
+  min-height: max(16rem, calc(100svh - 22rem));
+  text-align: center;
+}
+
+.assistant-soon .page-subtitle {
+  max-width: 34rem;
+}
+
 /* Responsive */
 
 /* Laptop — keep the wide composition, pull the gutters in. */
 @media (max-width: 1280px) {
-  body.home .header-inner {
-    padding: 1rem 1.25rem;
-    gap: 1.25rem;
-  }
-
   .hero-video-inner {
     padding-left: 1.25rem;
     padding-right: 1.25rem;
@@ -2385,102 +2366,8 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
-/* Tablet — the homepage nav collapses into the hamburger earlier than
-   inner pages do, because it also carries the contact button. */
+/* Tablet — the hero title shrinks. */
 @media (max-width: 1024px) {
-  body.home .nav-toggle {
-    display: block;
-    order: 3;
-  }
-
-  body.home .nav-cta {
-    display: none;
-  }
-
-  body.home .header-inner {
-    position: relative;
-    flex-wrap: wrap;
-  }
-
-  /* Dropdown menu in the paper palette of the section below the hero,
-     with the same darker side edges and dark ink links. It stays
-     rendered but hidden, so opening can animate: the panel slides down
-     and fades in, then the links follow one after another. */
-  body.home .site-nav {
-    display: block;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background:
-      var(--paper-edges),
-      var(--paper);
-    border-top: 1px solid var(--paper-line);
-    border-bottom: 1px solid var(--paper-line);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
-    padding: 1rem 1.75rem;
-    visibility: hidden;
-    opacity: 0;
-    transform: translateY(-0.75rem);
-    pointer-events: none;
-    transition:
-      opacity 0.3s ease,
-      transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
-      visibility 0s linear 0.35s;
-  }
-
-  body.home .site-nav.open {
-    visibility: visible;
-    opacity: 1;
-    transform: none;
-    pointer-events: auto;
-    transition:
-      opacity 0.3s ease,
-      transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
-      visibility 0s;
-  }
-
-  body.home .site-nav li {
-    opacity: 0;
-    transform: translateY(-0.4rem);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  body.home .site-nav.open li {
-    opacity: 1;
-    transform: none;
-    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
-  }
-
-  body.home .site-nav.open li:nth-child(1) { transition-delay: 0.06s; }
-  body.home .site-nav.open li:nth-child(2) { transition-delay: 0.11s; }
-  body.home .site-nav.open li:nth-child(3) { transition-delay: 0.16s; }
-  body.home .site-nav.open li:nth-child(4) { transition-delay: 0.21s; }
-  body.home .site-nav.open li:nth-child(5) { transition-delay: 0.26s; }
-
-  body.home .site-nav ul {
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  body.home .site-nav a,
-  body.home .site-header.is-past-hero .site-nav a {
-    padding: 0.5rem 0;
-    color: rgba(31, 32, 34, 0.7);
-    text-shadow: none;
-  }
-
-  body.home .site-nav a:hover,
-  body.home .site-nav a.active {
-    color: var(--ink);
-    text-shadow: none;
-  }
-
-  body.home .site-nav a::after {
-    left: 0;
-    right: 0;
-  }
-
   .hero-video-content {
     max-width: 100%;
     padding-bottom: 3rem;
@@ -2491,40 +2378,8 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
-/* Small tablet / large phone — the strip stays a strip, stacked.
-   Меню внутренних страниц (шесть пунктов) уже не помещается в строку
-   рядом с логотипом и уходит в бургер. */
+/* Small tablet / large phone — the strip stays a strip, stacked. */
 @media (max-width: 860px) {
-  .nav-toggle {
-    display: block;
-  }
-
-  .site-nav {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--color-surface-solid);
-    border-bottom: 1px solid var(--color-border);
-    box-shadow: var(--shadow);
-    padding: 1rem 1.25rem;
-  }
-
-  .site-nav.open {
-    display: block;
-  }
-
-  .site-nav ul {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .header-inner {
-    position: relative;
-    flex-wrap: wrap;
-  }
-
   .hero-video-footer {
     grid-template-columns: 1fr;
     gap: 1.1rem;
@@ -2679,9 +2534,8 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
-/* prefers-reduced-motion — один блок на весь сайт. Стоит последним не
-   случайно: правила меню должны перебить @media (max-width: 1024px) выше,
-   а медиазапросы специфичности не добавляют — выигрывает тот, кто ниже. */
+/* prefers-reduced-motion — один блок на весь сайт (у шапки свой, в
+   components/site-header/header.css). */
 @media (prefers-reduced-motion: reduce) {
   /* Вместо видео — его постер (на него же смотрит js/main.js, чтобы не
      ждать загрузки видео, которого не будет). */
@@ -2703,22 +2557,11 @@ body.home .hero-video + main .btn-primary:hover {
     animation: none;
   }
 
-  /* Меню только проявляется — без сдвига. */
-  body.home .site-nav,
-  body.home .site-nav li {
-    transform: none;
-  }
-
   /* Карточки переворачиваются и меняются мгновенно (js/flashcards.js
      тоже пропускает анимацию улёта). */
   .fc-card-inner,
   .fc-card.is-returning,
   .fc-progress span {
-    transition: none;
-  }
-
-  /* Шапка прячется и появляется без выезда. */
-  .site-header {
     transition: none;
   }
 }
@@ -2729,10 +2572,6 @@ body.home .hero-video + main .btn-primary:hover {
   .hero-video-inner {
     padding-left: 1.1rem;
     padding-right: 1.1rem;
-  }
-
-  body.home .header-inner {
-    padding: 0.9rem 1.1rem;
   }
 
   /* Колода: колонка иероглифа уже, чтобы тексту справа хватало места. */

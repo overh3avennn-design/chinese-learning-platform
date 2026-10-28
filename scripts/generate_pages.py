@@ -19,28 +19,33 @@
     отдельные адреса, на них ведут эти заголовки. Ступень 7–9 есть только
     в HSK 3.0, так что стандарты уровня нужно перебирать через
     level_standards(), а не по всему списку standards.
-    Шапка, меню и футер одинаковые на всех страницах; относительные ссылки
+    Шапка — общий компонент components/site-header: страница подключает его
+    стили в <head> и скрипт первой строкой <body>, разметку и меню вставляет
+    скрипт. Футер одинаковый на всех страницах; относительные ссылки
     считаются от глубины страницы (depth_prefix). Файл перезаписывается,
     только если его содержимое изменилось, поэтому повторный запуск
     ничего не меняет.
 
 Как запускать (из любой папки)
     python3 scripts/generate_pages.py           собрать страницы
-    python3 scripts/generate_pages.py --check   ничего не записывая, сверить шапку и
-                                                футер ручных страниц с шаблоном и
-                                                показать устаревшие сгенерированные
+    python3 scripts/generate_pages.py --check   ничего не записывая, сверить <head>,
+                                                подключение шапки и футер ручных страниц
+                                                с шаблоном и показать устаревшие
+                                                сгенерированные
 
 Что НЕ трогает
     Всё, чего нет в content.json: главную (index.html), library/index.html,
-    library/roadmap.html, library/textbooks/, library/journals/, library/culture/,
+    library/roadmap.html, library/textbooks/, library/materials/, library/journals/, library/grammar/, library/culture/,
     library/additional/index.html, library/practice/index.html,
-    library/practice/speaking.html, support/, flashcards/, а также css/, js/, images/ и файлы
+    library/practice/speaking.html, support/, flashcards/, assistant/, а также css/, js/, images/ и файлы
     материалов. Страницы, убранные из content.json, не удаляются — удалите сами.
     Правки вручную в сгенерированных страницах будут затёрты: меняйте content.json.
 
 Пункты (items) в content.json
     {"label": "...", "file": "library/hsk-1/x.pdf"}  карточка файла: обложка и название
-                                                     открывают файл, кнопки «Открыть» и «Скачать»
+                                                     открывают файл, кнопки «Открыть» и «Скачать».
+                                                     Если файл загружен на Яндекс Диск (ссылка
+                                                     есть в data/links.json), всё это ведёт на Диск
     {"label": "...", "url": "https://..."}          внешняя ссылка, открывается в новой вкладке
     {"label": "...", "type": "Статья"}              заготовка: на сайт не выводится
     "type" — метка типа (у url по умолчанию «Внешняя ссылка»), "desc" — короткое
@@ -76,13 +81,14 @@
 
 import csv
 import difflib
+import functools
 import glob
 import html
 import json
 import os
 import re
 import sys
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTENT = os.path.join(BASE, "content.json")
@@ -97,6 +103,21 @@ VOCAB_NOTE = ("Перевод на русский в списках слов п�
 # карточка рисует заглушку с расширением файла.
 PREVIEW_DIR = "images/previews"
 
+# Публичные ссылки на материалы на Яндекс Диске: «library/…» → «https://disk.yandex.ru/i/…».
+# Собирает scripts/yadisk_upload.py. Файл со ссылкой открывается с Диска, без
+# неё — с сайта, как раньше.
+LINKS = os.path.join(BASE, "data", "links.json")
+# Плашка под подзаголовком страницы, где есть файлы с Диска, — та же, что на
+# странице фильмов. Её же ставит в ручные страницы scripts/apply_disk_links.py.
+DISK_NOTE = '''
+    <div class="film-vpn" role="note">
+      <span class="film-vpn-icon" aria-hidden="true">⚠</span>
+      <p>
+        <strong>Если файл не открывается — выключите VPN.</strong>
+        Материалы хранятся на Яндекс Диске, а Яндекс часто не пускает подключения через VPN.
+      </p>
+    </div>'''
+
 # Страницы, собранные вручную. Генератор никогда в них не пишет.
 MANUAL_PAGES = [
     "index.html",
@@ -109,31 +130,39 @@ MANUAL_PAGES = [
     "library/textbooks/spoken-chinese.html",
     "library/textbooks/materials.html",
     "library/textbooks/exam-tickets.html",
+    "library/materials/index.html",
     "library/journals/index.html",
+    "library/grammar/index.html",
     "library/culture/index.html",
     "library/culture/films.html",
     "library/additional/index.html",
     "library/practice/index.html",
     "library/practice/speaking.html",
-    "support/faq.html",
     "support/teacher.html",
     "support/contacts.html",
     "flashcards/index.html",
+    "assistant/index.html",
 ]
 
 HOME_PAGE = "index.html"
+# Общая шапка сайта: стили — в <head>, скрипт — первой строкой <body>.
+HEADER_CSS = "components/site-header/header.css"
+HEADER_JS = "components/site-header/header.js"
 # Весь скрипт сайта — один файл js/main.js, одинаковый на всех страницах.
 PAGE_SCRIPTS = ["js/main.js"]
 
-# Оформление страниц additional/ и practice/: крошка, подзаголовок, заглушка.
+# Оформление страниц additional/ и practice/: крошка, кнопка «назад»,
+# подзаголовок, заглушка.
 COLLECTIONS = {
     "additional": {
         "crumb": "Дополнительные",
+        "back": "Дополнительные материалы",
         "subtitle": "Дополнительные материалы · Все уровни",
         "placeholder": "Добавьте материалы в этот раздел: справочники, статьи, ссылки на видео.",
     },
     "practice": {
         "crumb": "Практика",
+        "back": "Практика и контекст",
         "subtitle": "Практика и контекст",
         "placeholder": "Добавьте тексты, диалоги, ссылки на аудио и видео.",
     },
@@ -147,6 +176,24 @@ LEVEL_STANDARD_KEYS = {"subtitle", "next", "sections"}
 
 def depth_prefix(rel_depth):
     return "../" * rel_depth
+
+
+@functools.lru_cache(maxsize=None)
+def disk_links():
+    """Ссылки на Диск из data/links.json; пустой словарь, пока туда ничего не загружено."""
+    if not os.path.exists(LINKS):
+        return {}
+    with open(LINKS, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def file_href(path, depth):
+    """Адрес файла материала: ссылка на Диск, если файл загружен, иначе путь на сайте."""
+    return disk_links().get(path) or depth_prefix(depth) + quote(path)
+
+
+def on_disk(path):
+    return path in disk_links()
 
 
 def level_standards(content, level):
@@ -185,32 +232,11 @@ def head(title, depth):
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{p}css/style.css">
+  <link rel="stylesheet" href="{p}{HEADER_CSS}">
 </head>
 <body>
+  <script src="{p}{HEADER_JS}"></script>
   <div class="bg-fixed" aria-hidden="true"></div>
-'''
-
-
-def site_header(content, nav_active, depth):
-    p = depth_prefix(depth)
-    items = ""
-    for item in content["nav"]:
-        active = ' class="active"' if item["id"] == nav_active else ""
-        items += f'''
-          <li><a href="{p}{attr(item["href"])}"{active}>{esc(item["label"])}</a></li>'''
-    return f'''  <header class="site-header">
-    <div class="header-inner">
-      <a href="{p}index.html" class="logo">
-        <span class="logo-char">中</span>
-        <span>Китайский язык</span>
-      </a>
-      <button class="nav-toggle" aria-label="Меню" aria-expanded="false">☰</button>
-      <nav class="site-nav" aria-label="Основная навигация">
-        <ul>{items}
-        </ul>
-      </nav>
-    </div>
-  </header>
 '''
 
 
@@ -243,10 +269,15 @@ def footer(content, depth):
 
 def page(content, rel_path, title, main):
     depth = rel_path.count("/")
-    return (head(title, depth)
-            + site_header(content, active_nav_id(content, rel_path), depth)
-            + main
-            + footer(content, depth))
+    return head(title, depth) + with_disk_note(main) + footer(content, depth)
+
+
+def with_disk_note(main):
+    """Плашка про VPN под подзаголовком, если хоть один файл страницы открывается с Диска."""
+    if not any(url in main for url in disk_links().values()):
+        return main
+    return re.sub(r'<p class="page-subtitle">.*?</p>', lambda m: m.group(0) + DISK_NOTE,
+                  main, count=1, flags=re.S)
 
 
 def has_link(item):
@@ -269,8 +300,10 @@ def render_item(item, depth):
                 f'{esc(item.get("link_text", "Перейти на сайт"))}</a>')
     elif "file" in item:
         ext = os.path.splitext(item["file"])[1].lstrip(".").upper()
-        href = depth_prefix(depth) + quote(item["file"])
-        link = f'<a class="download" href="{attr(href)}">{"Скачать " + ext if ext else "Скачать"}</a>'
+        href = file_href(item["file"], depth)
+        target = ' target="_blank" rel="noopener"' if on_disk(item["file"]) else ""
+        link = (f'<a class="download" href="{attr(href)}"{target}>'
+                f'{"Скачать " + ext if ext else "Скачать"}</a>')
     else:
         link = ""
     badge = f'<span class="item-type">{esc(item_type)}</span>' if item_type else ""
@@ -303,8 +336,11 @@ def preview_for(item):
 def render_material(item, depth):
     """Карточка файла: обложка, название, описание, «Открыть» и «Скачать»."""
     p = depth_prefix(depth)
-    href = attr(p + quote(item["file"]))
+    href = attr(file_href(item["file"], depth))
     ext = os.path.splitext(item["file"])[1].lstrip(".").upper()
+    # Чужой адрес браузер по атрибуту download не скачивает, поэтому файл с
+    # Диска «Скачать» открывает в новой вкладке — там кнопка «Скачать» Диска.
+    save = ' target="_blank" rel="noopener"' if on_disk(item["file"]) else " download"
     preview = preview_for(item)
     if preview:
         cover = f'<img src="{attr(p + quote(preview))}" alt="" loading="lazy">'
@@ -317,14 +353,14 @@ def render_material(item, depth):
              if item.get("type") else "")
     return f'''
           <article class="material-card">
-            <a class="material-cover" href="{href}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">{cover}</a>
+            <a class="material-cover" href="{href}" data-ext="{attr(ext)}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">{cover}</a>
             <div class="material-body">
               <h3 class="material-title"><a href="{href}" target="_blank" rel="noopener">{esc(item["label"])}</a></h3>{desc}
               <div class="material-foot">
                 {badge}
                 <span class="material-actions">
                   <a class="material-action is-open" href="{href}" target="_blank" rel="noopener">Открыть</a>
-                  <a class="material-action" href="{href}" download>Скачать</a>
+                  <a class="material-action" href="{href}"{save}>Скачать</a>
                 </span>
               </div>
             </div>
@@ -423,7 +459,7 @@ def vocab_items(data, level_name):
         rows = list(csv.DictReader(f))
     items = []
     pdf = data.get("pdf")
-    if pdf and os.path.isfile(os.path.join(BASE, pdf)):
+    if pdf and (os.path.isfile(os.path.join(BASE, pdf)) or on_disk(pdf)):
         items.append({"label": f"Список новых слов уровня {level_name} ({len(rows)})",
                       "file": pdf, "type": "Для печати"})
     items.append({"label": f"Список слов таблицей — для Anki и Excel ({len(rows)})",
@@ -495,13 +531,15 @@ def hsk_section_page(content, level_slug, level, std, index, resources=()):
         "Раздел в процессе наполнения. Добавьте сюда свои материалы: "
         "PDF, ссылки на видео, аудио и конспекты."))
 
-    nav_next = ""
+    # «Назад» есть на каждой странице, «Дальше» — у всех разделов, кроме последнего.
+    next_link = ""
     if index + 1 < len(content["hsk_sections"]):
         nxt = content["hsk_sections"][index + 1]
-        nav_next = f'''
+        next_link = f'''
+      <a href="{attr(nxt["file"])}" class="btn btn-secondary">Дальше → {esc(nxt["title"])}</a>'''
+    nav_next = f'''
     <nav class="nav-next">
-      <a href="../index.html" class="btn btn-secondary">← Все разделы уровня</a>
-      <a href="{attr(nxt["file"])}" class="btn btn-secondary">Дальше → {esc(nxt["title"])}</a>
+      <a href="../index.html" class="btn btn-secondary">← Все разделы уровня</a>{next_link}
     </nav>'''
 
     main = f'''
@@ -625,23 +663,16 @@ def collection_page(content, group, entry, resources=()):
     <h1 class="page-title">{title}</h1>
     <p class="page-subtitle">{style["subtitle"]}</p>
     <p>{esc(entry["desc"])}</p>{body}
+
+    <nav class="nav-next">
+      <a href="index.html" class="btn btn-secondary">← {style["back"]}</a>
+    </nav>
   </main>
 '''
     return rel_path, page(content, rel_path, entry["title"], main)
 
 
 # ---------------------------------------------------------------- данные
-
-def active_nav_id(content, rel_path):
-    """Пункт меню, который подсвечивается на странице rel_path."""
-    for item in content["nav"]:
-        href = item["href"]
-        section_dir = os.path.dirname(href)
-        if rel_path == href or (section_dir and os.path.basename(href) == "index.html"
-                                and rel_path.startswith(section_dir + "/")):
-            return item["id"]
-    return None
-
 
 def load_content():
     with open(CONTENT, encoding="utf-8") as f:
@@ -773,7 +804,8 @@ def missing_files(content):
     items += [(f'library/{group}/{e["slug"]}', e["items"]) for group in COLLECTIONS for e in content[group]]
     for where, entries in items:
         for item in entries:
-            if "file" in item and not os.path.isfile(os.path.join(BASE, item["file"])):
+            if ("file" in item and not os.path.isfile(os.path.join(BASE, item["file"]))
+                    and not on_disk(item["file"])):
                 found.append(f'{where}: нет файла {item["file"]}')
             elif "file" in item and not preview_for(item):
                 found.append(f'{where}: нет обложки для {item["file"]} '
@@ -784,7 +816,7 @@ def missing_files(content):
     for slug, level in content["levels"].items():
         for std_id, block in level["standards"].items():
             pdf = block["sections"].get("vocabulary", {}).get("pdf")
-            if pdf and not os.path.isfile(os.path.join(BASE, pdf)):
+            if pdf and not os.path.isfile(os.path.join(BASE, pdf)) and not on_disk(pdf):
                 found.append(f'library/{slug}/{std_id}: нет PDF {pdf} '
                              f'(соберите: python3 scripts/make_vocab_pdf.py)')
     return found
@@ -810,7 +842,7 @@ def write_if_changed(rel_path, text):
 def canonical(block, rel_path):
     """Строки блока без отступов, ссылки приведены к пути от корня сайта.
 
-    "faq.html" на support/teacher.html и "../support/faq.html" на
+    "contacts.html" на support/teacher.html и "../support/contacts.html" на
     library/index.html ведут в одно место и считаются одинаковыми.
     """
     base_dir = os.path.dirname(rel_path)
@@ -826,17 +858,22 @@ def canonical(block, rel_path):
     return [line.strip() for line in block.splitlines() if line.strip()]
 
 
+def header_includes(text):
+    """Строки, которыми страница подключает общую шапку."""
+    css = re.search(r'<link rel="stylesheet" href="[^"]*%s">' % re.escape(HEADER_CSS), text)
+    js = re.search(r'<body[^>]*>\s*(<script src="[^"]*%s"></script>)' % re.escape(HEADER_JS), text)
+    return "\n".join([css.group(0) if css else f"(нет стилей шапки {HEADER_CSS} в <head>)",
+                      js.group(1) if js else f"(нет скрипта шапки {HEADER_JS} первой строкой <body>)"])
+
+
 def chrome_blocks(text, is_home):
-    """Общие для всех страниц куски: шапка до <header>, <header>, футер со скриптами."""
+    """Общие для всех страниц куски: <head> с началом <body>, шапка, футер со скриптами."""
+    if is_home:  # у главной свой <head> (шрифты, прелоадер) и свой подвал, общая только шапка
+        return {"подключение шапки": header_includes(text)}
     blocks = {}
-    if not is_home:  # у главной свой <head>: другие шрифты, прелоадер, нет bg-fixed
-        m = re.search(r"<!DOCTYPE html>.*?(?=\n\s*<header class=\"site-header\">)", text, re.S)
-        blocks["<head> и начало <body>"] = m.group(0) if m else ""
-    m = re.search(r'<header class="site-header">.*?</header>', text, re.S)
-    header = m.group(0) if m else ""
-    if is_home:  # кнопка «Записаться на урок» есть только на главной
-        header = "\n".join(line for line in header.splitlines() if 'class="nav-cta"' not in line)
-    blocks["шапка <header>"] = header
+    m = re.search(r'<!DOCTYPE html>.*?<div class="bg-fixed" aria-hidden="true"></div>', text, re.S)
+    blocks["<head> и начало <body>"] = m.group(0) if m else ""
+    blocks["подключение шапки"] = header_includes(text)
     m = re.search(r'<footer class="site-footer">.*</html>', text, re.S)
     blocks["футер и скрипты"] = m.group(0) if m else ""
     return blocks
@@ -844,11 +881,8 @@ def chrome_blocks(text, is_home):
 
 def expected_chrome(content, rel_path):
     depth = rel_path.count("/")
-    is_home = rel_path == HOME_PAGE
-    text = (head("…", depth)
-            + site_header(content, active_nav_id(content, rel_path), depth)
-            + footer(content, depth))
-    return chrome_blocks(text, is_home)
+    text = head("…", depth) + footer(content, depth)
+    return chrome_blocks(text, rel_path == HOME_PAGE)
 
 
 def html_pages():
@@ -886,6 +920,19 @@ def links_to(rel_path, target):
         if os.path.normpath(os.path.join(base_dir, url)) == target:
             return True
     return False
+
+
+def stale_local_links(rel_path):
+    """Файлы, на которые страница ссылается на сайте, хотя они уже на Диске."""
+    base_dir = os.path.dirname(rel_path)
+    found = []
+    for url in re.findall(r'href="([^"#?]+)', read(rel_path)):
+        if re.match(r"^[a-z]+:", url):
+            continue
+        target = os.path.normpath(os.path.join(base_dir, unquote(url)))
+        if on_disk(target) and target not in found:
+            found.append(target)
+    return found
 
 
 def check_empty_cards(content):
@@ -933,7 +980,7 @@ def placeholder_items(content):
 def check(content, pages):
     problems = 0
 
-    print("Ручные страницы: шапка и футер против шаблона")
+    print("Ручные страницы: <head>, подключение шапки и футер против шаблона")
     for rel_path in [p for p in html_pages() if p not in pages]:
         is_home = rel_path == HOME_PAGE
         actual = chrome_blocks(read(rel_path), is_home)
@@ -952,6 +999,16 @@ def check(content, pages):
                     print(f"        {line}")
         else:
             print(f"  ✓ {rel_path}")
+
+    print("\nРучные страницы: ссылки на файлы, которые уже на Яндекс Диске")
+    stale_links = [f"{rel_path} → {target}" for rel_path in MANUAL_PAGES
+                   if os.path.exists(os.path.join(BASE, rel_path))
+                   for target in stale_local_links(rel_path)]
+    for line in stale_links:
+        print(f"  ✗ {line} (запустите scripts/apply_disk_links.py)")
+    if not stale_links:
+        print("  ✓ все ведут на Диск")
+    problems += len(stale_links)
 
     print("\nСгенерированные страницы: есть ли ссылка с родительской страницы")
     orphans = []

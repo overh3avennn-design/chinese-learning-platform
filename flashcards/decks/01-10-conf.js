@@ -30,6 +30,15 @@ addDeck({
     { "hanzi": "打动", "pinyin": "dǎdòng", "translation": "тронуть, растрогать (= 感动)" },
     { "hanzi": "诚心", "pinyin": "chéngxīn", "translation": "искренность" },
     { "hanzi": "专心", "pinyin": "zhuānxīn", "translation": "настойчивость, увлечённость" },
-    { "hanzi": "精诚所至，金石为开", "pinyin": "jīngchéng suǒ zhì, jīnshí wèi kāi", "translation": "Абсолютная искренность может повлиять даже на металл и камень (нет непреодолимых трудностей)" }
+    { "hanzi": "精诚所至，金石为开", "pinyin": "jīngchéng suǒ zhì, jīnshí wèi kāi", "translation": "Абсолютная искренность может повлиять даже на металл и камень (нет непреодолимых трудностей)" },
+    { "hanzi": "摸", "pinyin": "mō", "translation": "гладить" },
+    { "hanzi": "摇", "pinyin": "yáo", "translation": "махать, вилять" },
+    { "hanzi": "摇尾巴", "pinyin": "yáo wěiba", "translation": "вилять хвостом" },
+    { "hanzi": "阻止", "pinyin": "zǔzhǐ", "translation": "останавливать, удерживать" },
+    { "hanzi": "急忙", "pinyin": "jímáng", "translation": "торопливо, поспешно" },
+    { "hanzi": "升起", "pinyin": "shēngqǐ", "translation": "восходить" },
+    { "hanzi": "藏", "pinyin": "cáng", "translation": "собирать, хранить, прятать" },
+    { "hanzi": "献", "pinyin": "xiàn", "translation": "преподносить" },
+    { "hanzi": "匹", "pinyin": "pǐ", "translation": "счётное слово для лошадей" }
   ]
 });

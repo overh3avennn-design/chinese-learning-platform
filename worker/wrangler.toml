@@ -1,0 +1,22 @@
+# Настройки Cloudflare Worker для формы обратной связи (telegram-form.js).
+# Выкладка: npx wrangler deploy (из папки worker/).
+# Токен бота и пароль вебхука сюда не пишем — они лежат в секретах воркера:
+#   npx wrangler secret put BOT_TOKEN
+#   npx wrangler secret put WEBHOOK_SECRET
+name = "chinese-form"
+main = "telegram-form.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+# Ник бота без @: на него ведёт ссылка «Открыть Telegram» после отправки формы.
+BOT_USERNAME = "chinese_free_bot"
+# Куда слать заявки: личный chat id преподавателя в боте @chinese_free_bot.
+CHAT_ID = "1463717395"
+# Адрес сайта, когда он будет опубликован, например https://example.github.io.
+# Пока пусто — заявки принимаются с любого сайта.
+ALLOWED_ORIGIN = ""
+
+# Заявки, которые ждут, пока ученик нажмёт «Старт» в боте (хранятся сутки).
+[[kv_namespaces]]
+binding = "APPLICATIONS"
+id = "4a0d3946618d4621a3738888991dcbe1"

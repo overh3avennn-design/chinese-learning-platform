@@ -358,8 +358,8 @@
   }
 
   // ------------------------------------------------- страница колоды
-  // Сводка прогресса, кнопки «Учить» и список слов. «Скрыть перевод»
-  // прячет переводы, тап по строке показывает перевод этого слова; выбор
+  // Сводка прогресса, кнопки «Учить» и список слов. «Узнать иероглифы»
+  // прячет пиньинь и переводы, тап по строке показывает их у этого слова; выбор
   // запоминается в браузере (не вышло — живёт, пока открыта страница).
   var STATUS_LABEL = { "new": "новое", learning: "изучается", learned: "выучено" };
   var HIDE_KEY = "flashcards-ui:hide-translation";
@@ -405,7 +405,7 @@
   function setRevealed(row, revealed) {
     var tr = row.querySelector(".fc-word-translation");
     row.classList.toggle("is-revealed", revealed);
-    if (hideTranslation && !revealed) tr.setAttribute("aria-label", "Показать перевод");
+    if (hideTranslation && !revealed) tr.setAttribute("aria-label", "Показать пиньинь и перевод");
     else tr.removeAttribute("aria-label");
   }
 

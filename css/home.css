@@ -6,10 +6,8 @@
 
 body.page-home {
   --hm-text: #f4f3f0;
-  --hm-muted: rgba(244, 243, 240, 0.8);
   --hm-gold: #cdb079;
   --hm-gold-hover: #e3c893;
-  --hm-line: rgba(244, 243, 240, 0.28);
   --hm-bg: #1f2024;
   --hm-gutter: 56px;
   /* Боковое поле первого экрана: не меньше --hm-gutter, а на окне шире
@@ -35,15 +33,19 @@ body.page-home button:focus-visible {
 
 /* ---------------------------------------------------------- первый экран */
 
+/* Над первым экраном — общая шапка (components/site-header), прозрачная,
+   поверх того же видео-фона. Экран вместе с ней занимает окно целиком,
+   поэтому её высота вычитается: 66px, на телефоне 60px (см. header.css). */
 .hm-hero {
+  --hm-header-h: 66px;
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  min-height: max(720px, 100vh);
-  min-height: max(720px, 100svh);
+  min-height: calc(max(720px, 100vh) - var(--hm-header-h));
+  min-height: calc(max(720px, 100svh) - var(--hm-header-h));
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 1fr auto;
 }
 
 /* ----------------------------------------------------- видео-фон страницы */
@@ -70,158 +72,6 @@ video.bg {
   z-index: -1;
   pointer-events: none;
   background: rgba(14, 16, 19, 0.66);
-}
-
-/* ------------------------------------------------------------------ шапка */
-
-.hm-header {
-  position: relative;
-  z-index: 3;
-  height: 72px;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  padding: 0 var(--hm-side);
-  border-bottom: 1px solid var(--hm-line);
-}
-
-.hm-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-  min-height: 44px;
-  color: var(--hm-text);
-  font-family: var(--font-cormorant);
-  font-weight: 600;
-  font-size: 25px;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.hm-logo:hover {
-  text-decoration: none;
-}
-
-.hm-logo-char {
-  font-family: var(--font-hanzi);
-  font-weight: 900;
-  font-size: 28px;
-  line-height: 1;
-  color: var(--hm-gold);
-}
-
-.hm-menu {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.hm-nav ul {
-  display: flex;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.hm-nav a {
-  display: inline-flex;
-  align-items: center;
-  height: 44px;
-  padding: 0 18px;
-  border-radius: 999px;
-  font-family: var(--font-cormorant);
-  font-weight: 600;
-  font-size: 19px;
-  line-height: 1;
-  white-space: nowrap;
-  color: var(--hm-muted);
-  text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.hm-nav a:hover {
-  text-decoration: none;
-  color: var(--hm-text);
-  background: rgba(244, 243, 240, 0.08);
-}
-
-.hm-nav a[aria-current="page"] {
-  color: #fff;
-  background: rgba(244, 243, 240, 0.16);
-}
-
-.hm-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-left: 24px;
-  border-left: 1px solid rgba(244, 243, 240, 0.22);
-}
-
-.hm-tg {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  color: var(--hm-text);
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.hm-tg:hover {
-  color: var(--hm-gold-hover);
-  background: rgba(244, 243, 240, 0.08);
-}
-
-.hm-cta {
-  display: inline-flex;
-  align-items: center;
-  height: 44px;
-  padding: 0 20px;
-  border: 1px solid rgba(244, 243, 240, 0.6);
-  border-radius: 4px;
-  font-family: var(--font-golos);
-  font-weight: 600;
-  font-size: 15px;
-  line-height: 1;
-  white-space: nowrap;
-  color: var(--hm-text);
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-.hm-cta:hover {
-  text-decoration: none;
-  border-color: var(--hm-text);
-  background: rgba(244, 243, 240, 0.1);
-}
-
-/* Бургер виден только на узком экране (см. медиазапросы ниже). */
-.hm-burger {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin-left: auto;
-  padding: 0;
-  border: 1px solid rgba(244, 243, 240, 0.3);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--hm-text);
-  cursor: pointer;
-}
-
-.hm-burger-close,
-.hm-burger[aria-expanded="true"] .hm-burger-open {
-  display: none;
-}
-
-.hm-burger[aria-expanded="true"] .hm-burger-close {
-  display: block;
 }
 
 /* ------------------------------------------------------------------- hero */
@@ -282,6 +132,7 @@ video.bg {
   font-weight: 400;
   font-size: 19px;
   line-height: 1.6;
+  text-align: center;
   color: rgba(244, 243, 240, 0.92);
 }
 
@@ -289,6 +140,7 @@ video.bg {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 16px 28px;
   margin-top: 30px;
 }
@@ -609,6 +461,15 @@ body.page-home .hm-main {
   text-decoration: none;
 }
 
+/* Знак 中 у логотипа. */
+.hm-logo-char {
+  font-family: var(--font-hanzi);
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--hm-gold);
+}
+
 .hm-footer-tagline {
   margin: 0;
   font-family: var(--font-golos);
@@ -663,65 +524,17 @@ body.page-home .hm-main {
 
 /* ----------------------------------------------------------------- адаптив */
 
-/* Широкий ноутбук: поля и меню немного теснее, чтобы шапка влезала. */
+/* Широкий ноутбук: поля немного теснее. */
 @media (max-width: 1280px) {
   body.page-home {
     --hm-gutter: 40px;
   }
-
-  .hm-nav a {
-    padding: 0 14px;
-  }
-
-  .hm-menu {
-    gap: 20px;
-  }
-
-  .hm-actions {
-    padding-left: 20px;
-  }
 }
 
-/* Меню и кнопки ужимаются: в полном размере шапке с шестью пунктами
-   меню нужно ~1360px. */
-@media (max-width: 1360px) {
-  .hm-menu {
-    gap: 14px;
-  }
-
-  .hm-nav ul {
-    gap: 2px;
-  }
-
-  .hm-nav a {
-    padding: 0 10px;
-    font-size: 17px;
-  }
-
-  .hm-actions {
-    gap: 6px;
-    padding-left: 14px;
-  }
-
-  .hm-cta {
-    padding: 0 14px;
-    font-size: 14px;
-  }
-}
-
-/* Поля и логотип — теснее. */
+/* Поля теснее, знак логотипа в подвале — меньше. */
 @media (max-width: 1180px) {
   body.page-home {
     --hm-gutter: 32px;
-  }
-
-  .hm-header {
-    gap: 16px;
-  }
-
-  .hm-logo {
-    font-size: 22px;
-    gap: 10px;
   }
 
   .hm-logo-char {
@@ -747,56 +560,6 @@ body.page-home .hm-main {
 
   .hm-strip-item {
     padding: 22px 24px 26px;
-  }
-}
-
-/* Уже ~1080px меню с кнопками в строку не помещается — уходит в бургер. */
-@media (max-width: 1080px) {
-  .hm-burger {
-    display: inline-flex;
-  }
-
-  .hm-menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 12px var(--hm-gutter) 20px;
-    background: rgba(24, 25, 29, 0.97);
-    border-bottom: 1px solid var(--hm-line);
-  }
-
-  .hm-menu.is-open {
-    display: flex;
-  }
-
-  .hm-nav ul {
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .hm-nav a {
-    display: flex;
-    height: 48px;
-    padding: 0 16px;
-    font-size: 20px;
-  }
-
-  .hm-actions {
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 0 0;
-    border-left: 0;
-    border-top: 1px solid rgba(244, 243, 240, 0.22);
-  }
-
-  .hm-cta {
-    padding: 0 18px;
-    font-size: 15px;
   }
 }
 
@@ -891,11 +654,13 @@ body.page-home .hm-main {
   }
 }
 
-@media (max-width: 400px) {
-  .hm-logo {
-    font-size: 20px;
+@media (max-width: 560px) {
+  .hm-hero {
+    --hm-header-h: 60px;
   }
+}
 
+@media (max-width: 400px) {
   .hm-actions-row {
     gap: 12px 24px;
   }
@@ -917,9 +682,6 @@ body.page-home .hm-main {
     animation: none;
   }
 
-  .hm-nav a,
-  .hm-tg,
-  .hm-cta,
   .hm-btn,
   .hm-trial,
   .hm-trial svg,
