@@ -2,6 +2,7 @@
   "nav": [
     {"label": "Главная", "href": "index.html", "id": "home"},
     {"label": "Библиотека", "href": "library/index.html", "id": "library"},
+    {"label": "Словарь", "href": "dictionary/index.html", "id": "dictionary"},
     {"label": "Карточки", "href": "flashcards/index.html", "id": "flashcards"},
     {"label": "ИИ-помощник", "href": "assistant/index.html", "id": "assistant"},
     {"label": "Преподаватель", "href": "support/teacher.html", "id": "teacher"},

@@ -131,13 +131,14 @@
   margin: 0;
 }
 
-/* Поля 8px: шесть пунктов, логотип и Telegram должны встать в колонку
-   920px с запасом (см. COMPACT_MAX в header.js). */
+/* Шрифт 14px и поля 6px по бокам: семь пунктов, логотип и Telegram должны
+   встать в колонку 920px (строка ~910px с Inter; системные шрифты, на
+   которые он заменяется, уже). См. COMPACT_MAX в header.js. */
 .site-header .site-header__link {
   display: block;
-  padding: 8px;
+  padding: 8px 6px;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 20px;
   white-space: nowrap;

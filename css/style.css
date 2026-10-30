@@ -2347,6 +2347,221 @@ body.home .hero-video + main .btn-primary:hover {
   max-width: 34rem;
 }
 
+/* Раздел «Словарь» (dictionary/index.html, js/dictionary.js): строка
+   поиска и статьи 大БКРС карточками, как слова колоды в «Карточках». */
+.dict-search {
+  margin-bottom: 1.5rem;
+}
+
+/* Подпись поля для экранных дикторов: глазами её заменяет подсказка в
+   самом поле. */
+.dict-search-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.dict-search-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+/* Шрифт не меньше 16px: иначе iOS увеличивает страницу при вводе. */
+.dict-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface-solid);
+  color: var(--color-text);
+  font-family: var(--font-sans), var(--font-chinese);
+  font-size: 1.05rem;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.dict-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+.dict-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(246, 82, 9, 0.25);
+}
+
+.dict-submit {
+  flex-shrink: 0;
+  padding: 0.75rem 1.4rem;
+}
+
+.dict-hint {
+  margin: 0.6rem 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.dict-status {
+  margin: 0 0 1rem;
+  color: var(--color-text-muted);
+}
+
+.dict-status:empty {
+  display: none;
+}
+
+.dict-status.is-error {
+  color: var(--color-accent-soft);
+}
+
+.dict-group {
+  margin-bottom: 2rem;
+}
+
+.dict-group-title {
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.4rem;
+  font-size: 1.1rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.dict-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dict-entry {
+  padding: 1rem 1.15rem;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.dict-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.dict-hanzi {
+  font-family: var(--font-chinese);
+  font-size: 1.75rem;
+  line-height: 1.25;
+  color: var(--color-chinese);
+  overflow-wrap: anywhere;
+}
+
+.dict-pinyin {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.dict-text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.dict-line {
+  margin: 0;
+}
+
+.dict-line + .dict-line {
+  margin-top: 0.2rem;
+}
+
+/* Пример: китайская фраза цветом иероглифов, перевод приглушён. */
+.dict-ex {
+  padding-left: 1rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.dict-ex-zh {
+  font-family: var(--font-chinese);
+  color: var(--color-chinese);
+}
+
+/* Пометки словаря (гл., см., уст.) и комментарии. */
+.dict-label {
+  font-size: 0.85em;
+  font-style: italic;
+  color: var(--color-accent-soft);
+}
+
+.dict-note {
+  color: var(--color-text-muted);
+}
+
+.dict-ref {
+  font-family: var(--font-chinese);
+}
+
+/* Длинная статья видна первыми строками, остальное — по кнопке. */
+.dict-entry:not(.is-open) .is-extra {
+  display: none;
+}
+
+.dict-toggle {
+  margin: 0;
+  padding: 0.45rem 0 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.dict-toggle:hover {
+  text-decoration: underline;
+}
+
+.dict-more {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Источник словаря — строкой над копирайтом. */
+.footer-source {
+  width: 100%;
+  margin: 1.5rem 0 0;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.footer-source + .footer-copy {
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .dict-entry {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .dict-hanzi {
+    font-size: 1.5rem;
+  }
+
+  .dict-submit {
+    padding: 0.75rem 1rem;
+  }
+}
+
 /* Responsive */
 
 /* Laptop — keep the wide composition, pull the gutters in. */

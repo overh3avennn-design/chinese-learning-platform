@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Словарь — Китайский язык</title>
+  <link rel="icon" href="../favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../favicon-192.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../components/site-header/header.css">
+</head>
+<body>
+  <script src="../components/site-header/header.js"></script>
+  <div class="bg-fixed" aria-hidden="true"></div>
+
+  <!-- Раздел «Словарь»: поиск по 大БКРС. Словарь лежит в отдельном
+       репозитории chinese-dictionary-data (свой GitHub Pages), js/dictionary.js
+       грузит оттуда только файлы, нужные для запроса. Запрос пишется в адрес
+       (?q=…), так что поиск можно отправить ссылкой. -->
+  <main data-dictionary>
+    <nav class="breadcrumb" aria-label="Навигация">
+      <a href="../index.html">Главная</a> / Словарь
+    </nav>
+    <h1 class="page-title">Словарь</h1>
+    <p class="page-subtitle">Китайско-русский словарь 大БКРС — 3,4 миллиона слов и выражений</p>
+
+    <form class="dict-search" role="search" data-dict-form>
+      <label class="dict-search-label" for="dict-q">Слово для поиска</label>
+      <div class="dict-search-row">
+        <input class="dict-input" id="dict-q" type="search" name="q" data-dict-input
+               placeholder="水, shuǐ или вода" autocomplete="off" autocapitalize="off"
+               autocorrect="off" spellcheck="false" enterkeyhint="search">
+        <button class="btn btn-primary dict-submit" type="submit">Найти</button>
+      </div>
+      <p class="dict-hint">
+        Иероглифами, пиньинем — с тонами или без (<span lang="zh-Latn">shuǐ</span>,
+        shui3, shui; ü набирается как v) — или русским словом.
+        Сначала точные совпадения, потом частичные.
+      </p>
+    </form>
+
+    <p class="dict-status" data-dict-status aria-live="polite"></p>
+    <div class="dict-results" data-dict-results></div>
+    <button class="btn btn-secondary dict-more" type="button" data-dict-more hidden>Показать ещё</button>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <strong class="footer-brand">Китайский язык</strong>
+        <p class="footer-tagline">Образовательная платформа · V1</p>
+      </div>
+      <div class="footer-links">
+        <a href="../library/index.html">Библиотека</a>
+        <a href="../flashcards/index.html">Карточки</a>
+        <a href="../support/contacts.html">Контакты</a>
+      </div>
+      <p class="footer-source">Словарь: <a href="https://bkrs.info" target="_blank" rel="noopener">大БКРС (bkrs.info)</a></p>
+      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    </div>
+  </footer>
+  <script src="../js/main.js"></script>
+  <script src="../js/dictionary.js"></script>
+</body>
+</html>

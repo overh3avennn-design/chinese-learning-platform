@@ -17,6 +17,7 @@
   var NAV = [
     { label: "Главная", href: "index.html" },
     { label: "Библиотека", href: "library/index.html" },
+    { label: "Словарь", href: "dictionary/index.html" },
     { label: "Карточки", href: "flashcards/index.html" },
     { label: "ИИ-помощник", href: "assistant/index.html" },
     { label: "Преподаватель", href: "support/teacher.html" },
@@ -26,7 +27,7 @@
   var TELEGRAM_URL = "https://t.me/kski12";
 
   // До какой ширины окна меню, Telegram и кнопка спрятаны в бургер. Строка
-  // с шестью пунктами занимает ~895px из колонки 920px, поэтому бургер
+  // с семью пунктами занимает ~910px из колонки 920px, поэтому бургер
   // держится, пока колонка не вырастет до полной ширины. На главной
   // строке нужно место ещё и под кнопку записи.
   var COMPACT_MAX = 960;
