@@ -246,7 +246,10 @@
       player.hidden = false;
       titleEl.textContent = titleOf(item);
       note.hidden = true;
+      // Без load() в плеере остаётся прошлый фильм — если Диск не отдаст
+      // ссылку, под новым названием играл бы старый.
       video.removeAttribute("src");
+      video.load();
       video.poster = item.preview || "";
       player.scrollIntoView({ block: "start" });
 
