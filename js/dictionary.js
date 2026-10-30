@@ -27,6 +27,8 @@
   var TYPE_DELAY = 400;     // пауза в наборе, после которой начинается поиск
   var LINES_SHOWN = 6;      // строк длинной статьи видно до «Показать всю статью»
   var FORMS_MAX = 300;      // сколько форм русского слова (дом → дома, домашний…) брать
+  var FETCH_TIMEOUT = 10000; // запрос, молчащий дольше, обрывается и повторяется
+  var FETCH_TRIES = 3;      // всего попыток на файл
 
   var VLQ = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
   var CJK = /[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]|[\ud840-\ud8bf][\udc00-\udfff]/;
@@ -63,12 +65,33 @@
     return response.json();
   }
 
+  // Мобильная сеть рвёт соединения и подвешивает запросы: зависший запрос
+  // обрывается через FETCH_TIMEOUT, оборванный повторяется. Ответ сервера
+  // с ошибкой (404 после обновления словаря) не повторяется.
+  function getJSON(url, options, triesLeft) {
+    if (triesLeft === undefined) triesLeft = FETCH_TRIES - 1;
+    var opts = {}, key;
+    for (key in options) opts[key] = options[key];
+    var ctrl = window.AbortController ? new AbortController() : null;
+    if (ctrl) opts.signal = ctrl.signal;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, FETCH_TIMEOUT) : null;
+    return fetch(url, opts).then(json).then(function (data) {
+      clearTimeout(timer);
+      return data;
+    }, function (err) {
+      clearTimeout(timer);
+      if (err.status || triesLeft <= 0) throw err;
+      return new Promise(function (resolve) { setTimeout(resolve, 600); }).then(function () {
+        return getJSON(url, options, triesLeft - 1);
+      });
+    });
+  }
+
   // fresh — мимо кэша браузера: после обновления словаря старый meta.json
   // (Pages держит его в кэше 10 минут) ссылается на удалённую версию.
   function loadMeta(fresh) {
     if (!metaPromise || fresh) {
-      metaPromise = fetch(DATA_URL + "meta.json", fresh ? { cache: "reload" } : undefined)
-        .then(json)
+      metaPromise = getJSON(DATA_URL + "meta.json", fresh ? { cache: "reload" } : {})
         .then(function (m) {
           m.ends = decode(m.e);
           meta = m;
@@ -83,7 +106,7 @@
   // Один запрос на файл, даже если он нужен нескольким результатам сразу.
   function load(path, parse) {
     if (!files[path]) {
-      var p = fetch(DATA_URL + meta.base + path).then(json);
+      var p = getJSON(DATA_URL + meta.base + path);
       if (parse) p = p.then(parse);
       files[path] = p;
       p.catch(function () { if (files[path] === p) delete files[path]; });
@@ -589,6 +612,8 @@
         // Словарь обновился, а в кэше старый meta.json: файлы прежней
         // версии уже удалены. Берём свежий и пробуем ещё раз.
         if (err && err.status === 404 && !fresh) return start(q, true);
+        // Тот же запрос можно отправить ещё раз кнопкой «Найти».
+        shownQuery = null;
         if (groups[0] || groups[1]) {
           setStatus("Часть результатов не загрузилась — нажмите «Показать ещё», чтобы попробовать снова.", true);
         } else {
