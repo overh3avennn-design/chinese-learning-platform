@@ -1721,6 +1721,23 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
+/* «Предыдущая карточка»: возвращается с той стороны, куда её смахнули
+   (--fc-from: 1 — справа, -1 — слева; ставит js/flashcards.js). */
+.fc-card.is-coming-back {
+  animation: fc-come-back 0.3s ease-out;
+}
+
+@keyframes fc-come-back {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--fc-from, 1) * 60%)) rotate(calc(var(--fc-from, 1) * 10deg));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .fc-card-inner {
   position: relative;
   width: 100%;
@@ -1935,6 +1952,34 @@ body.home .hero-video + main .btn-primary:hover {
   display: none;
 }
 
+/* «Предыдущая карточка» — тихая кнопка под ответами: нужна редко. На первой
+   карточке выключена, а не спрятана — чтобы ничего не прыгало. */
+.fc-undo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.fc-undo:hover:not(:disabled) {
+  color: var(--color-accent);
+  border-color: var(--color-border);
+}
+
+.fc-undo:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .fc-keys {
   margin: 1rem 0 0;
   font-size: 0.8rem;
@@ -2035,6 +2080,12 @@ body.home .hero-video + main .btn-primary:hover {
 
 .fc-result-actions .btn[hidden] {
   display: none;
+}
+
+/* Значок «Вернуться к последней карточке» — на одной линии с текстом. */
+.fc-result-actions .btn svg {
+  margin-right: 0.3rem;
+  vertical-align: -0.2em;
 }
 
 .fc-reset-line {
@@ -2305,7 +2356,7 @@ body.home .hero-video + main .btn-primary:hover {
   grid-template-columns: calc(5 * var(--fc-hanzi-size)) minmax(0, 1fr);
 }
 
-/* «Узнать иероглифы»: на месте пиньиня и перевода — пустые плашки их длины,
+/* «Спрятать перевод»: на месте пиньиня и перевода — пустые плашки их длины,
    тап по строке показывает их (is-revealed). */
 .fc-words.is-hiding .fc-word {
   cursor: pointer;

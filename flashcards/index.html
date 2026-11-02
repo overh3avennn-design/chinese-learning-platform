@@ -52,6 +52,7 @@
         <h2 class="fc-info-title" id="fc-info-title">Как работает прогресс</h2>
         <ul class="fc-info-list">
           <li>Свайп вправо — слово выучено, влево — повторишь ещё раз.</li>
+          <li>Ошибся со свайпом — «Предыдущая карточка» вернёт слово и отменит ответ.</li>
         </ul>
       </section>
 
@@ -93,7 +94,7 @@
           <label class="fc-toggle">
             <input type="checkbox" data-hide-translation>
             <span class="fc-toggle-track" aria-hidden="true"></span>
-            Узнать иероглифы
+            Спрятать перевод
           </label>
           <p class="fc-words-hint" data-hide-hint hidden>Нажмите на слово, чтобы увидеть пиньинь и перевод</p>
         </div>
@@ -142,7 +143,11 @@
           Знаю <span aria-hidden="true">→</span>
         </button>
       </div>
-      <p class="fc-keys">Клавиши: ← не знаю · пробел — перевернуть · → знаю</p>
+      <button class="fc-undo" type="button" data-undo disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+        Предыдущая карточка
+      </button>
+      <p class="fc-keys">Клавиши: ← не знаю · пробел — перевернуть · → знаю · Backspace — предыдущая</p>
     </div>
 
     <div class="fc-view fc-result" data-view="result" hidden>
@@ -179,6 +184,7 @@
       <div class="fc-result-actions">
         <button class="btn btn-primary" type="button" data-again="missed">Повторить только незнакомые</button>
         <button class="btn btn-secondary" type="button" data-again="all">Пройти колоду заново</button>
+        <button class="btn btn-secondary" type="button" data-undo data-undo-result hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg> Вернуться к последней карточке</button>
         <a class="btn btn-secondary" href="#" data-back-deck>← Назад к колоде</a>
       </div>
       <p class="fc-reset-line">

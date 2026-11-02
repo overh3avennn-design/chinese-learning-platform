@@ -358,7 +358,7 @@
   }
 
   // ------------------------------------------------- страница колоды
-  // Сводка прогресса, кнопки «Учить» и список слов. «Узнать иероглифы»
+  // Сводка прогресса, кнопки «Учить» и список слов. «Спрятать перевод»
   // прячет пиньинь и переводы, тап по строке показывает их у этого слова; выбор
   // запоминается в браузере (не вышло — живёт, пока открыта страница).
   var STATUS_LABEL = { "new": "новое", learning: "изучается", learned: "выучено" };
@@ -472,6 +472,8 @@
   var stage = $("[data-stage]");
   var tintKnow = card.querySelector(".fc-tint.is-know");
   var tintMiss = card.querySelector(".fc-tint.is-miss");
+  var undoBtn = $("[data-undo]");
+  var resultUndoBtn = $("[data-undo-result]");
   var session = null;
   var busy = false;      // карточка улетает — новые ответы не принимаем
 
@@ -486,19 +488,22 @@
       size: list.length,
       know: 0,
       miss: 0,
-      missed: []
+      missed: [],
+      history: []         // состояние перед каждым ответом — для «Предыдущей карточки»
     };
 
     $("[data-deck-title]").textContent = deck.title;
     document.title = deck.title + " — Карточки — Китайский язык";
     show("study");
-    showCard(false);
+    showCard();
   }
 
   function updateCounter() {
     $("[data-left]").textContent = session.queue.length;
     $("[data-know]").textContent = session.know;
     $("[data-miss]").textContent = session.miss;
+    undoBtn.disabled = !session.history.length;
+    resultUndoBtn.hidden = !session.history.length;
   }
 
   function setFlipped(flipped, animate) {
@@ -513,6 +518,8 @@
     }
   }
 
+  // enter — класс анимации появления: is-entering (следующая карточка) или
+  // is-coming-back (вернулась «Предыдущая карточка»).
   function showCard(enter) {
     updateCounter();
     if (!session.queue.length) {
@@ -531,10 +538,10 @@
     resetDrag(false);
     setFlipped(false, false);
     stage.classList.toggle("has-more", session.queue.length > 1);
+    card.classList.remove("is-entering", "is-coming-back");
     if (enter && !reduceMotion) {
-      card.classList.remove("is-entering");
       void card.offsetWidth;
-      card.classList.add("is-entering");
+      card.classList.add(enter);
     }
     busy = false;
   }
@@ -545,8 +552,16 @@
   }
 
   function answer(known) {
-    var word = session.queue.shift();
     var progress = session.progress;
+    session.history.push({
+      queue: session.queue.slice(),
+      know: session.know,
+      miss: session.miss,
+      missed: session.missed.slice(),
+      status: progress.words[wordKey(session.queue[0])],   // undefined — слово было новым
+      known: known
+    });
+    var word = session.queue.shift();
 
     if (known) {
       progress.words[wordKey(word)] = "learned";
@@ -558,7 +573,29 @@
       if (session.missed.indexOf(word) === -1) session.missed.push(word);
     }
     saveProgress(session.deck.id, progress);
-    showCard(true);
+    showCard("is-entering");
+  }
+
+  // «Предыдущая карточка»: отменяет последний ответ — очередь, счётчики и
+  // статус слова становятся как до него. Работает и с экрана итогов, если
+  // промахнулись на последней карточке.
+  function undo() {
+    if (!session || busy || !session.history.length) return;
+    if (currentView !== "study" && currentView !== "result") return;
+    var step = session.history.pop();
+    var key = wordKey(step.queue[0]);
+    session.queue = step.queue;
+    session.know = step.know;
+    session.miss = step.miss;
+    session.missed = step.missed;
+    if (step.status) session.progress.words[key] = step.status;
+    else delete session.progress.words[key];
+    saveProgress(session.deck.id, session.progress);
+
+    if (currentView !== "study") show("study");
+    // Карточка прилетает с той стороны, куда её смахнули.
+    card.style.setProperty("--fc-from", step.known ? 1 : -1);
+    showCard("is-coming-back");
   }
 
   // Карточка улетает в сторону ответа, затем — следующая.
@@ -572,7 +609,7 @@
     var dir = known ? 1 : -1;
     var distance = Math.max(window.innerWidth, 600);
     tint(dir, 1);
-    card.classList.remove("is-dragging", "is-entering");
+    card.classList.remove("is-dragging", "is-entering", "is-coming-back");
     card.classList.add("is-flying");
     card.style.transform = "translate(" + dir * distance + "px, " + drag.dy + "px) rotate(" + dir * 28 + "deg)";
     setTimeout(function () {
@@ -592,6 +629,7 @@
   function finishSession() {
     var deck = session.deck;
     var missed = session.missed.length;
+    busy = false;          // последняя карточка улетела — иначе не сработает «Вернуться к последней»
 
     $("[data-result-deck]").textContent = deck.title;
     $("[data-result-summary]").textContent = deck.title + " · " + words(session.size) + " в сессии";
@@ -664,7 +702,7 @@
     if (!drag.moved) {
       if (Math.abs(drag.dx) < 8) return;
       drag.moved = true;
-      card.classList.remove("is-returning", "is-entering");
+      card.classList.remove("is-returning", "is-entering", "is-coming-back");
       card.classList.add("is-dragging");
     }
     var now = performance.now();
@@ -755,6 +793,10 @@
       if (session && session.queue.length) speak(session.queue[0].hanzi);
       return;
     }
+    if (e.target.closest("[data-undo]")) {
+      undo();
+      return;
+    }
     var again = e.target.closest("[data-again]");
     if (again && session) {
       startSession(session.deck, again.getAttribute("data-again") === "all"
@@ -768,6 +810,9 @@
           "Все слова снова станут новыми.")) return;
       resetProgress(deck.id);
       session.progress = loadProgress(deck.id);
+      // Отменять ответы после сброса незачем: вернули бы статусы, которых уже нет.
+      session.history = [];
+      resultUndoBtn.hidden = true;
       renderLearned(deck, session.progress);
       $("[data-reset-done]").hidden = false;
     }
@@ -788,6 +833,9 @@
       // которую он иначе нажал бы.
       e.preventDefault();
       if (!e.repeat) flip();
+    } else if (e.key === "Backspace") {
+      e.preventDefault();
+      if (!e.repeat) undo();
     }
   });
 
