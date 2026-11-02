@@ -17,4 +17,5 @@ window.DECK_FILES = [
   "6-5-1-i.js",
   "21-10-conf.js",
   "klim-tekst-3.js",
+  "6-urok.js",
 ];
