@@ -21,7 +21,9 @@
   <!-- Раздел «Словарь»: поиск по 大БКРС. Словарь лежит в отдельном
        репозитории chinese-dictionary-data (свой GitHub Pages), js/dictionary.js
        грузит оттуда только файлы, нужные для запроса. Запрос пишется в адрес
-       (?q=…), так что поиск можно отправить ссылкой. -->
+       (?q=…), так что поиск можно отправить ссылкой. Нажатие на статью
+       открывает окно слова: разбор иероглифов на части, порядок черт и
+       «Написать самому» (js/hanzi-window.js). -->
   <main data-dictionary>
     <nav class="breadcrumb" aria-label="Навигация">
       <a href="../index.html">Главная</a> / Словарь
@@ -40,7 +42,8 @@
       <p class="dict-hint">
         Иероглифами, пиньинем — с тонами или без (<span lang="zh-Latn">shuǐ</span>,
         shui3, shui; ü набирается как v) — или русским словом.
-        Сначала точные совпадения, потом частичные.
+        Сначала точные совпадения, потом частичные. Нажмите на слово, чтобы
+        разобрать его иероглифы: из чего они состоят, порядок черт, написание.
       </p>
     </form>
 
@@ -60,11 +63,13 @@
         <a href="../flashcards/index.html">Карточки</a>
         <a href="../support/contacts.html">Контакты</a>
       </div>
-      <p class="footer-source">Словарь: <a href="https://bkrs.info" target="_blank" rel="noopener">大БКРС (bkrs.info)</a></p>
+      <p class="footer-source">Словарь: <a href="https://bkrs.info" target="_blank" rel="noopener">大БКРС (bkrs.info)</a> ·
+        состав и порядок черт: <a href="https://github.com/skishore/makemeahanzi" target="_blank" rel="noopener">Make Me a Hanzi</a></p>
       <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
     </div>
   </footer>
   <script src="../js/main.js"></script>
+  <script src="../js/hanzi-window.js"></script>
   <script src="../js/dictionary.js"></script>
 </body>
 </html>

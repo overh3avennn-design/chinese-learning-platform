@@ -513,8 +513,17 @@
     li.className = "dict-entry";
     var lines = e[2] ? e[2].split("\n") : [];
     var collapsed = lines.length > LINES_SHOWN + 1;
+    // Статья с иероглифами в заголовке открывает окно слова: разбор
+    // иероглифов, порядок черт, письмо (js/hanzi-window.js).
+    var card = window.HanziWindow && CJK.test(e[0]);
+    if (card) {
+      li.className += " has-card";
+      li.dictEntry = e;
+    }
     var html = '<div class="dict-head"><span class="dict-hanzi" lang="zh-CN">' + esc(e[0]) + "</span>" +
-      (e[1] ? '<span class="dict-pinyin">' + markup(e[1]) + "</span>" : "") + "</div>" +
+      (e[1] ? '<span class="dict-pinyin">' + markup(e[1]) + "</span>" : "") +
+      (card ? '<button class="dict-card-btn" type="button" aria-label="Разбор иероглифов: ' + esc(e[0]) +
+        '"><span class="zh" lang="zh-CN">字</span><span class="txt">Разбор</span></button>' : "") + "</div>" +
       '<div class="dict-text">' + lines.map(function (t, i) { return line(t, collapsed && i >= LINES_SHOWN); }).join("") + "</div>";
     if (collapsed) {
       var rest = lines.length - LINES_SHOWN;
@@ -660,13 +669,48 @@
     var ref = e.target.closest(".dict-ref");
     if (ref) {
       e.preventDefault();
-      input.value = ref.textContent;
-      history.pushState(null, "", "?q=" + encodeURIComponent(ref.textContent));
-      shownQuery = null;
-      start(ref.textContent);
-      window.scrollTo(0, 0);
+      searchFor(ref.textContent);
+      return;
     }
+    // Нажатие на статью — окно слова. Кроме ссылок, кнопок и случая, когда
+    // в статье выделяют текст, чтобы скопировать.
+    var item = e.target.closest(".dict-entry.has-card");
+    if (!item) return;
+    var cardBtn = e.target.closest(".dict-card-btn");
+    if (!cardBtn && e.target.closest("a, button")) return;
+    var sel = window.getSelection && window.getSelection();
+    if (!cardBtn && sel && !sel.isCollapsed && item.contains(sel.anchorNode)) return;
+    window.HanziWindow.open({
+      word: item.dictEntry[0],
+      entry: item.dictEntry,
+      lookup: lookupWord,
+      search: searchFor,
+      returnFocus: item.querySelector(".dict-card-btn")
+    });
   });
+
+  // Новый поиск ссылкой: из «см. …» в статье или из окна слова. replace —
+  // заменить текущую запись истории (окно слова оставило там свою).
+  function searchFor(q, replace) {
+    input.value = q;
+    history[replace ? "replaceState" : "pushState"](null, "", "?q=" + encodeURIComponent(q));
+    shownQuery = null;
+    start(q);
+    window.scrollTo(0, 0);
+  }
+
+  // Статья, у которой заголовок — ровно эти иероглифы (самая важная из
+  // нескольких), или null. Для значений иероглифов и их частей в окне слова.
+  function lookupWord(word) {
+    return loadMeta()
+      .then(function () { return shard("zh", word); })
+      .then(function (s) {
+        var i = lowerBound(s.keys, word);
+        if (s.keys[i] !== word) return null;
+        var ids = decode(s.fields[i][0]);
+        return ids.length ? entry(ids[0]) : null;
+      });
+  }
 
   window.addEventListener("popstate", function () {
     var q = new URLSearchParams(location.search).get("q") || "";

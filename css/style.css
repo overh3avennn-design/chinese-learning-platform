@@ -2613,6 +2613,981 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
+/* Статья словаря нажимается целиком — открывает окно слова
+   (js/hanzi-window.js). Метка «字 Разбор» в шапке статьи показывает, что
+   так можно. */
+.dict-entry.has-card {
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+@media (hover: hover) {
+  .dict-entry.has-card:hover {
+    border-color: rgba(246, 82, 9, 0.45);
+  }
+}
+
+.dict-card-btn {
+  align-self: center;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--color-accent-soft);
+  background: rgba(246, 82, 9, 0.08);
+  border: 1px solid rgba(246, 82, 9, 0.4);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.dict-card-btn:hover {
+  background: rgba(246, 82, 9, 0.16);
+  border-color: var(--color-accent);
+}
+
+.dict-card-btn .zh {
+  font-family: var(--font-chinese);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+  .dict-card-btn .txt {
+    display: none;
+  }
+}
+
+/* Окно слова (js/hanzi-window.js). Сверху крупно само слово, ниже карточка
+   на каждый иероглиф: клетка с разметкой 米字格, как в прописях, значение и
+   «Состав» — части иероглифа, каждая своим цветом и в клетке, и в списке.
+   Порядок черт по шагам и «Написать самому» раскрываются в карточке.
+   На телефоне окно — лист снизу во всю ширину. */
+html.hz-lock {
+  overflow: hidden;
+}
+
+.hz {
+  /* Цвета частей иероглифа (.is-p0 … .is-p3; первая часть — обычно ключ,
+     поэтому золото, как у ключа) и текущей черты. */
+  --hz-p0: #e9b44c;
+  --hz-p1: #8fc3f0;
+  --hz-p2: #74d6a2;
+  --hz-p3: #d9a4f2;
+  --hz-current: #ff6a2b;
+  --hz-ghost: rgba(242, 217, 168, 0.12);
+  width: min(720px, calc(100vw - 2rem));
+  max-width: none;
+  max-height: calc(100vh - 2rem);
+  margin: auto;
+  padding: 0;
+  color: var(--color-text);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.hz[open] {
+  display: flex;
+  flex-direction: column;
+  animation: hz-in 0.22s ease-out;
+}
+
+/* Браузер без <dialog>.showModal(): окно просто поверх страницы. */
+.hz[open]:not(:modal) {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.hz::backdrop {
+  background: rgba(4, 9, 18, 0.72);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+@keyframes hz-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+@keyframes hz-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+}
+
+.hz-sheet {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 1.5rem 1.1rem;
+  overscroll-behavior: contain;
+}
+
+.hz-sheet:focus {
+  outline: none;
+}
+
+/* Крестик прилипает к верху, пока окно прокручивается. */
+.hz-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  height: 0;
+}
+
+.hz-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0.75rem -0.75rem 0 0;
+  padding: 0;
+  color: var(--color-text-muted);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.hz-close:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+
+.hz-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Само слово — главное в окне. */
+.hz-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.75rem 2.5rem 1.4rem;
+  text-align: center;
+}
+
+.hz-hero p {
+  margin: 0;
+}
+
+.hz-word {
+  font-family: var(--font-chinese);
+  font-size: 3.4rem;
+  line-height: 1.15;
+  color: var(--color-chinese);
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+.hz-word.is-mid {
+  font-size: 2.6rem;
+}
+
+.hz-word.is-long {
+  font-size: 1.9rem;
+}
+
+.hz-pinyin {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.hz-gloss {
+  max-width: 34rem;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hz-say {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-top: 0.5rem;
+  padding: 0;
+  color: var(--color-accent-soft);
+  background: rgba(246, 82, 9, 0.1);
+  border: 1px solid rgba(246, 82, 9, 0.45);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.hz-say:hover {
+  background: rgba(246, 82, 9, 0.2);
+}
+
+.hz-say:active {
+  transform: scale(0.94);
+}
+
+.hz-say[hidden] {
+  display: none;
+}
+
+.hz-say svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hz-section {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.hz-cards {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.hz-card {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+/* Слева клетка, справа значение, под значением — «Состав». На телефоне
+   «Состав» уходит под клетку во всю ширину карточки. */
+.hz-card-main {
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  grid-template-areas:
+    "side info"
+    "side more";
+  grid-template-rows: auto 1fr;
+  column-gap: 1.1rem;
+  align-items: start;
+}
+
+.hz-card-info {
+  grid-area: info;
+}
+
+.hz-card-more {
+  grid-area: more;
+}
+
+.hz-card-side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* Клетка 米字格: маленькая в карточке, большая в раскрытой панели. */
+.hz-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(242, 217, 168, 0.22);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.hz-card-board {
+  cursor: pointer;
+}
+
+.hz-card-board.is-loading::after {
+  content: "…";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+
+.hz-char,
+.hz-writer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hz-plain-char {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-chinese);
+  font-size: 5rem;
+  color: var(--color-chinese);
+}
+
+.hz-retry {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
+  padding: 0.35rem 0.8rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.hz-grid line {
+  stroke: rgba(242, 217, 168, 0.16);
+  stroke-width: 4;
+  stroke-dasharray: 18 14;
+}
+
+.hz-ghost {
+  fill: var(--hz-ghost);
+}
+
+/* Черта — толстая линия вдоль оси, обрезанная по контуру черты. */
+.hz-ink {
+  fill: none;
+  stroke: var(--color-chinese);
+  stroke-width: 200;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.3s, opacity 0.2s;
+}
+
+.hz-ink.is-p0 { stroke: var(--hz-p0); }
+.hz-ink.is-p1 { stroke: var(--hz-p1); }
+.hz-ink.is-p2 { stroke: var(--hz-p2); }
+.hz-ink.is-p3 { stroke: var(--hz-p3); }
+
+.hz-ink.is-current {
+  stroke: var(--hz-current);
+}
+
+.hz-ink.is-hidden {
+  visibility: hidden;
+}
+
+/* Наведение на часть в «Составе»: остальные черты бледнеют. */
+.has-focus .hz-ink:not(.is-focus) {
+  opacity: 0.25;
+}
+
+.hz-badge circle {
+  fill: var(--hz-current);
+}
+
+.hz-badge text {
+  fill: #fff;
+  font-family: var(--font-sans);
+  font-size: 58px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.hz-mini {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.hz-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 34px;
+  padding: 0;
+  color: var(--color-accent-soft);
+  background: rgba(246, 82, 9, 0.08);
+  border: 1px solid rgba(246, 82, 9, 0.38);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.hz-icon:hover:not(:disabled),
+.hz-icon[aria-expanded="true"] {
+  background: rgba(246, 82, 9, 0.2);
+  border-color: var(--color-accent);
+}
+
+.hz-icon:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.hz-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.hz-count {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.hz-card-info p,
+.hz-card-more p {
+  margin: 0;
+}
+
+.hz-char-pinyin {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.hz-char-gloss {
+  margin-top: 0.15rem !important;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hz-char-gloss:empty {
+  display: none;
+}
+
+.hz-parts {
+  margin-top: 0.85rem;
+}
+
+.hz-parts[hidden] {
+  display: none;
+}
+
+.hz-parts-title {
+  margin-bottom: 0.4rem !important;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.hz-layout {
+  margin-left: 0.35rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.85;
+}
+
+.hz-part-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.hz-part + .hz-part {
+  border-top: 1px solid var(--color-border);
+}
+
+.hz-part-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.hz-part-btn:disabled {
+  cursor: default;
+}
+
+.hz-part-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hz-part-btn:disabled .hz-chev {
+  visibility: hidden;
+}
+
+.hz-part-char {
+  flex: none;
+  width: 1.6em;
+  font-family: var(--font-chinese);
+  font-size: 1.5rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.hz-part-shape svg {
+  display: block;
+  width: 1.4em;
+  height: 1.4em;
+  margin: 0 auto;
+}
+
+.hz-part-char.is-p0 { color: var(--hz-p0); fill: var(--hz-p0); }
+.hz-part-char.is-p1 { color: var(--hz-p1); fill: var(--hz-p1); }
+.hz-part-char.is-p2 { color: var(--hz-p2); fill: var(--hz-p2); }
+.hz-part-char.is-p3 { color: var(--hz-p3); fill: var(--hz-p3); }
+
+.hz-part-shape path {
+  fill: inherit !important;
+}
+
+.hz-part-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.hz-part-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.45rem;
+  font-size: 0.9rem;
+}
+
+.hz-part-name {
+  color: var(--color-text-muted);
+}
+
+.hz-tag {
+  padding: 0.05rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--hz-p0);
+  border: 1px solid rgba(233, 180, 76, 0.5);
+  border-radius: 999px;
+}
+
+.hz-part-gloss {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hz-part-gloss:empty {
+  display: none;
+}
+
+.hz-chev {
+  flex: none;
+  font-size: 1.2rem;
+  color: var(--color-text-muted);
+}
+
+.hz-radical {
+  margin-top: 0.75rem !important;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.hz-radical[hidden] {
+  display: none;
+}
+
+.hz-radical b {
+  font-family: var(--font-chinese);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--hz-p0);
+}
+
+.hz-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 0.45rem;
+  vertical-align: 0.05em;
+  background: var(--hz-p0);
+  border-radius: 50%;
+}
+
+.hz-link {
+  margin-top: 0.75rem;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--color-accent-soft);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.hz-link b {
+  font-family: var(--font-chinese);
+  font-weight: 400;
+}
+
+.hz-link:hover {
+  text-decoration: underline;
+}
+
+.hz-link[hidden] {
+  display: none;
+}
+
+/* Раскрытая панель карточки: порядок черт по шагам или письмо. */
+.hz-panel {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.hz-panel[hidden] {
+  display: none;
+}
+
+.hz-panel-main {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.hz-big {
+  flex: none;
+  width: 240px;
+}
+
+.hz-big.is-writing {
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.hz-panel-side {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.hz-panel-side p {
+  margin: 0;
+}
+
+.hz-step {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+
+.hz-step b {
+  font-size: 1.15rem;
+  color: var(--color-text);
+}
+
+.hz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hz-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s, transform 0.1s;
+}
+
+.hz-btn:hover:not(:disabled) {
+  border-color: var(--color-text-muted);
+}
+
+.hz-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.hz-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.hz-btn svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.hz-controls [data-act="prev"],
+.hz-controls [data-act="next"] {
+  padding: 0;
+}
+
+.hz-btn.is-play {
+  min-width: 124px;
+  color: #fff;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.hz-btn.is-play:hover:not(:disabled) {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent-soft);
+}
+
+.hz-btn[aria-pressed="true"] {
+  background: rgba(168, 184, 209, 0.14);
+}
+
+.hz-speed {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.hz-speed button {
+  padding: 0.35rem 0.75rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.hz-speed button + button {
+  border-left: 1px solid var(--color-border);
+}
+
+.hz-speed button[aria-pressed="true"] {
+  color: var(--color-text);
+  background: rgba(168, 184, 209, 0.14);
+}
+
+.hz-write-msg {
+  min-height: 2.6em;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.hz-write-msg.is-miss {
+  color: var(--color-accent-soft);
+}
+
+.hz-write-msg.is-done {
+  color: var(--color-know-soft);
+}
+
+/* Лента шагов: весь порядок черт сразу, нажатие — к этому шагу. */
+.hz-strip {
+  position: relative;
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  padding-bottom: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.hz-cell {
+  flex: none;
+  width: 46px;
+  padding: 0;
+  font: inherit;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.hz-cell svg {
+  display: block;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 0.15rem;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  transition: border-color 0.15s;
+}
+
+.hz-cell path { fill: var(--hz-ghost); }
+.hz-cell path.is-ink { fill: var(--color-chinese); }
+.hz-cell path.is-p0 { fill: var(--hz-p0); }
+.hz-cell path.is-p1 { fill: var(--hz-p1); }
+.hz-cell path.is-p2 { fill: var(--hz-p2); }
+.hz-cell path.is-p3 { fill: var(--hz-p3); }
+.hz-cell path.is-current { fill: var(--hz-current); }
+
+.hz-cell:hover svg {
+  border-color: var(--color-text-muted);
+}
+
+.hz-cell[aria-current="step"] {
+  color: var(--color-accent-soft);
+}
+
+.hz-cell[aria-current="step"] svg {
+  border-color: var(--color-accent);
+}
+
+.hz-note {
+  margin: 1rem 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+.hz-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+@media (max-width: 600px) {
+  .hz {
+    width: 100%;
+    max-height: 94vh;
+    max-height: 94dvh;
+    margin: auto 0 0;
+    border-width: 1px 0 0;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .hz[open] {
+    animation-name: hz-up;
+  }
+
+  .hz-sheet {
+    padding: 0 0.85rem calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  .hz-close {
+    margin-right: -0.1rem;
+  }
+
+  .hz-hero {
+    padding: 1.6rem 2.25rem 1.1rem;
+  }
+
+  .hz-word {
+    font-size: 2.9rem;
+  }
+
+  .hz-word.is-mid {
+    font-size: 2.2rem;
+  }
+
+  .hz-word.is-long {
+    font-size: 1.6rem;
+  }
+
+  .hz-card {
+    padding: 0.85rem 0.75rem;
+  }
+
+  .hz-card-main {
+    grid-template-columns: 112px minmax(0, 1fr);
+    grid-template-areas:
+      "side info"
+      "more more";
+    grid-template-rows: auto auto;
+    column-gap: 0.85rem;
+  }
+
+  .hz-parts {
+    margin-top: 0.9rem;
+  }
+
+  .hz-icon {
+    width: 34px;
+  }
+
+  .hz-part-btn {
+    gap: 0.5rem;
+    padding: 0.5rem 0.55rem;
+  }
+
+  .hz-part-char {
+    font-size: 1.3rem;
+  }
+
+  .hz-panel-main {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.9rem;
+  }
+
+  .hz-big {
+    width: min(100%, 280px);
+    margin: 0 auto;
+  }
+
+  .hz-panel-side {
+    align-items: center;
+    text-align: center;
+  }
+
+  .hz-controls {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hz[open] {
+    animation: none;
+  }
+}
+
 /* Responsive */
 
 /* Laptop — keep the wide composition, pull the gutters in. */
