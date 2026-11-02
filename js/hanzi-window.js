@@ -150,6 +150,25 @@
     return (text || "").replace(/\[\/?[pi]\]/g, "").trim();
   }
 
+  var CYRILLIC = /[а-яё]/i;
+  var AUTO_PINYIN = "Пиньинь подобран автоматически и может быть неточным";
+
+  // Короткое значение статьи: машинный перевод (e[3].m), если он есть, —
+  // у таких статей в БКРС перевод не на русском.
+  function entryGloss(e, lines) {
+    var extra = e && e[3];
+    return extra && extra.m ? shortGloss(extra.m, lines) : shortGloss(e && e[2], lines);
+  }
+
+  // Пиньинь статьи; подобранный автоматически — с пометкой «авто».
+  function setPinyin(node, e) {
+    node.textContent = e ? plainPinyin(e[1]) : "";
+    var auto = !!(e && e[3] && e[3].a && node.textContent);
+    node.classList.toggle("is-auto", auto);
+    node.title = auto ? AUTO_PINYIN : "";
+    if (auto) node.appendChild(el("span", "hz-auto", "авто"));
+  }
+
   // ---------------------------------------------------------------- данные
 
   var cache = {};             // иероглиф → Promise(данные или null, если их нет)
@@ -650,9 +669,18 @@
     ui.word.textContent = word;
     var len = Array.from ? Array.from(word).length : word.length;
     ui.word.className = "hz-word" + (len > 8 ? " is-long" : len > 4 ? " is-mid" : "");
-    ui.pinyin.textContent = plainPinyin(entry[1] || opts.pinyin);
+    setPinyin(ui.pinyin, entry.length ? entry : [word, opts.pinyin || ""]);
     ui.pinyin.hidden = !ui.pinyin.textContent;
-    ui.gloss.textContent = shortGloss(entry[2]) || opts.gloss || "";
+    var extra = entry[3] || {};
+    ui.gloss.textContent = "";
+    if (extra.m) {
+      ui.gloss.appendChild(el("span", "hz-mt", "машинный перевод"));
+      ui.gloss.appendChild(document.createTextNode(" " + shortGloss(extra.m)));
+    } else if (entry.length && !CYRILLIC.test(entry[2] || "")) {
+      ui.gloss.textContent = "Русского перевода в словаре нет — значения иероглифов ниже.";
+    } else {
+      ui.gloss.textContent = shortGloss(entry[2]) || opts.gloss || "";
+    }
     ui.gloss.hidden = !ui.gloss.textContent;
     ui.section.textContent = chars.length > 1 ? "Иероглифы" : "Иероглиф";
 
@@ -787,8 +815,8 @@
     // Значение иероглифа — из словаря.
     lookup(card.ch).then(function (e) {
       if (token !== card.token) return;
-      c.querySelector(".hz-char-pinyin").textContent = e ? plainPinyin(e[1]) : "";
-      c.querySelector(".hz-char-gloss").textContent = e ? shortGloss(e[2], 2) : "";
+      setPinyin(c.querySelector(".hz-char-pinyin"), e);
+      c.querySelector(".hz-char-gloss").textContent = e ? entryGloss(e, 2) : "";
     });
 
     charData(card.ch).then(function (d) {
@@ -878,8 +906,8 @@
       if (part[0]) {
         lookup(part[0]).then(function (e) {
           if (!e) return;
-          py.textContent = plainPinyin(e[1]);
-          gloss.textContent = shortGloss(e[2], 2);
+          setPinyin(py, e);
+          gloss.textContent = entryGloss(e, 2);
           if (state && state.opts.search) {
             btn.disabled = false;
             btn.setAttribute("data-search", part[0]);
@@ -1164,5 +1192,7 @@
     });
   }
 
-  window.HanziWindow = { open: open };
+  // gloss(статья, строк) — короткое значение; им пользуется и словарь
+  // (строка «по словам»).
+  window.HanziWindow = { open: open, gloss: entryGloss };
 })();

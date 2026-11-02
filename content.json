@@ -5,7 +5,6 @@
     {"label": "Словарь", "href": "dictionary/index.html", "id": "dictionary"},
     {"label": "Карточки", "href": "flashcards/index.html", "id": "flashcards"},
     {"label": "ИИ-помощник", "href": "assistant/index.html", "id": "assistant"},
-    {"label": "Преподаватель", "href": "support/teacher.html", "id": "teacher"},
     {"label": "Контакты", "href": "support/contacts.html", "id": "contacts"}
   ],
   "footer_links": ["library", "flashcards", "contacts"],

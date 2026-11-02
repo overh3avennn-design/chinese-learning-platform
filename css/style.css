@@ -1086,13 +1086,7 @@ body.home .hero-video + main .btn-primary:hover {
   margin: 1rem 0;
 }
 
-/* Contact form */
-.contact-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-}
-
+/* Contacts */
 .contact-info p {
   margin: 0 0 1.25rem;
   color: var(--color-text-muted);
@@ -1104,76 +1098,8 @@ body.home .hero-video + main .btn-primary:hover {
   font-weight: 600;
 }
 
-/* Ловушка для спам-ботов: поле есть в форме, но человек его не видит. */
-.contact-hp {
-  position: absolute;
-  left: -10000px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
-/* Итог отправки под кнопкой: «отправляю» или ошибка. */
-.contact-status {
-  margin: 1rem 0 0;
-  color: var(--color-text-muted);
-}
-
-/* Последний шаг после отправки: открыть бота и нажать «Старт». */
-.contact-next {
-  margin-top: 1rem;
-  padding: 1rem 1.15rem;
-  border-left: 3px solid var(--color-accent);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  background: var(--color-surface);
-}
-
-.contact-next p {
-  margin: 0 0 0.85rem;
-}
-
-.contact-status.is-error {
-  padding: 0.75rem 1rem;
-  color: var(--color-text);
-  background: rgba(246, 82, 9, 0.10);
-  border: 1px dashed var(--color-accent);
-  border-radius: var(--radius);
-}
-
-.contact-form label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.35rem;
-  font-size: 0.9rem;
-}
-
-.contact-form input,
-.contact-form textarea,
-.contact-form select {
-  width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-family: inherit;
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
-  background: rgba(238, 241, 246, 0.05);
-  color: var(--color-text);
-}
-
-.contact-form textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
-/* Подпись под заголовком формы. */
-.contact-lead {
-  margin: 0 0 1.25rem;
-  color: var(--color-text-muted);
-}
-
-/* «Как начать» под Telegram: та же полупрозрачная подложка с красной
-   чертой слева, что у последнего шага под формой (.contact-next). */
+/* «Как начать» под Telegram: полупрозрачная подложка с красной
+   чертой слева. */
 .contact-steps {
   margin-top: 2rem;
   padding: 1.15rem 1.25rem;
@@ -1233,7 +1159,7 @@ body.home .hero-video + main .btn-primary:hover {
   margin: 1rem 0 0;
 }
 
-/* Частые вопросы под обеими колонками. Каждый вопрос — <details> на той же
+/* Частые вопросы под «Как начать». Каждый вопрос — <details> на той же
    подложке, ответ раскрывается по клику без скриптов. */
 .contact-faq {
   margin-top: 3rem;
@@ -1297,7 +1223,7 @@ body.home .hero-video + main .btn-primary:hover {
   color: var(--color-text-muted);
 }
 
-/* Мелкая сноска под блоком: примечание к контактам, к форме. Раньше эти
+/* Мелкая сноска под блоком: примечание к контактам. Раньше эти
    сноски были набраны inline-стилями в самой разметке. */
 .note-small {
   margin: 1rem 0 0;
@@ -1369,7 +1295,7 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 /* Только прямые пункты: вложенный список внутри шага (примеры задач на
-   support/teacher.html) не должен получать номер и линию. */
+   support/contacts.html) не должен получать номер и линию. */
 .steps-list > li {
   counter-increment: step;
   padding: 0.75rem 0 0.75rem 2.5rem;
@@ -1429,7 +1355,7 @@ body.home .hero-video + main .btn-primary:hover {
   color: var(--color-accent);
 }
 
-/* Вступление на странице «О преподавателе»: крупный первый абзац,
+/* Вступление о преподавателе на странице «Контакты»: крупный первый абзац,
    список через тире и обещание в рамке с красной полосой. Строки
    ограничены ~68 знаками, чтобы текст не тянулся на всю ширину main. */
 .teacher-intro p,
@@ -2587,6 +2513,10 @@ body.home .hero-video + main .btn-primary:hover {
   margin: 0 auto;
 }
 
+.dict-more[hidden] {
+  display: none;
+}
+
 /* Источник словаря — строкой над копирайтом. */
 .footer-source {
   width: 100%;
@@ -2611,6 +2541,62 @@ body.home .hero-video + main .btn-primary:hover {
   .dict-submit {
     padding: 0.75rem 1rem;
   }
+}
+
+/* Дополнения к статьям БКРС (build.py, enrich). Подобранный пиньинь —
+   с пометкой «авто», машинный перевод — с подписью; у статей, где в БКРС
+   перевод не на русском, сам текст статьи бледнее. */
+.dict-pinyin.is-auto,
+.hz-pinyin.is-auto,
+.hz-char-pinyin.is-auto,
+.hz-part-py.is-auto {
+  font-weight: 500;
+}
+
+.dict-auto,
+.hz-auto {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  vertical-align: 0.2em;
+  color: var(--color-text-muted);
+  border: 1px dashed rgba(168, 184, 209, 0.45);
+  border-radius: 4px;
+  cursor: help;
+}
+
+.dict-tag,
+.hz-mt {
+  display: inline-block;
+  margin-right: 0.35rem;
+  padding: 0 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 0.1em;
+  color: #8fc3f0;
+  border: 1px solid rgba(143, 195, 240, 0.45);
+  border-radius: 999px;
+}
+
+.dict-no-ru {
+  color: var(--color-text-muted);
+}
+
+.dict-words .dict-ref {
+  color: var(--color-accent-soft);
+}
+
+.dict-text.is-foreign .dict-line:not(.dict-mt):not(.dict-no-ru) {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
 }
 
 /* Статья словаря нажимается целиком — открывает окно слова
@@ -3588,6 +3574,224 @@ html.hz-lock {
   }
 }
 
+/* Рукописный ввод в словаре (js/handwriting.js): кнопка с кисточкой между
+   полем и «Найти» и клетка 米字格, в которой рисуют иероглиф, рядом —
+   похожие иероглифы. На компьютере клетка раскрывается под строкой
+   поиска, на телефоне — панелью внизу экрана, как клавиатура. */
+.dict-hw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 0.85rem;
+}
+
+.dict-hw-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.dict-hw-btn[aria-expanded="true"] {
+  color: var(--color-accent-soft);
+  background: rgba(246, 82, 9, 0.12);
+  border-color: var(--color-accent);
+}
+
+.hw {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "board cands"
+    "board tools";
+  gap: 0.9rem 1.1rem;
+  margin-top: 0.75rem;
+  padding: 0.9rem;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.hw[hidden] {
+  display: none;
+}
+
+.hw-board {
+  grid-area: board;
+}
+
+/* touch-action: none — палец рисует, а не прокручивает страницу. */
+.hw-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--color-chinese);
+  cursor: crosshair;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.hw-cands {
+  grid-area: cands;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0.45rem;
+}
+
+.hw-cand {
+  min-width: 52px;
+  height: 52px;
+  padding: 0 0.45rem;
+  font-family: var(--font-chinese);
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--color-chinese);
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+/* Первый вариант — самый похожий. */
+.hw-cand:first-child {
+  border-color: rgba(246, 82, 9, 0.55);
+}
+
+.hw-cand:hover {
+  border-color: var(--color-accent);
+}
+
+.hw-cand:active {
+  transform: scale(0.94);
+}
+
+.hw-msg {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.hw-msg.is-error {
+  color: var(--color-accent-soft);
+}
+
+.hw-retry {
+  padding: 0;
+  font: inherit;
+  color: var(--color-text);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.hw-tools {
+  grid-area: tools;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hw-tool[data-hw="done"] {
+  margin-left: auto;
+}
+
+@media (max-width: 600px) {
+  .hw {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 900;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "cands cands"
+      "board tools";
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0.6rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
+    border-width: 1px 0 0;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
+    animation: hz-up 0.22s ease-out;
+  }
+
+  /* Клетка не выше трети экрана — над панелью остаются поле и результаты. */
+  .hw-board {
+    justify-self: center;
+    width: min(100%, 36vh, 320px);
+  }
+
+  .hw-cands {
+    flex-wrap: nowrap;
+    min-height: 46px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .hw-cand {
+    flex: none;
+    min-width: 46px;
+    height: 46px;
+    font-size: 1.5rem;
+  }
+
+  .hw-msg {
+    align-self: center;
+    font-size: 0.85rem;
+  }
+
+  .hw-tools {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .hw-tool {
+    flex-direction: column;
+    gap: 0.2rem;
+    width: 68px;
+    height: auto;
+    padding: 0.45rem 0;
+    font-size: 0.72rem;
+    border-radius: 10px;
+  }
+
+  .hw-tool svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .hw-tool[data-hw="done"] {
+    margin-left: 0;
+  }
+
+  /* Отступ снизу высотой с панель (js/handwriting.js) — чтобы до конца
+     результатов можно было докрутить. */
+  html.hw-docked body {
+    padding-bottom: var(--hw-space, 0px);
+  }
+
+  /* Над панелью мало места — оно отдаётся результатам. */
+  html.hw-docked .dict-hint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hw {
+    animation: none;
+  }
+}
+
 /* Responsive */
 
 /* Laptop — keep the wide composition, pull the gutters in. */
@@ -3638,23 +3842,186 @@ html.hz-lock {
 }
 
 @media (max-width: 640px) {
-  .contact-grid {
-    grid-template-columns: 1fr;
-  }
-
   .card-grid {
     grid-template-columns: 1fr;
   }
 
-  /* На телефоне карточки идут одна под другой, превью чуть уже. */
-  .material-grid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+  /* Главная библиотеки: уровни HSK — низкие плашки, название и метка
+     уровня в одной строке, описание под ними. */
+  .card-grid.is-levels {
+    gap: 0.6rem;
+  }
+
+  .card-grid.is-levels .card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    column-gap: 0.75rem;
+    row-gap: 0.2rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .card-grid.is-levels .card h3 {
+    margin: 0;
+  }
+
+  .card-grid.is-levels .card p {
+    grid-column: 1 / -1;
+    font-size: 0.85rem;
+  }
+
+  .card-grid.is-levels .card .card-meta {
+    grid-row: 1;
+    grid-column: 2;
+    margin: 0;
+    font-size: 0.75rem;
+  }
+
+  /* Сетки разделов библиотеки (is-pairs: «Дополнительно» и «Все разделы»
+     на главной библиотеки, обзоры «Учебников», «Материалов», «Культуры»
+     и т. д.) — по две карточки в ряд. Карточки уже, поэтому шрифт мельче,
+     а описание переносится по слогам и показывается целиком. Заголовок
+     переносится только целыми словами; слову, которое не влезает в
+     полкарточки на экране 360px, в разметке ставится мягкий перенос &shy;.
+     Последняя карточка без пары — во всю ширину. */
+  .card-grid.is-pairs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .card-grid.is-pairs .card {
+    padding: 0.8rem 0.85rem;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  .card-grid.is-pairs .card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .card-grid.is-pairs .card h3 {
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    hyphens: manual;
+    -webkit-hyphens: manual;
+  }
+
+  .card-grid.is-pairs .card p {
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .card-grid.is-pairs .card .card-meta {
+    margin-top: 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  /* Материалы и фильмы на телефоне — тоже по две карточки в ряд. На боку
+     карточка в полэкрана не помещается, поэтому встаёт: превью сверху,
+     под ним название, описание целиком и кнопки «Открыть» / «Скачать»
+     поровну. Последняя карточка без пары (и единственная в разделе) —
+     во всю ширину и остаётся на боку, с превью слева. */
+  .material-grid,
+  .film-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .material-card:last-child:nth-child(odd),
+  .film-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
   .material-cover {
     flex-basis: 84px;
     padding: 0.6rem;
+  }
+
+  .material-body {
+    gap: 0.3rem;
+    padding: 0.7rem 0.75rem 0.75rem;
+  }
+
+  /* Названий материалов много и в них бывают слова длиннее полкарточки
+     («Диагностический», «(«Головоломка»)»), поэтому переносы автоматические,
+     но только в словах от 12 знаков (скобки и кавычки считаются) —
+     короткие переносятся целиком. Через .material-card — иначе
+     перебивает .section h3 с крупным шрифтом и отступом сверху. */
+  .material-card .material-title,
+  .film-title {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.3;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    hyphenate-limit-chars: 12 4 4;
+    overflow-wrap: break-word;
+  }
+
+  .material-desc {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  .material-card:not(:last-child:nth-child(odd)) {
+    flex-direction: column;
+  }
+
+  .material-card:not(:last-child:nth-child(odd)) .material-cover {
+    flex: 0 0 auto;
+    height: 116px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .material-card:not(:last-child:nth-child(odd)) .material-cover img {
+    max-height: 100%;
+  }
+
+  .material-card:not(:last-child:nth-child(odd)) .material-foot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+    padding-top: 0.5rem;
+  }
+
+  .material-card:not(:last-child:nth-child(odd)) .material-type {
+    align-self: flex-start;
+    white-space: normal;
+  }
+
+  .material-card:not(:last-child:nth-child(odd)) .material-actions {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-left: 0;
+  }
+
+  .material-card:not(:last-child:nth-child(odd)) .material-action {
+    flex: 1 1 auto;
+    text-align: center;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.3rem;
+  }
+
+  .film-body {
+    padding: 0.7rem 0.75rem;
+  }
+
+  .film-card:not(:last-child:nth-child(odd)) {
+    flex-direction: column;
+  }
+
+  .film-card:not(:last-child:nth-child(odd)) .film-cover {
+    flex: 0 0 auto;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
   }
 
   /* На узком экране подпись, метка и ссылка не влезают в строку: метка

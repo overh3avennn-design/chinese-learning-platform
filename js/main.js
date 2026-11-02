@@ -1,7 +1,7 @@
 /* Весь скрипт сайта одним файлом: заглушки вместо обложек, прелоадер,
-   фильмы с Яндекс Диска, кнопка «назад», форма обратной связи и работа
-   внутри Telegram (Mini App бота @chinese_free_bot). Шапка —
-   отдельный компонент components/site-header. Каждый блок сам проверяет,
+   фильмы с Яндекс Диска, кнопка «назад» и работа внутри Telegram (Mini
+   App бота @chinese_free_bot). Шапка — отдельный компонент
+   components/site-header. Каждый блок сам проверяет,
    есть ли на странице то, с чем он работает, поэтому файл подключается ко
    всем страницам одинаково.
    Анимаций скролла на сайте нет: колесо, клавиатура и якорные ссылки
@@ -334,63 +334,6 @@
     back.textContent = "← Библиотека";
   }
 
-  // ------------------------------------- форма обратной связи
-  // Заявку с support/contacts.html принимает посредник на Cloudflare
-  // (worker/telegram-form.js): он сохраняет её и возвращает ссылку на
-  // бота с кодом заявки. Ученик открывает бота, жмёт «Старт», и бот
-  // пересылает заявку преподавателю вместе с Telegram ученика. Адрес
-  // посредника — в data-endpoint формы. Токен бота хранится только у
-  // посредника: на странице его увидел бы любой посетитель.
-  function initContactForm() {
-    var form = document.getElementById("contact-form");
-    if (!form) return;
-
-    var endpoint = form.getAttribute("data-endpoint");
-    var button = form.querySelector("button[type=submit]");
-    var status = form.querySelector(".contact-status");
-    var next = form.querySelector(".contact-next");
-    var FALLBACK = "Напиши мне напрямую в Telegram: @kski12.";
-
-    function show(text, isError) {
-      status.hidden = false;
-      status.textContent = text;
-      status.classList.toggle("is-error", !!isError);
-    }
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      next.hidden = true;
-      if (!endpoint) {
-        show("Форма пока не подключена. " + FALLBACK, true);
-        return;
-      }
-
-      button.disabled = true;
-      show("Отправляю…");
-      fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(Object.fromEntries(new FormData(form)))
-      })
-        .then(function (res) {
-          if (!res.ok) throw new Error(res.status);
-          return res.json();
-        })
-        .then(function (data) {
-          form.reset();
-          status.hidden = true;
-          next.querySelector("a").href = data.link;
-          next.hidden = false;
-        })
-        .catch(function () {
-          show("Не получилось отправить заявку. " + FALLBACK, true);
-        })
-        .then(function () {
-          button.disabled = false;
-        });
-    });
-  }
-
   // ----------------------------------------------- Telegram Mini App
   // Сайт открывается и как приложение внутри Telegram — кнопкой в боте
   // @chinese_free_bot. Telegram передаёт данные запуска в адресе первой
@@ -470,6 +413,5 @@
   initPreloader();
   initYandexFilms();
   initBackLink();
-  initContactForm();
   initTelegramApp();
 })();

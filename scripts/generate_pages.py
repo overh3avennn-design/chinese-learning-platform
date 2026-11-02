@@ -138,7 +138,6 @@ MANUAL_PAGES = [
     "library/additional/index.html",
     "library/practice/index.html",
     "library/practice/speaking.html",
-    "support/teacher.html",
     "support/contacts.html",
     "flashcards/index.html",
     "assistant/index.html",
@@ -842,7 +841,7 @@ def write_if_changed(rel_path, text):
 def canonical(block, rel_path):
     """Строки блока без отступов, ссылки приведены к пути от корня сайта.
 
-    "contacts.html" на support/teacher.html и "../support/contacts.html" на
+    "contacts.html" на support/contacts.html и "../support/contacts.html" на
     library/index.html ведут в одно место и считаются одинаковыми.
     """
     base_dir = os.path.dirname(rel_path)

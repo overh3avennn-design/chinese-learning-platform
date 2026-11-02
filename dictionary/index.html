@@ -23,7 +23,8 @@
        грузит оттуда только файлы, нужные для запроса. Запрос пишется в адрес
        (?q=…), так что поиск можно отправить ссылкой. Нажатие на статью
        открывает окно слова: разбор иероглифов на части, порядок черт и
-       «Написать самому» (js/hanzi-window.js). -->
+       «Написать самому» (js/hanzi-window.js). Кнопка с кисточкой — рукописный
+       ввод: иероглиф рисуют, распознаёт Google (js/handwriting.js). -->
   <main data-dictionary>
     <nav class="breadcrumb" aria-label="Навигация">
       <a href="../index.html">Главная</a> / Словарь
@@ -37,11 +38,16 @@
         <input class="dict-input" id="dict-q" type="search" name="q" data-dict-input
                placeholder="水, shuǐ или вода" autocomplete="off" autocapitalize="off"
                autocorrect="off" spellcheck="false" enterkeyhint="search">
+        <button class="btn btn-secondary dict-hw-btn" type="button" data-hw-toggle aria-expanded="false"
+                aria-label="Нарисовать иероглиф" title="Нарисовать иероглиф от руки">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.2 10.8 7.3-7.3"/><path d="M11.4 9.2l3.4 3.4"/><path d="M11.4 9.2C8.9 8.7 6.6 10.4 6.4 13c-.2 2.4-1.2 4.4-3.4 6.1 3.7 1.4 8.1.6 10.4-1.9 1.5-1.6 1.8-3.4 1.4-4.6"/></svg>
+        </button>
         <button class="btn btn-primary dict-submit" type="submit">Найти</button>
       </div>
       <p class="dict-hint">
         Иероглифами, пиньинем — с тонами или без (<span lang="zh-Latn">shuǐ</span>,
-        shui3, shui; ü набирается как v) — или русским словом.
+        shui3, shui; ü набирается как v) — или русским словом. Не знаете, как
+        набрать иероглиф, — нарисуйте его: кнопка с кисточкой.
         Сначала точные совпадения, потом частичные. Нажмите на слово, чтобы
         разобрать его иероглифы: из чего они состоят, порядок черт, написание.
       </p>
@@ -64,12 +70,14 @@
         <a href="../support/contacts.html">Контакты</a>
       </div>
       <p class="footer-source">Словарь: <a href="https://bkrs.info" target="_blank" rel="noopener">大БКРС (bkrs.info)</a> ·
-        состав и порядок черт: <a href="https://github.com/skishore/makemeahanzi" target="_blank" rel="noopener">Make Me a Hanzi</a></p>
+        состав и порядок черт: <a href="https://github.com/skishore/makemeahanzi" target="_blank" rel="noopener">Make Me a Hanzi</a> ·
+        рукописный ввод: Google</p>
       <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
     </div>
   </footer>
   <script src="../js/main.js"></script>
   <script src="../js/hanzi-window.js"></script>
   <script src="../js/dictionary.js"></script>
+  <script src="../js/handwriting.js"></script>
 </body>
 </html>

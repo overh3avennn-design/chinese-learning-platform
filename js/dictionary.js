@@ -508,11 +508,27 @@
     return '<p class="' + cls + '">' + markup(text) + "</p>";
   }
 
+  // e[3] — дополнения сборки к статье БКРС (build.py, enrich): a — пиньинь
+  // подобран автоматически, m — машинный перевод, w — ID слов для «по
+  // словам» у статей без русского перевода.
+  var AUTO_PINYIN = "Пиньинь подобран автоматически и может быть неточным";
+
   function renderEntry(e) {
     var li = document.createElement("li");
     li.className = "dict-entry";
+    var extra = e[3] || {};
     var lines = e[2] ? e[2].split("\n") : [];
     var collapsed = lines.length > LINES_SHOWN + 1;
+    // Перевод БКРС не на русском (китайское толкование, английский): сверху
+    // машинный перевод или «по словам», сам текст статьи — бледнее.
+    var foreign = !CYRILLIC.test(e[2] || "");
+    var lead = "";
+    if (extra.m) {
+      lead = '<p class="dict-line dict-mt"><span class="dict-tag">машинный перевод</span> ' + esc(extra.m) + "</p>";
+    } else if (foreign) {
+      lead = '<p class="dict-line dict-no-ru">Русского перевода в словаре нет' +
+        (extra.w ? '<span class="dict-words"></span>' : "") + "</p>";
+    }
     // Статья с иероглифами в заголовке открывает окно слова: разбор
     // иероглифов, порядок черт, письмо (js/hanzi-window.js).
     var card = window.HanziWindow && CJK.test(e[0]);
@@ -521,10 +537,12 @@
       li.dictEntry = e;
     }
     var html = '<div class="dict-head"><span class="dict-hanzi" lang="zh-CN">' + esc(e[0]) + "</span>" +
-      (e[1] ? '<span class="dict-pinyin">' + markup(e[1]) + "</span>" : "") +
+      (e[1] ? '<span class="dict-pinyin' + (extra.a ? ' is-auto" title="' + AUTO_PINYIN : "") + '">' + markup(e[1]) +
+        (extra.a ? '<span class="dict-auto">авто</span>' : "") + "</span>" : "") +
       (card ? '<button class="dict-card-btn" type="button" aria-label="Разбор иероглифов: ' + esc(e[0]) +
         '"><span class="zh" lang="zh-CN">字</span><span class="txt">Разбор</span></button>' : "") + "</div>" +
-      '<div class="dict-text">' + lines.map(function (t, i) { return line(t, collapsed && i >= LINES_SHOWN); }).join("") + "</div>";
+      '<div class="dict-text' + (foreign ? " is-foreign" : "") + '">' + lead +
+        lines.map(function (t, i) { return line(t, collapsed && i >= LINES_SHOWN); }).join("") + "</div>";
     if (collapsed) {
       var rest = lines.length - LINES_SHOWN;
       html += '<button class="dict-toggle" type="button" aria-expanded="false" data-more="Показать всю статью · ещё ' +
@@ -532,7 +550,24 @@
         plural(rest, ["строка", "строки", "строк"]) + "</button>";
     }
     li.innerHTML = html;
+    if (extra.w && !extra.m) fillWords(li.querySelector(".dict-words"), extra.w);
     return li;
+  }
+
+  // «По словам: 工业 — промышленность · 管 — труба» — значения слов, из
+  // которых состоит заголовок, из их собственных статей.
+  function fillWords(el, ids) {
+    Promise.all(ids.slice(0, 6).map(function (id) {
+      return entry(id).catch(function () { return null; });
+    })).then(function (list) {
+      var parts = list.filter(Boolean).map(function (w) {
+        var g = window.HanziWindow ? window.HanziWindow.gloss(w, 1) : "";
+        if (g.length > 48) g = g.slice(0, 46).replace(/[\s,;]+$/, "") + "…";
+        return '<a class="dict-ref" href="?q=' + encodeURIComponent(w[0]) + '" lang="zh-CN">' + esc(w[0]) + "</a>" +
+          (g ? " — " + esc(g) : "");
+      });
+      if (parts.length) el.innerHTML = ". По словам: " + parts.join(" · ");
+    });
   }
 
   function group(n) {

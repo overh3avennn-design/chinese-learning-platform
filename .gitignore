@@ -16,10 +16,6 @@ desktop.ini
 __pycache__/
 *.pyc
 
-# Служебные файлы wrangler и локальные секреты воркера (токен бота).
-.wrangler/
-.dev.vars
-
 # Локальные секреты скриптов: токен Яндекс Диска (YANDEX_DISK_TOKEN).
 .env
 
