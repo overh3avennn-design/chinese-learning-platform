@@ -1,4 +1,6 @@
 /* Главная страница: неподвижное видео-фон, первый экран, разделы и подвал.
+   До 900px — своя телефонная версия по макету home-mobile.html (в конце
+   файла, под @media): компактная заставка, плитки и нижняя панель.
 
    Подключается только в index.html, после общего css/style.css. Всё здесь
    привязано к body.page-home или к классам hm-* / .container, которых в
@@ -19,10 +21,17 @@ body.page-home {
   --font-cormorant: "Cormorant Garamond", Georgia, serif;
   --font-lora: "Lora", Georgia, serif;
   --font-hanzi: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  /* Шрифт поиска по словарю и телефонной версии — из макета home-mobile.html. */
+  --font-manrope: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Цвет виден только, пока видео не загрузилось. */
   background-color: var(--hm-bg);
   color: var(--hm-text);
+  /* viewport-fit=cover (в index.html — ради нижней панели телефона)
+     пускает страницу под вырез iPhone. Фон уходит под него, а содержимое
+     остаётся в безопасной зоне, как и без cover. Вне iPhone отступы — 0. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 body.page-home a:focus-visible,
@@ -203,6 +212,98 @@ video.bg {
 
 .hm-trial:hover svg {
   transform: translateX(3px);
+}
+
+/* ------------------------------------------------------ поиск по словарю */
+
+/* Одна форма на обе версии: на компьютере — под абзацем, перед кнопками,
+   на телефоне — сразу под заставкой. Вид из макета home-mobile.html:
+   светлое поле с лупой и кнопкой «Найти». Шире 620px не бывает; на
+   компьютере его держит колонка абзаца (450px, на планшете 520px). */
+.hm-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 620px;
+  height: 56px;
+  margin: 18px auto 0;
+  padding: 0 6px 0 16px;
+  border-radius: 16px;
+  background-color: var(--hm-text);
+  color: #15181d;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-manrope);
+  line-height: normal;
+  transition: box-shadow 0.2s ease;
+}
+
+/* У самого поля обводки нет — при вводе подсвечивается вся строка. */
+.hm-search:focus-within {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), 0 0 0 2px var(--hm-gold);
+}
+
+.hm-search svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  opacity: 0.55;
+}
+
+.hm-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  font-size: 16px;
+  color: #15181d;
+}
+
+.hm-search input::placeholder {
+  color: #7b7e83;
+  opacity: 1;
+}
+
+.hm-search button {
+  flex: none;
+  height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background-color: #15181d;
+  color: var(--hm-text);
+  font: inherit;
+  font-weight: 600;
+  font-size: 14.5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.hm-search button:hover {
+  background-color: #2a2e35;
+}
+
+.hm-search-hint {
+  margin: 8px 0 0;
+  font-family: var(--font-manrope);
+  font-size: 12.5px;
+  line-height: normal;
+  text-align: left;
+  color: rgba(244, 243, 240, 0.5);
+}
+
+.hm-search-hint b {
+  font-family: var(--font-hanzi);
+  font-weight: 500;
+  color: rgba(244, 243, 240, 0.72);
 }
 
 /* ---------------------------------------------------- нижняя полоса экрана */
@@ -563,106 +664,488 @@ body.page-home .hm-main {
   }
 }
 
-/* Телефон: поля 16px, 中文 поменьше, блоки полосы — столбиком. */
-@media (max-width: 768px) {
+/* ================================================ телефон: до 900px */
+
+/* На телефоне у главной своя раскладка по макету home-mobile.html:
+   компактная заставка, поиск, плитки разделов, блок «Занятия» и нижняя
+   панель вместо бургера. Блоки только для телефона помечены в разметке
+   классом hm-phone. Все правила телефона — в @media ниже, поэтому
+   компьютерную версию (от 900px) они не задевают. */
+
+@media (min-width: 900px) {
+  .hm-phone,
+  .hm-lead-short {
+    display: none;
+  }
+}
+
+@media (max-width: 899.98px) {
   body.page-home {
-    --hm-gutter: 16px;
+    --font-script: "Marck Script", "Great Vibes", cursive;
+    --hm-text-soft: rgba(244, 243, 240, 0.72);
+    --hm-text-mute: rgba(244, 243, 240, 0.5);
+    --hm-glass: rgba(18, 22, 29, 0.55);
+    --hm-glass-strong: rgba(18, 22, 29, 0.72);
+    --hm-line: rgba(255, 255, 255, 0.12);
+    --hm-radius: 18px;
+    --hm-tabbar-h: 64px;
+    /* Фон — картинка с горами, постер того же видео. Само видео на
+       телефоне не скачивается (<source media> в index.html); поверх
+       картинки то же затемнение .hm-bg-shade, что и на компьютере. */
+    --hero-image: url("../images/hero-poster.jpg");
+    /* Конец страницы не уходит под нижнюю панель. */
+    padding-bottom: calc(var(--hm-tabbar-h) + env(safe-area-inset-bottom) + 24px);
   }
 
-  .hm-body {
-    padding: 48px var(--hm-gutter) 36px;
+  /* Фокус с клавиатуры и прокрутка к элементу тоже не прячут его под
+     панель. html здесь — только главной: файл подключён лишь к ней. */
+  html {
+    scroll-padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
 
-  .hm-welcome {
-    padding-left: 6px;
-    font-size: clamp(34px, 8.5vw, 52px);
+  body.page-home::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: var(--hero-image) center / cover no-repeat;
   }
 
-  .hm-hanzi {
-    font-size: clamp(160px, 46vw, 200px);
+  /* Картинка светлее серого фона макета, а текст телефонной версии мельче
+     и бледнее компьютерного. Затемнение плотнее — контраст как в макете. */
+  .hm-bg-shade {
+    background: rgba(14, 16, 19, 0.72);
   }
 
-  .hm-lead {
-    font-size: 17px;
-  }
-
-  .hm-strip {
-    grid-template-columns: minmax(0, 1fr);
-    min-height: 0;
-  }
-
-  .hm-strip-item,
-  .hm-strip-item:first-child,
-  .hm-strip-item:last-child {
-    padding: 18px 0 20px;
-    border-left: 0;
-  }
-
-  .hm-strip-item + .hm-strip-item {
-    border-top: 1px solid rgba(244, 243, 240, 0.3);
-  }
-
-  .hm-strip-item h2 {
-    font-size: 16px;
-  }
-
-  body.page-home .container {
-    padding: 0 16px;
-  }
-
-  body.page-home .hm-main {
-    padding: 80px 0 72px;
-  }
-
-  .hm-section + .hm-section {
-    margin-top: 64px;
-  }
-
-  .hm-section h2 {
-    margin-bottom: 18px;
-    font-size: 36px;
-  }
-
-  .hm-section p {
-    font-size: 17px;
-  }
-
-  .hm-more {
-    margin-top: 10px;
-    font-size: 16px;
-  }
-
-  .hm-deco {
+  /* Видео, заставка «欢迎» (без видео ей нечего ждать), длинный абзац,
+     кнопки и нижняя полоса первого экрана, разделы и подвал — только на
+     компьютере. */
+  video.bg,
+  body.page-home .preloader,
+  .hm-lead-long,
+  .hm-actions-row,
+  .hm-strip,
+  .hm-main,
+  .hm-footer {
     display: none;
   }
 
-  .hm-footer-top {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 16px;
-    padding: 28px 0;
+  body.page-home a:hover {
+    text-decoration: none;
   }
 
-  /* Ссылки подвала выровнены по тексту логотипа, а не по краю «пилюли». */
-  .hm-footer-nav ul {
-    margin-left: -18px;
+  /* ------------------------------------------------------------- шапка */
+
+  /* Шапка общая (components/site-header), но без бургера: меню здесь —
+     нижняя панель. В строке логотип и Telegram — на месте бургера других
+     страниц, поэтому при переходе в раздел меняется только эта кнопка.
+     Отступ сверху — под вырез iPhone, если страница заходит под строку
+     состояния (вне iPhone он 0). */
+  body.page-home .site-header {
+    height: calc(var(--sh-height) + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
   }
 
-  .hm-footer-bottom {
-    padding: 16px 0;
+  body.page-home .site-header.site-header--compact .site-header__menu {
+    display: contents;
   }
-}
 
-@media (max-width: 560px) {
+  body.page-home .site-header .site-header__nav,
+  body.page-home .site-header .site-header__divider,
+  body.page-home .site-header .site-header__cta,
+  body.page-home .site-header .site-header__burger {
+    display: none;
+  }
+
+  body.page-home .site-header.site-header--compact .site-header__actions {
+    justify-self: end;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  body.page-home .site-header.site-header--compact .site-header__tg {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    background-color: rgba(18, 22, 29, 0.35);
+    color: var(--sh-text);
+  }
+
+  body.page-home .site-header.site-header--compact .site-header__tg:hover {
+    border-color: var(--sh-gold);
+    color: var(--sh-gold);
+  }
+
+  /* ------------------------------------------------ компактная заставка */
+
   .hm-hero {
-    --hm-header-h: 60px;
+    display: block;
+    min-height: 0;
+    overflow: visible;
   }
-}
 
-@media (max-width: 400px) {
-  .hm-actions-row {
-    gap: 12px 24px;
+  .hm-body {
+    display: block;
+    padding: 8px 16px 0;
+  }
+
+  .hm-title,
+  .hm-aside {
+    animation: none;
+  }
+
+  .hm-title {
+    text-align: center;
+  }
+
+  .hm-welcome {
+    padding-left: 8px;
+    font-family: var(--font-script);
+    font-size: 30px;
+    line-height: 1;
+    text-align: left;
+    color: rgba(244, 243, 240, 0.95);
+  }
+
+  .hm-hanzi {
+    margin-top: -2px;
+    font-size: clamp(92px, 27vw, 230px);
+    letter-spacing: 0.02em;
+    background: linear-gradient(180deg, var(--hm-text) 55%, #a9aaab 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .hm-aside {
+    max-width: none;
+    margin: 0;
+  }
+
+  .hm-lead {
+    max-width: 34ch;
+    margin: 10px auto 0;
+    font-family: var(--font-manrope);
+    font-size: 15.5px;
+    line-height: 1.5;
+    color: var(--hm-text-soft);
+  }
+
+  .hm-search {
+    max-width: none;
+  }
+
+  .hm-search-hint {
+    margin: 8px 4px 0;
+  }
+
+  /* ---------------------------------------------------- плитки разделов */
+
+  .hm-block {
+    padding: 26px 16px 0;
+    font-family: var(--font-manrope);
+    line-height: normal;
+    color: var(--hm-text);
+  }
+
+  .hm-block-title {
+    margin: 0 4px 12px;
+    font-family: var(--font-cormorant);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--hm-text-soft);
+  }
+
+  .hm-tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .hm-tile {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 146px;
+    padding: 16px;
+    border: 1px solid var(--hm-line);
+    border-radius: var(--hm-radius);
+    background-color: var(--hm-glass);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: var(--hm-text);
+    transition: transform 0.12s ease, background-color 0.2s ease;
+  }
+
+  .hm-tile:active {
+    transform: scale(0.98);
+    background-color: var(--hm-glass-strong);
+  }
+
+  .hm-tile-han {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    font-family: var(--font-hanzi);
+    font-weight: 900;
+    font-size: 52px;
+    line-height: 1;
+    color: var(--hm-gold);
+    opacity: 0.9;
+  }
+
+  .hm-tile-name {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--hm-text);
+  }
+
+  .hm-tile-desc {
+    margin: 3px 0 0;
+    font-size: 13px;
+    line-height: 1.35;
+    color: var(--hm-text-soft);
+  }
+
+  /* Библиотека — во всю ширину, с кнопками уровней. */
+  .hm-tile--main {
+    grid-column: 1 / -1;
+    min-height: 0;
+    padding: 18px 16px 16px;
+    justify-content: flex-start;
+  }
+
+  .hm-tile--main .hm-tile-han {
+    top: 4px;
+    right: 12px;
+    font-size: 84px;
+  }
+
+  .hm-tile--main .hm-tile-name,
+  .hm-tile--main .hm-tile-desc {
+    padding-right: 90px;
+  }
+
+  .hm-tile--main .hm-tile-name {
+    font-size: 22px;
+  }
+
+  /* Ссылка заголовка растянута на всю плитку, как у карточек
+     библиотеки; ряд уровней лежит поверх неё. */
+  .hm-tile--main .hm-tile-name::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Ряд уровней прокручивается вбок и уходит под правый край плитки. */
+  .hm-hsk {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 8px;
+    margin: 16px -16px 0 0;
+    padding-right: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .hm-hsk::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hm-hsk a {
+    flex: none;
+    display: grid;
+    place-items: center;
+    min-width: 58px;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--hm-line);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: var(--hm-text);
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .hm-hsk a:active {
+    border-color: var(--hm-gold);
+    background-color: rgba(205, 176, 121, 0.22);
+  }
+
+  /* Ряд обрезает всё, что за его краями, — обводка фокуса внутри кнопки. */
+  body.page-home .hm-hsk a:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .hm-hsk-note {
+    display: block;
+    margin-top: -2px;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--hm-text-mute);
+  }
+
+  /* ИИ-помощник — строкой во всю ширину. */
+  .hm-tile--wide {
+    grid-column: 1 / -1;
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+  }
+
+  .hm-tile--wide .hm-tile-han {
+    position: static;
+    font-size: 40px;
+    opacity: 0.75;
+  }
+
+  .hm-tile-body {
+    flex: 1;
+  }
+
+  .hm-tile--wide .hm-tile-desc {
+    display: block;
+  }
+
+  .hm-tile-arrow {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    opacity: 0.6;
+  }
+
+  .hm-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    vertical-align: 2px;
+    background-color: var(--hm-gold);
+    color: #15181d;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* ------------------------------------------- занятия с преподавателем */
+
+  .hm-lesson {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 16px;
+    border: 1px solid rgba(205, 176, 121, 0.35);
+    border-radius: var(--hm-radius);
+    background: linear-gradient(135deg, rgba(205, 176, 121, 0.14), rgba(18, 22, 29, 0.55));
+  }
+
+  .hm-lesson-title {
+    margin: 0;
+    font-family: var(--font-cormorant);
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1.15;
+    color: var(--hm-text);
+  }
+
+  .hm-lesson-text {
+    margin: 6px 0 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--hm-text-soft);
+  }
+
+  .hm-lesson-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .hm-lesson-btn {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    height: 50px;
+    border-radius: 14px;
+    background-color: var(--hm-text);
+    color: #15181d;
+    font-weight: 600;
+    font-size: 15.5px;
+  }
+
+  .hm-lesson-tg {
+    flex: none;
+    width: 50px;
+    border: 1px solid var(--hm-line);
+    background-color: transparent;
+    color: var(--hm-text);
+  }
+
+  .hm-lesson-tg svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* ---------------------------------------------------- нижняя панель */
+
+  /* Высота — 64px плюс полоска «Домой» на iPhone; в альбомной ориентации
+     пункты не заходят под вырез. */
+  .hm-tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 900;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    height: calc(var(--hm-tabbar-h) + env(safe-area-inset-bottom));
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    border-top: 1px solid var(--hm-line);
+    background-color: rgba(18, 22, 29, 0.94);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    font-family: var(--font-manrope);
+    line-height: normal;
+  }
+
+  .hm-tabbar a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--hm-text-mute);
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .hm-tabbar svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .hm-tabbar a[aria-current="page"] {
+    color: var(--hm-text);
+  }
+
+  .hm-tabbar a[aria-current="page"] svg {
+    color: var(--hm-gold);
+  }
+
+  body.page-home .hm-tabbar a:focus-visible {
+    outline-offset: -2px;
   }
 }
 
@@ -685,11 +1168,14 @@ body.page-home .hm-main {
   .hm-btn,
   .hm-trial,
   .hm-trial svg,
+  .hm-search,
+  .hm-search button,
   .hm-strip-item h2,
   .hm-more,
   .hm-more svg,
   .hm-tg-line a,
-  .hm-footer-nav a {
+  .hm-footer-nav a,
+  .hm-tile {
     transition: none;
   }
 }

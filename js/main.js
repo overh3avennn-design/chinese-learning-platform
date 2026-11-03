@@ -78,9 +78,25 @@
       play(reveal);
     }
 
-    // Видео нет или оно скрыто ради prefers-reduced-motion — ждать нечего.
+    // У видео главной источник только для компьютерной версии (<source
+    // media>): на телефоне оно не скачивается. Если окно потом расширили,
+    // источник выбирается заново, дальше видео запускает autoplay.
+    function loadWhenShown() {
+      var source = video.querySelector("source[media]");
+      if (!source || !window.matchMedia) return;
+      var wide = window.matchMedia(source.getAttribute("media"));
+      function sync() {
+        if (wide.matches && !video.currentSrc && getComputedStyle(video).display !== "none") video.load();
+      }
+      if (wide.addEventListener) wide.addEventListener("change", sync);
+      else wide.addListener(sync);
+    }
+
+    // Видео нет или оно скрыто — ради prefers-reduced-motion или на
+    // телефоне, где фон — его постер (css/home.css), — ждать нечего.
     if (!video || getComputedStyle(video).display === "none") {
       reveal();
+      if (video) loadWhenShown();
       return;
     }
 

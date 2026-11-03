@@ -2,7 +2,9 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- viewport-fit=cover нужен нижней панели телефонной версии: отступ под
+       полоской «Домой» на iPhone она берёт из env(safe-area-inset-bottom). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Китайский язык — Образовательная платформа</title>
   <meta name="description" content="Персональная образовательная платформа по изучению китайского языка. Материалы по уровням HSK, практика и поддержка.">
   <link rel="icon" href="favicon.ico" sizes="48x48">
@@ -11,10 +13,11 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Golos+Text:wght@400;500;600&family=Lora:wght@400;600&family=Imperial+Script&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Golos+Text:wght@400;500;600&family=Lora:wght@400;600&family=Imperial+Script&family=Great+Vibes&family=Manrope:wght@400;500;600;700&family=Marck+Script&display=swap" rel="stylesheet">
   <!-- Китайские шрифты грузим только под нужные знаки: 中文 в заголовке и
-       логотипе, 你好 в «Контактах», 欢迎 на заставке. -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&text=%E4%B8%AD%E6%96%87%E4%BD%A0%E5%A5%BD&display=swap" rel="stylesheet">
+       логотипе, 你好 в «Контактах», 学习 в подсказке поиска, 书词卡问 на
+       плитках телефонной версии, 欢迎 на заставке. -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&text=%E4%B8%AD%E6%96%87%E4%BD%A0%E5%A5%BD%E5%AD%A6%E4%B9%A0%E4%B9%A6%E8%AF%8D%E5%8D%A1%E9%97%AE&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400&text=%E6%AC%A2%E8%BF%8E&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/home.css">
@@ -27,14 +30,18 @@
     <span class="preloader-mark">欢迎</span>
   </div>
   <!-- Фон всей главной: видео стоит на месте, страница едет поверх него.
-       Класс hero-video-media нужен прелоадеру из js/main.js. -->
+       Класс hero-video-media нужен прелоадеру из js/main.js. Источник у
+       видео только для компьютера: на телефоне (до 900px) оно не
+       скачивается, фон там — его постер, картинка с горами (css/home.css). -->
   <video class="hero-video-media bg" autoplay muted loop playsinline preload="auto" poster="images/hero-poster.jpg">
-    <source src="images/hero-video.mp4" type="video/mp4">
+    <source src="images/hero-video.mp4" type="video/mp4" media="(min-width: 900px)">
   </video>
   <div class="hm-bg-shade" aria-hidden="true"></div>
 
   <!-- Первый экран главной. Стили — css/home.css; классы hm-* не
-       пересекаются с общими стилями остальных страниц. -->
+       пересекаются с общими стилями остальных страниц. На телефоне тот же
+       блок — компактная заставка: короткая строка вместо абзаца, без
+       кнопок и нижней полосы. -->
   <section class="hm-hero">
     <div class="hm-body">
       <h1 class="hm-title">
@@ -44,11 +51,27 @@
 
       <div class="hm-aside">
         <p class="hm-lead">
+          <span class="hm-lead-long">
           За китайским языком стоят тысячелетия истории, мудрости и опыта.
           Я хочу, чтобы этот путь был открыт каждому: материалы по уровням HSK,
-          культура Китая и учебники — в одном месте. 
-          </br>Для изучения нужно только ваше желание, а сайт постарается обеспечить удобство.
+          культура Китая и учебники — в одном месте.
+          <br>Для изучения нужно только ваше желание, а сайт постарается обеспечить удобство.
+          </span>
+          <span class="hm-lead-short">Материалы HSK, словарь и карточки — всё для изучения китайского в одном месте.</span>
         </p>
+
+        <!-- Поиск по словарю — одна форма на обе версии: на компьютере под
+             абзацем перед кнопками, на телефоне сразу под заставкой. Запрос
+             уходит в словарь как ?q=…, и там поиск запускается сразу
+             (js/dictionary.js). -->
+        <form class="hm-search" action="dictionary/index.html" method="get" role="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" name="q" placeholder="Слово или пиньинь" aria-label="Поиск по словарю"
+                 autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+          <button type="submit">Найти</button>
+        </form>
+        <p class="hm-search-hint">Например: <b lang="zh-CN">学习</b> · <span lang="zh-Latn">xuéxí</span> · учиться</p>
+
         <div class="hm-actions-row">
           <a href="library/index.html" class="hm-btn">Открыть библиотеку</a>
           <a href="support/contacts.html" class="hm-trial">
@@ -72,6 +95,66 @@
         <h2>Учебники и материалы</h2>
         <p>Рукодельникова, практический курс и билеты к экзамену.</p>
       </a>
+    </div>
+  </section>
+
+  <!-- Только телефон (класс hm-phone): плитки разделов, занятия и нижняя
+       панель — по макету home-mobile.html. На компьютере их нет, а
+       разделов «О платформе» и подвала нет на телефоне. -->
+  <section class="hm-phone hm-block" aria-labelledby="hm-sections-title">
+    <h2 class="hm-block-title" id="hm-sections-title">Разделы</h2>
+    <div class="hm-tiles">
+      <!-- Нажимается вся плитка (ссылка заголовка растянута на неё), кнопки
+           уровней лежат поверх и ведут прямо на страницу уровня. -->
+      <div class="hm-tile hm-tile--main">
+        <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">书</span>
+        <a class="hm-tile-name" href="library/index.html">Библиотека&nbsp;→</a>
+        <p class="hm-tile-desc">Учебники, грамматика, фонетика и&nbsp;иероглифика по&nbsp;уровням</p>
+        <nav class="hm-hsk" aria-label="Уровни HSK">
+          <a href="library/hsk-1/index.html"><span>HSK 1<span class="hm-hsk-note">начальный</span></span></a>
+          <a href="library/hsk-2/index.html">HSK 2</a>
+          <a href="library/hsk-3/index.html">HSK 3</a>
+          <a href="library/hsk-4/index.html">HSK 4</a>
+          <a href="library/hsk-5/index.html">HSK 5</a>
+          <a href="library/hsk-6/index.html">HSK 6</a>
+        </nav>
+      </div>
+
+      <a class="hm-tile" href="dictionary/index.html">
+        <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">词</span>
+        <span class="hm-tile-name">Словарь</span>
+        <span class="hm-tile-desc">БКРС прямо на&nbsp;сайте</span>
+      </a>
+
+      <a class="hm-tile" href="flashcards/index.html">
+        <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">卡</span>
+        <span class="hm-tile-name">Карточки</span>
+        <span class="hm-tile-desc">Слова свайпами</span>
+      </a>
+
+      <a class="hm-tile hm-tile--wide" href="assistant/index.html">
+        <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">问</span>
+        <span class="hm-tile-body">
+          <span class="hm-tile-name">ИИ-помощник <span class="hm-badge">скоро</span></span>
+          <span class="hm-tile-desc">Объяснит слово, грамматику и&nbsp;разницу синонимов</span>
+        </span>
+        <svg class="hm-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <section class="hm-phone hm-block" aria-labelledby="hm-lesson-title">
+    <div class="hm-lesson">
+      <div>
+        <h2 class="hm-lesson-title" id="hm-lesson-title">Занятия с&nbsp;преподавателем</h2>
+        <p class="hm-lesson-text">Пробное занятие — разберём ваш уровень и&nbsp;составим план подготовки.</p>
+      </div>
+      <div class="hm-lesson-row">
+        <a class="hm-lesson-btn" href="support/contacts.html">Записаться на урок</a>
+        <a class="hm-lesson-btn hm-lesson-tg" href="https://t.me/kski12" target="_blank" rel="noopener" aria-label="Написать в Telegram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 3.5 2.8 10.6c-.9.3-.9 1.6 0 1.9l4.6 1.5 1.8 5.6c.2.7 1.1.9 1.6.4l2.6-2.4 4.7 3.5c.6.4 1.4.1 1.6-.6L22.9 4.8c.2-.9-.6-1.6-1.4-1.3Z"/><path d="m7.4 14 10-7.1-7.6 8.5"/></svg>
+        </a>
+      </div>
     </div>
   </section>
 
@@ -135,6 +218,30 @@
       </div>
     </div>
   </footer>
+
+  <!-- Нижняя панель навигации телефонной версии — вместо бургера в шапке. -->
+  <nav class="hm-phone hm-tabbar" aria-label="Основная навигация">
+    <a href="index.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>
+      Главная
+    </a>
+    <a href="library/index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H19v-3"/><path d="M8 7h7"/></svg>
+      Библиотека
+    </a>
+    <a href="dictionary/index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      Словарь
+    </a>
+    <a href="flashcards/index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="14" height="15" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/></svg>
+      Карточки
+    </a>
+    <a href="assistant/index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
+      ИИ
+    </a>
+  </nav>
 
   <script src="js/main.js"></script>
 </body>
