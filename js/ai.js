@@ -73,7 +73,7 @@
       if (err && err.code) throw err;
       if (timedOut) throw fail("timeout", "Нейросеть отвечает слишком долго. Попробуйте ещё раз.");
       if (outer && outer.aborted) throw fail("aborted", "Запрос отменён.");
-      throw fail("network", "Нет связи с сервером ИИ. Проверьте интернет и попробуйте ещё раз.");
+      throw fail("network", "Нет связи с сервером ИИ. Пока он работает только с VPN — включите VPN и попробуйте ещё раз.");
     });
   }
 
