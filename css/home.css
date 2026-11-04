@@ -823,31 +823,38 @@ body.page-home .hm-main {
 
   /* ------------------------------------------------------ первый экран */
 
-  /* Первый экран — во всё окно между шапкой и нижней панелью: сверху
-     заставка и абзац, как на компьютере, внизу поиск. Плитки разделов —
-     ниже, их видно при прокрутке. svh — высота окна при развёрнутых
-     панелях браузера, поэтому поиск виден сразу. Шапка — 66px, до 560px
-     60px (--hm-header-h ниже), плюс вырез iPhone. */
   /* Слоёв (isolation, z-index) у первого экрана на телефоне нет: клетка
      рукописного ввода внутри него прибита к низу окна и должна лечь
      поверх плиток и нижней панели, как клавиатура. */
   .hm-hero {
     isolation: auto;
-    display: flex;
-    flex-direction: column;
-    min-height: calc(100vh - var(--hm-header-h) - env(safe-area-inset-top, 0px) - var(--site-tabbar-space, 0px));
-    min-height: calc(100svh - var(--hm-header-h) - env(safe-area-inset-top, 0px) - var(--site-tabbar-space, 0px));
+    display: block;
+    min-height: 0;
     overflow: visible;
   }
 
-  /* stretch — вместо end компьютерной сетки: блоки во всю ширину. */
+  /* Первый экран — во всё окно между шапкой и нижней панелью: заставка,
+     тот же абзац, что на компьютере, и поиск. Строки сетки: зазор,
+     заставка, зазор, абзац, зазор, поиск. Свободное место делится между
+     тремя зазорами поровну (но не меньше 16 и 28px), поэтому 中文 не
+     жмётся к шапке и абзацу, а абзац стоит посередине. Колонки абзаца
+     (.hm-aside) на телефоне нет — абзац и поиск сами строки сетки.
+     Плитки разделов — ниже, их видно при прокрутке. svh — высота окна
+     при развёрнутых панелях браузера, поэтому поиск виден сразу. Шапка —
+     66px, до 560px 60px (--hm-header-h ниже), плюс вырез iPhone. */
   .hm-body {
     z-index: auto;
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    align-items: stretch;
-    padding: 8px 16px 20px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(16px, 1fr) auto minmax(28px, 1fr) auto minmax(28px, 1fr) auto;
+    align-items: start;
+    align-content: stretch;
+    min-height: calc(100vh - var(--hm-header-h) - env(safe-area-inset-top, 0px) - var(--site-tabbar-space, 0px));
+    min-height: calc(100svh - var(--hm-header-h) - env(safe-area-inset-top, 0px) - var(--site-tabbar-space, 0px));
+    padding: 0 16px 20px;
+  }
+
+  .hm-aside {
+    display: contents;
   }
 
   .hm-title,
@@ -856,22 +863,22 @@ body.page-home .hm-main {
   }
 
   .hm-title {
+    grid-row: 2;
     text-align: center;
   }
 
   .hm-welcome {
-    padding-left: 8px;
+    padding-left: 0;
     font-family: var(--font-script);
     font-size: 30px;
-    line-height: 1;
-    text-align: left;
+    line-height: 1.1;
     color: rgba(244, 243, 240, 0.95);
   }
 
   /* На низком окне (iPhone SE, панели браузера) 中文 мельче, чтобы
      абзац и поиск уместились на первом экране. */
   .hm-hanzi {
-    margin-top: -2px;
+    margin-top: 10px;
     font-size: clamp(72px, 27vw, 230px);
     font-size: clamp(72px, min(27vw, 14svh), 230px);
     letter-spacing: 0.02em;
@@ -883,26 +890,18 @@ body.page-home .hm-main {
     mask-image: none;
   }
 
-  .hm-aside {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    max-width: none;
-    margin: 0;
-  }
-
   /* Абзац — тот же, что на компьютере, тем же шрифтом и цветом. */
   .hm-lead {
+    grid-row: 4;
     max-width: 36ch;
-    margin: 14px auto 0;
+    margin: 0 auto;
     font-size: 16.5px;
     line-height: 1.6;
   }
 
   /* Поиск — внизу первого экрана, над нижней панелью. */
   .hm-finder {
-    margin-top: auto;
-    padding-top: 24px;
+    grid-row: 6;
   }
 
   .hm-search {
@@ -1188,6 +1187,23 @@ body.page-home .hm-main {
 @media (max-width: 560px) {
   .hm-hero {
     --hm-header-h: 60px;
+  }
+}
+
+/* Низкое окно (iPhone SE, телефоны с панелями браузера): абзац мельче и
+   зазоры меньше, чтобы поиск остался на первом экране. */
+@media (max-width: 899.98px) and (max-height: 640px) {
+  .hm-body {
+    grid-template-rows: minmax(8px, 1fr) auto minmax(12px, 1fr) auto minmax(12px, 1fr) auto;
+  }
+
+  .hm-hanzi {
+    margin-top: 6px;
+  }
+
+  .hm-lead {
+    font-size: 15px;
+    line-height: 1.5;
   }
 }
 
