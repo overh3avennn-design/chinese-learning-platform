@@ -18,12 +18,14 @@
   <script src="../components/site-header/header.js"></script>
   <div class="bg-fixed" aria-hidden="true"></div>
 
-  <!-- Раздел «Карточки». Пять экранов на одной странице — список колод,
-       страница колоды, изучение, итоги и «Колода выучена»; переключает их js/flashcards.js
-       по адресу (#deck=<id> — страница колоды, #deck=<id>&learn —
-       изучение), поэтому кнопка «Назад» в браузере ведёт на шаг назад:
-       из изучения — к колоде, от колоды — к списку. Колоды лежат в
-       flashcards/decks/. -->
+  <!-- Раздел «Карточки». Шесть экранов на одной странице — список колод,
+       страница колоды, изучение, итоги, «Колода выучена» и проверка слов с
+       фото; переключает их js/flashcards.js по адресу (#deck=<id> —
+       страница колоды, #deck=<id>&learn — изучение, #photo — слова с
+       фото), поэтому кнопка «Назад» в браузере ведёт на шаг назад: из
+       изучения — к колоде, от колоды — к списку. Колоды лежат в
+       flashcards/decks/, свои колоды ученика — в его браузере. Фото
+       тетради распознаёт нейросеть (js/photo-cards.js → js/ai.js). -->
   <main data-flashcards>
     <div class="fc-view" data-view="list">
       <nav class="breadcrumb" aria-label="Навигация">
@@ -38,14 +40,21 @@
         конце, а в следующий раз попадутся раньше остальных.
       </p>
 
-      <!-- Заглушка будущей функции: блок неактивный, кнопка выключена. -->
-      <section class="fc-soon" aria-label="Скоро: карточки из фотографии">
-        <span class="fc-soon-icon" aria-hidden="true">📷</span>
-        <div class="fc-soon-body">
-          <p class="fc-soon-title">Сфотографируй страницу тетради — и карточки создадутся сами</p>
-          <span class="fc-soon-badge">В разработке</span>
+      <!-- Карточки по фото тетради: «Сфотографировать» открывает камеру
+           (на компьютере, где камеры в выборе файла нет, кнопка спрятана),
+           «Выбрать фото» — галерею или файл. Дальше — экран #photo. -->
+      <section class="fc-photo-cta" aria-labelledby="fc-photo-cta-title">
+        <span class="fc-photo-icon" aria-hidden="true">📷</span>
+        <div class="fc-photo-body">
+          <h2 class="fc-photo-cta-title" id="fc-photo-cta-title">Карточки по фото тетради</h2>
+          <p>Сфотографируйте страницу, где записаны иероглифы, пиньинь и перевод, — нейросеть распознает слова, а вы проверите их перед сохранением.</p>
         </div>
-        <button class="btn btn-secondary fc-soon-btn" type="button" disabled>Сфотографировать</button>
+        <div class="fc-photo-actions">
+          <button class="btn btn-primary" type="button" data-photo-camera hidden>Сфотографировать</button>
+          <button class="btn btn-secondary" type="button" data-photo-pick>Выбрать фото</button>
+        </div>
+        <input class="fc-file" type="file" accept="image/*" capture="environment" data-photo-input="camera" tabindex="-1" aria-hidden="true">
+        <input class="fc-file" type="file" accept="image/*" data-photo-input="pick" tabindex="-1" aria-hidden="true">
       </section>
 
       <section class="fc-info" aria-labelledby="fc-info-title">
@@ -54,6 +63,12 @@
           <li>Свайп вправо — слово выучено, влево — повторишь ещё раз.</li>
           <li>Ошибся со свайпом — «Предыдущая карточка» вернёт слово и отменит ответ.</li>
         </ul>
+      </section>
+
+      <section class="section" data-own-decks hidden>
+        <h2>Мои колоды</h2>
+        <p class="fc-own-hint">Собраны по фото и хранятся в этом браузере.</p>
+        <div class="card-grid" data-own-grid></div>
       </section>
 
       <section class="section">
@@ -72,6 +87,7 @@
       <a class="fc-back" href="#" data-back="">← Назад</a>
       <h1 class="page-title" data-deck-name></h1>
       <p class="page-subtitle" data-deck-size></p>
+      <p class="fc-saved" data-saved-note role="status" hidden></p>
 
       <div class="fc-deck-summary">
         <div class="fc-deck-counts">
@@ -99,6 +115,14 @@
           <p class="fc-words-hint" data-hide-hint hidden>Нажмите на слово, чтобы увидеть пиньинь и перевод</p>
         </div>
         <ul class="fc-words" data-word-list></ul>
+      </section>
+
+      <section class="fc-own" data-own hidden>
+        <p class="fc-own-text" data-own-text></p>
+        <div class="fc-own-actions">
+          <button class="btn btn-secondary" type="button" data-own-download>Скачать файл колоды</button>
+          <button class="fc-reset" type="button" data-own-delete>Удалить колоду</button>
+        </div>
       </section>
     </div>
 
@@ -202,9 +226,87 @@
         <button class="btn btn-primary" type="button" data-learn="all">Пройти всю колоду заново</button>
       </div>
     </div>
+
+    <!-- Слова с фото тетради: сначала состояние распознавания (загрузка,
+         ошибка, «ничего не найдено»), потом таблица слов — их можно
+         исправить, удалить и дописать — и выбор колоды. Строки таблицы
+         строит js/photo-cards.js. -->
+    <div class="fc-view fc-photo" data-view="photo" hidden>
+      <a class="fc-back" href="#" data-back="">← Назад</a>
+      <h1 class="page-title">Карточки по фото</h1>
+
+      <div class="fc-photo-head">
+        <button class="fc-photo-thumb" type="button" data-photo-zoom aria-label="Показать фото крупнее" aria-pressed="false">
+          <img data-photo-img alt="Фото страницы тетради">
+        </button>
+
+        <div class="fc-photo-state" data-state="loading" aria-live="polite">
+          <p class="fc-photo-msg"><span class="fc-spinner" aria-hidden="true"></span><span data-loading-text>Распознаю слова…</span></p>
+          <p class="fc-photo-hint" data-loading-hint>Обычно это занимает 10–30 секунд.</p>
+          <div class="fc-photo-buttons">
+            <button class="btn btn-secondary" type="button" data-photo-cancel>Отменить</button>
+          </div>
+        </div>
+
+        <div class="fc-photo-state" data-state="error" role="alert" hidden>
+          <p class="fc-photo-msg is-error" data-error-text></p>
+          <div class="fc-photo-buttons">
+            <button class="btn btn-primary" type="button" data-photo-retry>Попробовать ещё раз</button>
+            <button class="btn btn-secondary" type="button" data-photo-pick>Выбрать другое фото</button>
+          </div>
+        </div>
+
+        <div class="fc-photo-state" data-state="empty" hidden>
+          <p class="fc-photo-msg">На фото не нашлось китайских слов.</p>
+          <ul class="fc-photo-tips">
+            <li>Снимайте страницу целиком и ровно, при хорошем свете.</li>
+            <li>Иероглифы должны быть чёткими — без бликов и тени от телефона.</li>
+          </ul>
+          <div class="fc-photo-buttons">
+            <button class="btn btn-primary" type="button" data-photo-pick>Выбрать другое фото</button>
+            <button class="btn btn-secondary" type="button" data-photo-manual>Ввести слова вручную</button>
+          </div>
+        </div>
+
+        <div class="fc-photo-state" data-state="review" hidden>
+          <p class="fc-photo-msg" data-review-text></p>
+          <p class="fc-photo-hint" data-ai-legend hidden>
+            <span class="fc-ai-badge">ИИ</span> — этого не было на фото, нейросеть дописала сама.
+            Проверьте такие места.
+          </p>
+        </div>
+      </div>
+
+      <section class="fc-edit" data-edit hidden aria-label="Слова с фото">
+        <div class="fc-edit-head" aria-hidden="true">
+          <span>Иероглифы</span><span>Пиньинь</span><span>Перевод</span>
+        </div>
+        <ol class="fc-edit-list" data-edit-list></ol>
+        <button class="btn btn-secondary fc-edit-add" type="button" data-add-row>+ Добавить слово</button>
+
+        <fieldset class="fc-save">
+          <legend>Куда сохранить</legend>
+          <div class="fc-save-row">
+            <label class="fc-save-option"><input type="radio" name="fc-target" value="new" checked data-target> Новая колода</label>
+            <input class="fc-input" type="text" maxlength="60" data-new-title aria-label="Название новой колоды">
+          </div>
+          <div class="fc-save-row">
+            <label class="fc-save-option"><input type="radio" name="fc-target" value="existing" data-target> Добавить в колоду</label>
+            <select class="fc-input" data-existing aria-label="Колода, куда добавить слова" disabled></select>
+          </div>
+        </fieldset>
+        <p class="fc-save-error" data-save-error role="alert" hidden></p>
+        <div class="fc-photo-buttons">
+          <button class="btn btn-primary fc-save-btn" type="button" data-save>Сохранить</button>
+          <button class="btn btn-secondary" type="button" data-photo-pick>Другое фото</button>
+        </div>
+      </section>
+    </div>
   </main>
   <script src="decks/index.js"></script>
   <script src="../js/flashcards.js"></script>
+  <script src="../js/ai.js"></script>
+  <script src="../js/photo-cards.js"></script>
 
   <footer class="site-footer">
     <div class="footer-inner">

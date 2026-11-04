@@ -39,3 +39,9 @@ library/**
 # Обложки материалов (собирает scripts/make_previews.py) — только локально.
 # Без них страницы показывают плашку с расширением файла (js/main.js).
 images/previews/
+
+# Cloudflare Worker (ai-worker/): локальные секреты wrangler и его служебные папки.
+.dev.vars
+.dev.vars.*
+.wrangler/
+node_modules/

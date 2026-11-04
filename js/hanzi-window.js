@@ -16,6 +16,11 @@
    раскрашены каждая своим цветом. «Написать самому» — библиотека Hanzi
    Writer (js/vendor/), она грузится при первом нажатии.
 
+   «Объяснить» под словом — объяснение от нейросети: значение, примеры,
+   отличие от похожих слов (window.AI.explainWord, js/ai.js — его надо
+   подключить до этого файла, иначе кнопки нет). opts.explain: true — окно
+   откроется сразу с объяснением.
+
    Открытое окно добавляет запись в историю (адрес тот же), поэтому кнопка
    «Назад» на телефоне закрывает окно, а не уводит со страницы. */
 (function () {
@@ -76,7 +81,8 @@
     pause: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>',
     steps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
     pen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
-    say: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>'
+    say: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 3l1.9 5.6L18.5 10.5l-5.6 1.9L11 18l-1.9-5.6L3.5 10.5l5.6-1.9z"/><path d="M18.5 14.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z"/></svg>'
   };
 
   function plural(n, forms) {
@@ -523,8 +529,13 @@
           '<p class="hz-word" id="hz-word" lang="zh-CN"></p>' +
           '<p class="hz-pinyin"></p>' +
           '<p class="hz-gloss"></p>' +
-          '<button class="hz-say" type="button" aria-label="Озвучить" title="Озвучить">' + ICONS.say + '</button>' +
+          '<div class="hz-actions">' +
+            '<button class="hz-say" type="button" aria-label="Озвучить" title="Озвучить">' + ICONS.say + '</button>' +
+            '<button class="hz-explain" type="button" data-explain>' + ICONS.spark + 'Объяснить</button>' +
+          '</div>' +
         '</div>' +
+        // Объяснение слова нейросетью (js/ai.js) — по кнопке «Объяснить».
+        '<section class="hz-ai" aria-live="polite" hidden></section>' +
         '<h2 class="hz-section"></h2>' +
         '<div class="hz-cards"></div>' +
         '<p class="hz-note">Состав, ключи и порядок черт — <a href="https://github.com/skishore/makemeahanzi" target="_blank" rel="noopener">Make Me a Hanzi</a>, значения — 大БКРС</p>' +
@@ -536,7 +547,9 @@
       pinyin: d.querySelector(".hz-pinyin"),
       gloss: d.querySelector(".hz-gloss"),
       say: d.querySelector(".hz-say"),
-      section: d.querySelector(".hz-section"),
+      explain: d.querySelector(".hz-explain"),
+      ai: d.querySelector(".hz-ai"),
+      section: d.querySelector(".hz-section"),     // в .hz-ai пока пусто — это заголовок иероглифов
       cards: d.querySelector(".hz-cards")
     };
     ui.say.hidden = !canSpeak;
@@ -578,6 +591,10 @@
     if (!state) return;
     if (e.target.closest(".hz-say")) {
       speak(state.word);
+      return;
+    }
+    if (e.target.closest("[data-explain]")) {
+      explain();
       return;
     }
     var search = e.target.closest("[data-search]");
@@ -684,6 +701,16 @@
     ui.gloss.hidden = !ui.gloss.textContent;
     ui.section.textContent = chars.length > 1 ? "Иероглифы" : "Иероглиф";
 
+    // Для «Объяснить»: пиньинь и значение из словаря подсказывают нейросети,
+    // какое из значений слова объяснять.
+    state.hint = {
+      pinyin: entry.length ? plainPinyin(entry[1]) : opts.pinyin || "",
+      gloss: extra.m ? shortGloss(extra.m) : entry.length ? shortGloss(entry[2]) : opts.gloss || ""
+    };
+    ui.explain.hidden = !window.AI;
+    ui.ai.hidden = true;
+    ui.ai.textContent = "";
+
     ui.cards.textContent = "";
     chars.forEach(function (ch, i) {
       var card = { ch: ch, index: i, data: null, board: null, panel: null, token: 0 };
@@ -706,6 +733,7 @@
         pushed = true;
       } catch (e) {}
     }
+    if (opts.explain) explain();
   }
 
   function requestClose() {
@@ -762,6 +790,66 @@
         });
     }
     return lookups[word];
+  }
+
+  // ------------------------------------------------------- объяснение слова
+  // «Объяснить»: значение, примеры и похожие слова от нейросети
+  // (window.AI.explainWord из js/ai.js). Текст ответа экранирует js/ai.js;
+  // похожее слово — кнопка поиска в словаре.
+  function attr(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
+
+  function explain() {
+    if (!state || !window.AI) return;
+    var current = state;
+    ui.explain.hidden = true;
+    ui.ai.hidden = false;
+    ui.ai.innerHTML = '<h2 class="hz-section">Объяснение</h2>' +
+      '<p class="hz-ai-wait"><span class="ai-dots" aria-hidden="true"><i></i><i></i><i></i></span>' +
+      "Нейросеть готовит объяснение…</p>";
+    window.AI.explainWord(current.word, current.hint).then(function (r) {
+      if (state === current) renderExplain(r);
+    }, function (err) {
+      if (state !== current) return;
+      ui.ai.innerHTML = '<h2 class="hz-section">Объяснение</h2>' +
+        '<div class="hz-ai-card is-error"><p></p>' +
+        '<button class="hz-ai-retry" type="button" data-explain>Повторить</button></div>';
+      ui.ai.querySelector("p").textContent = err.message;
+    });
+  }
+
+  function renderExplain(r) {
+    var AI = window.AI;
+    var html = '<h2 class="hz-section">Объяснение</h2><div class="hz-ai-card">';
+    if (r.pinyin || r.partOfSpeech) {
+      html += '<p class="hz-ai-head">' + (r.pinyin ? '<span class="hz-ai-py">' + AI.text(r.pinyin) + "</span>" : "") +
+        (r.partOfSpeech ? '<span class="hz-ai-pos">' + AI.text(r.partOfSpeech) + "</span>" : "") + "</p>";
+    }
+    html += '<p class="hz-ai-meaning">' + AI.inline(r.meaning) + "</p>";
+    if (r.examples && r.examples.length) {
+      html += '<h3 class="hz-ai-sub">Примеры</h3><ul class="hz-ai-examples">';
+      r.examples.forEach(function (e) {
+        html += '<li><span class="hz-ai-zh">' + AI.text(e.zh) + "</span>" +
+          (e.pinyin ? '<span class="hz-ai-expy">' + AI.text(e.pinyin) + "</span>" : "") +
+          (e.ru ? '<span class="hz-ai-ru">' + AI.inline(e.ru) + "</span>" : "") + "</li>";
+      });
+      html += "</ul>";
+    }
+    if (r.synonyms && r.synonyms.length) {
+      html += '<h3 class="hz-ai-sub">Чем отличается от похожих слов</h3><ul class="hz-ai-syn">';
+      r.synonyms.forEach(function (s) {
+        var word = state.opts.search
+          ? '<button class="hz-ai-word" type="button" data-search="' + attr(s.word) + '" title="Найти в словаре">' + AI.text(s.word) + "</button>"
+          : '<b class="hz-ai-word">' + AI.text(s.word) + "</b>";
+        html += "<li>" + word + (s.pinyin ? ' <span class="hz-ai-expy">' + AI.text(s.pinyin) + "</span>" : "") +
+          " — " + AI.inline(s.difference) + "</li>";
+      });
+      html += "</ul>";
+    }
+    if (r.note) html += '<p class="hz-ai-note">' + AI.inline(r.note) + "</p>";
+    html += '<p class="hz-ai-foot">Объяснение составила нейросеть — она может ошибаться.</p></div>';
+    ui.ai.innerHTML = html;
   }
 
   // ------------------------------------------------------- карточка иероглифа

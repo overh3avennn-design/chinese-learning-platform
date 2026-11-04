@@ -1,0 +1,43 @@
+# Cloudflare Worker «chinese-ai» — прослойка между сайтом и нейросетью Qwen
+# (через агрегатор Polza.ai). Как развернуть, где смотреть логи и как
+# добавить задачу — README.md в этой папке.
+name = "chinese-ai"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# Логи запросов и ошибок хранятся в Cloudflare: панель → Workers & Pages →
+# chinese-ai → Logs. В реальном времени — npx wrangler tail (из этой папки).
+[observability]
+enabled = true
+
+# Обычные настройки, не секреты: видны в панели Cloudflare и в git.
+# Поменяли — снова npx wrangler deploy.
+#
+# QWEN_MODEL — модель для чата и «Объяснить», QWEN_VISION_MODEL — для фото
+# тетради (должна понимать картинки). Qwen3.8 Flash умеет и то и другое.
+# Модель должна быть разрешена ключу Polza (белый список моделей ключа).
+#
+# QWEN_REASONING и QWEN_VISION_REASONING — «рассуждения» модели перед
+# ответом: none — выключены (быстрее и в разы дешевле), low / medium /
+# high — включены. Пусто — параметр не передаётся (для моделей без
+# рассуждений, например qwen/qwen3-vl-8b-instruct).
+#
+# ALLOWED_ORIGINS — с каких адресов сайта принимать запросы, через запятую
+# (только схема и домен, без пути).
+#
+# Ключ API сюда НЕ пишется — только секретом:
+#   npx wrangler secret put QWEN_API_KEY
+[vars]
+QWEN_BASE_URL = "https://polza.ai/api/v1"
+QWEN_MODEL = "qwen/qwen3.8-flash"
+QWEN_VISION_MODEL = "qwen/qwen3.8-flash"
+QWEN_REASONING = "none"
+QWEN_VISION_REASONING = "none"
+ALLOWED_ORIGINS = "https://overh3avennn-design.github.io,http://localhost:8000,http://127.0.0.1:8000"
+
+# Не больше 20 запросов в минуту с одного IP-адреса — чтобы одна вкладка
+# или чужой скрипт не потратили весь баланс Polza.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }

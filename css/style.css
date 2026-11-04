@@ -1430,49 +1430,76 @@ body.home .hero-video + main .btn-primary:hover {
   margin-top: 0.5rem;
 }
 
-/* Заглушка будущей функции: пунктир, как у пустых разделов библиотеки,
-   приглушённый текст и выключенная кнопка. */
-.fc-soon {
+/* «Карточки по фото тетради» на списке колод: значок, текст и кнопки
+   камеры и выбора фото (js/photo-cards.js). Рамка — акцентом, как у
+   действия, которое можно сделать прямо сейчас. */
+.fc-photo-cta {
+  position: relative;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.75rem 1rem;
   margin: 1.5rem 0 1rem;
   padding: 1rem 1.25rem;
-  background: rgba(16, 29, 49, 0.55);
-  border: 1px dashed rgba(168, 184, 209, 0.35);
+  background: rgba(16, 29, 49, 0.72);
+  border: 1px solid rgba(246, 82, 9, 0.45);
   border-radius: var(--radius);
 }
 
-.fc-soon-icon {
+.fc-photo-icon {
   flex: none;
   font-size: 1.75rem;
   line-height: 1;
-  filter: grayscale(0.35);
-  opacity: 0.8;
 }
 
-.fc-soon-body {
-  flex: 1 1 14rem;
+.fc-photo-body {
+  flex: 1 1 16rem;
   min-width: 0;
 }
 
-.fc-soon-title {
-  margin: 0 0 0.45rem;
-  font-weight: 600;
+.fc-photo-cta-title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.fc-photo-body p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
   color: var(--color-text-muted);
 }
 
-.fc-soon-badge {
-  display: inline-block;
-  padding: 0.15rem 0.6rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--color-accent);
-  background: rgba(246, 82, 9, 0.1);
-  border: 1px solid rgba(246, 82, 9, 0.45);
-  border-radius: 999px;
+.fc-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.fc-photo-actions .btn,
+.fc-photo-buttons .btn,
+.fc-own-actions .btn,
+.fc-edit-add {
+  font-family: inherit;
+}
+
+.fc-photo-actions .btn[hidden] {
+  display: none;
+}
+
+/* Поля выбора файла не видны: их открывают кнопки. Не display: none —
+   так надёжнее открываются из кода в старых Safari. */
+.fc-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fc-own-hint {
+  margin: -0.5rem 0 1rem;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
 }
 
 /* «Как работает прогресс»: короткая справка под заглушкой — объясняет,
@@ -2306,22 +2333,769 @@ body.home .hero-video + main .btn-primary:hover {
   outline-offset: 2px;
 }
 
-/* Раздел «ИИ-помощник» (assistant/index.html) — пока заглушка: заголовок,
-   строка о том, что раздел в разработке, и кнопка в библиотеку, всё по
-   центру. Блок вытянут почти на весь экран, чтобы текст стоял посередине,
-   а футер — у нижнего края окна; 22rem — шапка, поля main и футер. */
-.assistant-soon {
+/* Экран «Карточки по фото» (#photo, js/photo-cards.js): слева миниатюра
+   фото — нажатие увеличивает её, чтобы сверять слова, — справа состояние
+   распознавания; ниже таблица слов и выбор колоды. */
+.fc-photo-head {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: max(16rem, calc(100vh - 22rem));
-  min-height: max(16rem, calc(100svh - 22rem));
-  text-align: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem 1.25rem;
+  margin: 1rem 0 1.5rem;
 }
 
-.assistant-soon .page-subtitle {
-  max-width: 34rem;
+.fc-photo-thumb {
+  flex: none;
+  width: 112px;
+  padding: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: zoom-in;
+}
+
+.fc-photo-thumb img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fc-photo-thumb:not(.is-zoomed) img {
+  max-height: 150px;
+  object-fit: cover;
+}
+
+.fc-photo-thumb.is-zoomed {
+  width: 100%;
+  cursor: zoom-out;
+}
+
+.fc-photo-state {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.fc-photo-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.fc-photo-msg.is-error {
+  color: var(--color-accent-soft);
+}
+
+.fc-photo-hint {
+  margin: 0 0 0.9rem;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.fc-photo-tips {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.fc-photo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.fc-photo-buttons .btn[hidden],
+.fc-own-actions .btn[hidden] {
+  display: none;
+}
+
+.fc-spinner {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(246, 82, 9, 0.25);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: fc-spin 0.8s linear infinite;
+}
+
+@keyframes fc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Пометка «ИИ»: этого не было на фото, нейросеть дописала сама. */
+.fc-ai-badge {
+  display: inline-block;
+  padding: 0 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: var(--color-accent-soft);
+  background: rgba(246, 82, 9, 0.12);
+  border: 1px solid rgba(246, 82, 9, 0.5);
+  border-radius: 4px;
+  vertical-align: 0.1em;
+}
+
+/* Таблица слов: иероглифы | пиньинь | перевод | удалить. На телефоне —
+   иероглифы и пиньинь в строку, перевод под ними во всю ширину. */
+.fc-edit-head,
+.fc-edit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.6fr) 2.25rem;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.fc-edit-head {
+  padding: 0 0.6rem 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.fc-edit-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.fc-edit-row {
+  padding: 0.5rem 0.6rem;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.fc-edit-row.is-invalid {
+  border-color: var(--color-accent);
+}
+
+.fc-cell {
+  position: relative;
+  min-width: 0;
+}
+
+.fc-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem 0.6rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-text);
+  color-scheme: dark;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.fc-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.fc-input:disabled {
+  opacity: 0.45;
+}
+
+.fc-input::placeholder {
+  color: rgba(167, 179, 196, 0.45);
+}
+
+.fc-cell-hanzi .fc-input {
+  font-family: var(--font-chinese);
+  font-size: 1.15rem;
+  color: var(--color-chinese);
+}
+
+.fc-cell.is-ai .fc-input {
+  padding-right: 2.4rem;
+  border-style: dashed;
+  border-color: rgba(246, 82, 9, 0.65);
+}
+
+.fc-cell .fc-ai-badge {
+  position: absolute;
+  top: 50%;
+  right: 0.45rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.fc-edit-row.is-invalid .fc-cell-hanzi .fc-input {
+  background: rgba(246, 82, 9, 0.12);
+  border-color: var(--color-accent);
+}
+
+.fc-edit-del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.fc-edit-del:hover {
+  color: var(--color-accent-soft);
+  border-color: rgba(246, 82, 9, 0.45);
+}
+
+.fc-edit-add {
+  margin-bottom: 1.5rem;
+}
+
+.fc-save {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.fc-save legend {
+  padding: 0 0.4rem;
+  font-weight: 600;
+}
+
+.fc-save-row {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 0.4rem 1rem;
+  align-items: center;
+}
+
+.fc-save-row + .fc-save-row {
+  margin-top: 0.6rem;
+}
+
+.fc-save-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.fc-save-option input {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.fc-save-error {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.92rem;
+  color: var(--color-accent-soft);
+  background: rgba(246, 82, 9, 0.1);
+  border: 1px solid rgba(246, 82, 9, 0.45);
+  border-radius: var(--radius);
+}
+
+/* После сохранения слов с фото — строка «Сохранено: …» на странице колоды. */
+.fc-saved {
+  margin: -1.25rem 0 1.5rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.95rem;
+  color: var(--color-know-soft);
+  background: rgba(60, 184, 120, 0.1);
+  border: 1px solid rgba(60, 184, 120, 0.45);
+  border-radius: var(--radius);
+}
+
+/* Своя колода: где хранится, «Скачать файл колоды», «Удалить колоду». */
+.fc-own {
+  margin-top: 2rem;
+  padding: 1rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px dashed rgba(168, 184, 209, 0.35);
+  border-radius: var(--radius);
+}
+
+.fc-own-text {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.fc-own-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .fc-photo-thumb {
+    width: 84px;
+  }
+
+  .fc-edit-head {
+    display: none;
+  }
+
+  .fc-edit-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 2.25rem;
+    grid-template-areas:
+      "hanzi pinyin del"
+      "tr tr tr";
+  }
+
+  .fc-cell-hanzi {
+    grid-area: hanzi;
+  }
+
+  .fc-cell-pinyin {
+    grid-area: pinyin;
+  }
+
+  .fc-cell-translation {
+    grid-area: tr;
+  }
+
+  .fc-edit-del {
+    grid-area: del;
+  }
+
+  .fc-save-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Раздел «ИИ-помощник» (assistant/index.html, js/assistant.js). Вопросы
+   ученика — пузыри справа, ответы — карточки во всю ширину с разметкой
+   (markdown → HTML в js/ai.js). Поле ввода прилипает к низу окна. */
+.ai-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0 1rem;
+}
+
+.ai-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.2rem 0 1.25rem;
+  font-family: inherit;
+}
+
+.ai-new[hidden] {
+  display: none;
+}
+
+.ai-intro {
+  margin-bottom: 1.25rem;
+  padding: 1.1rem 1.25rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.ai-intro-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+}
+
+.ai-intro p {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+
+.ai-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ai-prompt {
+  padding: 0.45rem 0.9rem;
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  color: var(--color-text);
+  background: rgba(238, 241, 246, 0.06);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.ai-prompt:hover {
+  background: rgba(246, 82, 9, 0.1);
+  border-color: rgba(246, 82, 9, 0.6);
+}
+
+.ai-log {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* Ответ прокручивается к началу — под закреплённую шапку. */
+.ai-msg {
+  scroll-margin-top: 84px;
+}
+
+.ai-msg.is-user {
+  align-self: flex-end;
+  max-width: min(85%, 36rem);
+  padding: 0.6rem 1rem;
+  background: var(--color-primary);
+  border: 1px solid rgba(168, 184, 209, 0.22);
+  border-radius: 16px 16px 4px 16px;
+}
+
+.ai-user-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ai-msg.is-assistant {
+  align-self: stretch;
+  padding: 1rem 1.25rem;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: var(--shadow);
+}
+
+.ai-msg.is-waiting {
+  align-self: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.ai-msg.is-error {
+  align-self: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(246, 82, 9, 0.08);
+  border: 1px solid rgba(246, 82, 9, 0.45);
+  border-radius: 16px;
+}
+
+.ai-msg.is-error p {
+  margin: 0;
+}
+
+.ai-retry {
+  padding: 0.4rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+}
+
+.ai-link {
+  padding: 0;
+  font: inherit;
+  color: var(--color-accent-soft);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.ai-truncated {
+  margin: 0.85rem 0 0;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+/* Три точки «думаю»: здесь и в объяснении слова (окно слова). */
+.ai-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.ai-dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  animation: ai-dot 1.2s ease-in-out infinite;
+}
+
+.ai-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ai-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes ai-dot {
+  0%, 80%, 100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+/* Ответ нейросети: заголовки, списки, таблицы, цитаты. Китайский текст
+   (span.zh из js/ai.js) — шрифтом и цветом иероглифов. */
+.ai-md {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.ai-md > :first-child {
+  margin-top: 0;
+}
+
+.ai-md > :last-child {
+  margin-bottom: 0;
+}
+
+.ai-md p,
+.ai-md ul,
+.ai-md ol,
+.ai-md blockquote,
+.ai-md pre,
+.ai-md .ai-table {
+  margin: 0 0 0.85rem;
+}
+
+.ai-md h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.1rem;
+  line-height: 1.35;
+}
+
+.ai-md h4 {
+  margin: 1rem 0 0.4rem;
+  font-size: 1rem;
+}
+
+.ai-md ul,
+.ai-md ol {
+  padding-left: 1.4rem;
+}
+
+.ai-md li + li {
+  margin-top: 0.3rem;
+}
+
+.ai-md li > ul,
+.ai-md li > ol {
+  margin: 0.3rem 0 0;
+}
+
+.ai-md strong {
+  color: #fff;
+}
+
+.ai-md a {
+  text-decoration: underline;
+}
+
+.ai-md code {
+  padding: 0.1rem 0.35rem;
+  font-size: 0.9em;
+  background: rgba(238, 241, 246, 0.08);
+  border-radius: 4px;
+}
+
+.ai-md pre {
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius);
+}
+
+.ai-md pre code {
+  padding: 0;
+  background: none;
+}
+
+.ai-md blockquote {
+  padding: 0.2rem 0 0.2rem 1rem;
+  color: var(--color-text-muted);
+  border-left: 3px solid rgba(246, 82, 9, 0.6);
+}
+
+.ai-md hr {
+  margin: 1rem 0;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.ai-table {
+  overflow-x: auto;
+}
+
+.ai-md table {
+  min-width: 100%;
+  font-size: 0.92rem;
+  border-collapse: collapse;
+}
+
+/* В ячейках слова переносятся только целиком: узкой таблице лучше
+   прокрутиться вбок (.ai-table), чем рвать «завершен-о». */
+.ai-md th,
+.ai-md td {
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: normal;
+  border: 1px solid var(--color-border);
+}
+
+.ai-md th {
+  font-weight: 600;
+  background: rgba(238, 241, 246, 0.05);
+}
+
+.ai-md .zh,
+.ai-user-text .zh,
+.hz-ai .zh {
+  font-family: var(--font-chinese);
+  color: var(--color-chinese);
+}
+
+.hz-ai-zh .zh,
+.hz-ai-word .zh {
+  color: inherit;
+}
+
+/* Поле ввода прилипает к низу окна; плотная подложка с мягким верхним краем
+   отделяет его от ответов, которые прокручиваются под ним. Предупреждение
+   «Нейросеть может ошибаться» — под полем и не прилипает: на телефоне
+   каждая строка экрана на счету. */
+.ai-form {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin-top: 1rem;
+  padding: 1rem 0 calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(8, 13, 23, 0) 0%, rgba(8, 13, 23, 0.97) 1rem);
+}
+
+/* На телефоне внизу окна — нижняя панель разделов (components/site-header):
+   поле прилипает над ней, а полоску «Домой» iPhone закрывает сама панель. */
+@media (max-width: 899.98px) {
+  .ai-form {
+    bottom: var(--site-tabbar-space, 0px);
+    padding-bottom: 0.75rem;
+  }
+}
+
+.ai-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.ai-form-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.35rem 0.35rem 0.35rem 0.5rem;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.ai-form-row:focus-within {
+  border-color: rgba(246, 82, 9, 0.6);
+}
+
+.ai-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  max-height: 200px;
+  padding: 0.6rem 0.4rem;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  outline: none;
+  resize: none;
+}
+
+.ai-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.ai-send {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: var(--color-accent);
+  border-radius: 10px;
+}
+
+.ai-send:hover {
+  background: var(--color-accent-soft);
+}
+
+.ai-note {
+  margin: 0;
+  font-size: 0.78rem;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .ai-msg.is-user {
+    max-width: 90%;
+  }
+
+  .ai-msg.is-assistant {
+    padding: 0.9rem 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-spinner {
+    animation-duration: 2.4s;
+  }
+
+  .ai-dots i {
+    animation: none;
+    opacity: 0.7;
+  }
 }
 
 /* Раздел «Словарь» (dictionary/index.html, js/dictionary.js): строка
@@ -2640,6 +3414,18 @@ body.home .hero-video + main .btn-primary:hover {
   font-size: 0.95rem;
 }
 
+/* «ИИ Объяснить» стоит перед «字 Разбор»; вторая кнопка прижата к первой,
+   а не делит с ней свободное место. */
+.dict-card-btn + .dict-card-btn {
+  margin-left: -0.4rem;
+}
+
+.dict-explain-btn .ai {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 @media (max-width: 640px) {
   .dict-card-btn .txt {
     display: none;
@@ -2834,6 +3620,192 @@ html.hz-lock {
 .hz-say svg {
   width: 22px;
   height: 22px;
+}
+
+/* Под словом: озвучка и «Объяснить» — объяснение от нейросети. */
+.hz-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.hz-actions .hz-say {
+  margin-top: 0;
+}
+
+.hz-explain {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 48px;
+  padding: 0 1.15rem;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-accent-soft);
+  background: rgba(246, 82, 9, 0.1);
+  border: 1px solid rgba(246, 82, 9, 0.45);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.hz-explain:hover {
+  background: rgba(246, 82, 9, 0.2);
+}
+
+.hz-explain:active {
+  transform: scale(0.97);
+}
+
+.hz-explain[hidden] {
+  display: none;
+}
+
+.hz-explain svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Объяснение слова: значение, примеры (иероглифы, пиньинь, перевод) и
+   отличие от похожих слов. Похожее слово — ссылка на поиск в словаре. */
+.hz-ai {
+  margin: 0 0 1.5rem;
+}
+
+.hz-ai-card {
+  padding: 1rem 1.1rem;
+  line-height: 1.55;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(246, 82, 9, 0.35);
+  border-radius: 12px;
+}
+
+.hz-ai-wait {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.hz-ai-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.75rem;
+  margin: 0 0 0.35rem;
+}
+
+.hz-ai-py {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.hz-ai-pos {
+  padding: 0.05rem 0.55rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.hz-ai-meaning {
+  margin: 0;
+}
+
+.hz-ai-sub {
+  margin: 1rem 0 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.hz-ai-examples,
+.hz-ai-syn {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hz-ai-examples li {
+  display: flex;
+  flex-direction: column;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(246, 82, 9, 0.45);
+}
+
+.hz-ai-zh {
+  font-family: var(--font-chinese);
+  font-size: 1.1rem;
+  color: var(--color-chinese);
+}
+
+.hz-ai-expy {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.hz-ai-ru {
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+}
+
+.hz-ai-word {
+  padding: 0;
+  font: inherit;
+  font-family: var(--font-chinese);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-chinese);
+  background: none;
+  border: 0;
+}
+
+button.hz-ai-word {
+  border-bottom: 1px dashed rgba(242, 217, 168, 0.5);
+  cursor: pointer;
+}
+
+button.hz-ai-word:hover {
+  color: #fff;
+  border-bottom-color: currentColor;
+}
+
+.hz-ai-note {
+  margin: 1rem 0 0;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.92rem;
+  background: rgba(238, 241, 246, 0.05);
+  border-radius: 8px;
+}
+
+.hz-ai-foot {
+  margin: 0.9rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.hz-ai-card.is-error p {
+  margin: 0 0 0.6rem;
+  color: var(--color-accent-soft);
+}
+
+.hz-ai-retry {
+  padding: 0.35rem 0.9rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
 }
 
 .hz-section {

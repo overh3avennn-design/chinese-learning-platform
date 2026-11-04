@@ -18,12 +18,58 @@
   <script src="../components/site-header/header.js"></script>
   <div class="bg-fixed" aria-hidden="true"></div>
 
-  <main>
-    <div class="assistant-soon">
-      <h1 class="page-title">ИИ-помощник</h1>
-      <p class="page-subtitle">Этот раздел ещё в разработке. Скоро здесь появится помощник, которому можно будет задать вопрос по китайскому.</p>
-      <a class="btn btn-primary" href="../library/index.html">Пока открыть библиотеку</a>
+  <!-- Раздел «ИИ-помощник»: чат с нейросетью Qwen о китайском — грамматика,
+       слова, иероглифы, культура. Запросы идут через js/ai.js в воркер
+       chinese-ai (папка ai-worker/), там же системный промпт. Диалог живёт
+       в sessionStorage, пока открыта вкладка (js/assistant.js). -->
+  <main class="ai-page" data-assistant>
+    <nav class="breadcrumb" aria-label="Навигация">
+      <a href="../index.html">Главная</a> / ИИ-помощник
+    </nav>
+    <div class="ai-head">
+      <div>
+        <h1 class="page-title">ИИ-помощник</h1>
+        <p class="page-subtitle">Объясняет грамматику, слова, иероглифы и культуру Китая — по-русски и с примерами</p>
+      </div>
+      <button class="btn btn-secondary ai-new" type="button" data-new-chat hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Новый диалог
+      </button>
     </div>
+
+    <section class="ai-intro" data-intro aria-labelledby="ai-intro-title">
+      <h2 class="ai-intro-title" id="ai-intro-title">О чём спросить</h2>
+      <p>
+        Задайте вопрос своими словами: как работает грамматика, чем похожие
+        слова отличаются друг от друга, из чего состоит иероглиф, что
+        празднуют в Китае. Помощник ответит с примерами — иероглифы, пиньинь
+        и перевод.
+      </p>
+      <div class="ai-prompts" data-prompts>
+        <button class="ai-prompt" type="button">Объясни разницу 了 и 过</button>
+        <button class="ai-prompt" type="button">Когда говорят 二, а когда 两?</button>
+        <button class="ai-prompt" type="button">Чем отличаются 的, 地 и 得?</button>
+        <button class="ai-prompt" type="button">Как сравнивать с помощью 比?</button>
+        <button class="ai-prompt" type="button">Как задать вопрос без 吗?</button>
+        <button class="ai-prompt" type="button">Из каких частей состоит иероглиф 好?</button>
+        <button class="ai-prompt" type="button">Как запомнить четыре тона?</button>
+        <button class="ai-prompt" type="button">Как в Китае празднуют Новый год?</button>
+      </div>
+    </section>
+
+    <div class="ai-log" data-log aria-live="polite"></div>
+
+    <form class="ai-form" data-form>
+      <label class="ai-label" for="ai-input">Ваш вопрос</label>
+      <div class="ai-form-row">
+        <textarea class="ai-input" id="ai-input" data-input rows="1" maxlength="1500"
+                  placeholder="Спросите о китайском…" enterkeyhint="send"></textarea>
+        <button class="btn btn-primary ai-send" type="submit" data-send aria-label="Отправить" title="Отправить">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+        </button>
+      </div>
+    </form>
+    <p class="ai-note">Нейросеть может ошибаться — сверяйтесь с учебником и <a href="../dictionary/index.html">словарём</a>. Диалог хранится только в этой вкладке.</p>
   </main>
 
   <footer class="site-footer">
@@ -37,9 +83,12 @@
         <a href="../flashcards/index.html">Карточки</a>
         <a href="../support/contacts.html">Контакты</a>
       </div>
+      <p class="footer-source">Ответы: нейросеть Qwen (Alibaba) через Polza.ai</p>
       <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
     </div>
   </footer>
+  <script src="../js/ai.js"></script>
+  <script src="../js/assistant.js"></script>
   <script src="../js/main.js"></script>
 </body>
 </html>

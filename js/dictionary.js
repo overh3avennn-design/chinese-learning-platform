@@ -536,9 +536,13 @@
       li.className += " has-card";
       li.dictEntry = e;
     }
+    // «ИИ Объяснить» — то же окно, но сразу с объяснением слова от нейросети
+    // (js/ai.js; если он не подключён, кнопки нет).
     var html = '<div class="dict-head"><span class="dict-hanzi" lang="zh-CN">' + esc(e[0]) + "</span>" +
       (e[1] ? '<span class="dict-pinyin' + (extra.a ? ' is-auto" title="' + AUTO_PINYIN : "") + '">' + markup(e[1]) +
         (extra.a ? '<span class="dict-auto">авто</span>' : "") + "</span>" : "") +
+      (card && window.AI ? '<button class="dict-card-btn dict-explain-btn" type="button" aria-label="Объяснить слово: ' + esc(e[0]) +
+        '"><span class="ai" aria-hidden="true">ИИ</span><span class="txt">Объяснить</span></button>' : "") +
       (card ? '<button class="dict-card-btn" type="button" aria-label="Разбор иероглифов: ' + esc(e[0]) +
         '"><span class="zh" lang="zh-CN">字</span><span class="txt">Разбор</span></button>' : "") + "</div>" +
       '<div class="dict-text' + (foreign ? " is-foreign" : "") + '">' + lead +
@@ -720,7 +724,8 @@
       entry: item.dictEntry,
       lookup: lookupWord,
       search: searchFor,
-      returnFocus: item.querySelector(".dict-card-btn")
+      explain: !!(cardBtn && cardBtn.classList.contains("dict-explain-btn")),
+      returnFocus: cardBtn || item.querySelector(".dict-card-btn:not(.dict-explain-btn)")
     });
   });
 

@@ -8,6 +8,12 @@
    прямо с диска (file://), а там fetch к соседним файлам браузер
    запрещает. Тег <script> работает и с диска, и на сайте.
 
+   Свои колоды — те, что ученик собрал из фото тетради (js/photo-cards.js),
+   и слова, которые он добавил с фото в готовые колоды. Лежат в localStorage
+   этого браузера (ключ flashcards-user) в том же формате, что и файлы, и
+   проходят ту же проверку cleanDeck — поэтому свайпы и прогресс работают
+   с ними так же. Свою колоду можно скачать файлом для decks/.
+
    Прогресс — три статуса слова: новое, изучается, выучено. «Знаю» —
    слово выучено, «Не знаю» — изучается и уходит в конец текущей сессии,
    пока его не узнают. «Учить карточки» берёт только невыученные слова,
@@ -31,7 +37,8 @@
     deck: $('[data-view="deck"]'),
     study: $('[data-view="study"]'),
     result: $('[data-view="result"]'),
-    done: $('[data-view="done"]')
+    done: $('[data-view="done"]'),
+    photo: $('[data-view="photo"]')
   };
 
   var reduceMotion = window.matchMedia &&
@@ -171,13 +178,10 @@
   var deckById = {};
   var errors = [];
 
-  function cleanDeck(raw, file) {
-    if (!raw || typeof raw !== "object") return null;
-    var id = typeof raw.id === "string" && raw.id.trim() ? raw.id.trim() : file.replace(/\.js$/, "");
-    var list = Array.isArray(raw.words) ? raw.words : [];
+  function cleanWords(list) {
     var clean = [];
     var seen = {};
-    list.forEach(function (w) {
+    (Array.isArray(list) ? list : []).forEach(function (w) {
       if (!w || typeof w.hanzi !== "string" || !w.hanzi.trim()) return;
       var word = {
         hanzi: w.hanzi.trim(),
@@ -188,10 +192,16 @@
       seen[wordKey(word)] = true;
       clean.push(word);
     });
+    return clean;
+  }
+
+  function cleanDeck(raw, file) {
+    if (!raw || typeof raw !== "object") return null;
+    var id = typeof raw.id === "string" && raw.id.trim() ? raw.id.trim() : file.replace(/\.js$/, "");
     return {
       id: id,
       title: typeof raw.title === "string" && raw.title.trim() ? raw.title.trim() : id,
-      words: clean,
+      words: cleanWords(raw.words),
       file: file
     };
   }
@@ -256,6 +266,147 @@
     });
   }
 
+  // ---------------------------------------------------------- свои колоды
+  // { decks: [{ id, title, words }], extra: { id готовой колоды: [слово, …] } }.
+  // Если localStorage недоступен, всё живёт в userData, пока открыта страница.
+  var USER_KEY = "flashcards-user";
+  var userData = null;
+
+  function loadUser() {
+    if (userData) return userData;
+    var data = null;
+    try {
+      data = JSON.parse(window.localStorage.getItem(USER_KEY) || "null");
+    } catch (e) {
+      if (!(e instanceof SyntaxError)) storageFailed();
+    }
+    userData = {
+      decks: data && Array.isArray(data.decks) ? data.decks : [],
+      extra: data && data.extra && typeof data.extra === "object" ? data.extra : {}
+    };
+    return userData;
+  }
+
+  function saveUser() {
+    try {
+      window.localStorage.setItem(USER_KEY, JSON.stringify(userData));
+      return true;
+    } catch (e) {
+      storageFailed();
+      return false;
+    }
+  }
+
+  function plainWords(list) {
+    return list.map(function (w) {
+      return { hanzi: w.hanzi, pinyin: w.pinyin, translation: w.translation };
+    });
+  }
+
+  // Слова с фото — в конец готовых колод, свои колоды — в общий список с
+  // пометкой own. Колода с занятым id (такой файл появился в decks/)
+  // пропускается.
+  function collectOwnDecks() {
+    var user = loadUser();
+    Object.keys(user.extra).forEach(function (id) {
+      var deck = deckById[id];
+      if (!deck || deck.own) return;
+      deck.fileWords = deck.words;
+      deck.words = cleanWords(deck.words.concat(user.extra[id]));
+      deck.extra = deck.words.length - deck.fileWords.length;
+    });
+    user.decks.forEach(function (raw) {
+      var deck = cleanDeck(raw, "");
+      if (!deck || !deck.id || deckById[deck.id] || !deck.words.length) return;
+      deck.own = true;
+      deckById[deck.id] = deck;
+      decks.push(deck);
+    });
+  }
+
+  // Сохранение слов с фото. target — { title } для новой колоды или { id }
+  // для готовой. Повторы слов, которые уже есть в колоде, пропускаются.
+  function saveWords(target, list) {
+    var user = loadUser();
+    var words = cleanWords(list);
+    if (!words.length) throw new Error("Нет ни одного слова с иероглифами.");
+    var deck;
+    var added = words;
+    if (target.id) {
+      deck = deckById[target.id];
+      if (!deck) throw new Error("Такой колоды больше нет — выберите другую.");
+      var have = {};
+      deck.words.forEach(function (w) { have[wordKey(w)] = true; });
+      added = words.filter(function (w) { return !have[wordKey(w)]; });
+      if (deck.own) {
+        user.decks.forEach(function (d) {
+          if (d.id === deck.id) d.words = plainWords(cleanWords(d.words).concat(added));
+        });
+      } else {
+        user.extra[deck.id] = plainWords(cleanWords(user.extra[deck.id]).concat(added));
+        if (!deck.fileWords) deck.fileWords = deck.words;
+        deck.extra = (deck.extra || 0) + added.length;
+      }
+      deck.words = deck.words.concat(added);
+    } else {
+      var id = "my-" + Date.now().toString(36);
+      while (deckById[id]) id += "x";
+      var raw = { id: id, title: String(target.title || "").trim() || id, words: plainWords(words) };
+      user.decks.push(raw);
+      deck = cleanDeck(raw, "");
+      deck.own = true;
+      deckById[id] = deck;
+      decks.push(deck);
+    }
+    return { id: deck.id, added: added.length, skipped: words.length - added.length, stored: saveUser() };
+  }
+
+  function deleteOwnDeck(deck) {
+    var user = loadUser();
+    user.decks = user.decks.filter(function (d) { return d.id !== deck.id; });
+    saveUser();
+    delete deckById[deck.id];
+    decks = decks.filter(function (d) { return d !== deck; });
+    resetProgress(deck.id);
+  }
+
+  function removeExtra(deck) {
+    var user = loadUser();
+    delete user.extra[deck.id];
+    saveUser();
+    if (deck.fileWords) deck.words = deck.fileWords;
+    deck.extra = 0;
+  }
+
+  // Файл колоды для flashcards/decks/ — тот же вид, что у готовых колод.
+  function deckFile(deck) {
+    var rows = deck.words.map(function (w) {
+      return '    { "hanzi": ' + JSON.stringify(w.hanzi) + ', "pinyin": ' + JSON.stringify(w.pinyin) +
+        ', "translation": ' + JSON.stringify(w.translation) + " }";
+    });
+    return "/* Колода раздела «Карточки». Внутри addDeck( … ) — обычный JSON:\n" +
+      "   id (латиницей, совпадает с именем файла), title и список слов.\n" +
+      "   Прогресс ученика хранится по id, поэтому после публикации id лучше не\n" +
+      "   менять — иначе прогресс по колоде начнётся заново. */\n" +
+      "addDeck({\n" +
+      '  "id": ' + JSON.stringify(deck.id) + ",\n" +
+      '  "title": ' + JSON.stringify(deck.title) + ",\n" +
+      '  "words": [\n' + rows.join(",\n") + "\n  ]\n" +
+      "});\n";
+  }
+
+  function downloadDeck(deck) {
+    var blob = new Blob([deckFile(deck)], { type: "text/javascript;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = deck.id + ".js";
+    document.body.appendChild(a);
+    a.click();
+    a.parentNode.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
   // ---------------------------------------------------------- экраны
   var currentView = null;
 
@@ -278,11 +429,15 @@
     bar.classList.toggle("is-done", total > 0 && done === total);
   }
 
+  // Свои колоды — отдельной сеткой «Мои колоды», новые первыми.
   function renderList() {
     var grid = $("[data-deck-grid]");
+    var ownGrid = $("[data-own-grid]");
     var status = $("[data-deck-status]");
     var errorBox = $("[data-deck-errors]");
+    var ownCount = 0;
     grid.textContent = "";
+    ownGrid.textContent = "";
 
     decks.forEach(function (deck) {
       var progress = loadProgress(deck.id);
@@ -305,10 +460,16 @@
       card.appendChild(el("p", "card-meta", learned === total
         ? "Колода выучена ✓"
         : "Выучено " + learned + " из " + total));
-      grid.appendChild(card);
+      if (deck.own) {
+        ownGrid.insertBefore(card, ownGrid.firstChild);
+        ownCount++;
+      } else {
+        grid.appendChild(card);
+      }
     });
 
-    status.hidden = decks.length > 0;
+    $("[data-own-decks]").hidden = !ownCount;
+    status.hidden = decks.length > ownCount;
     status.textContent = "Колод пока нет.";
 
     errorBox.textContent = "";
@@ -365,6 +526,7 @@
   var HIDE_KEY = "flashcards-ui:hide-translation";
   var hideTranslation = false;
   var deckOnPage = null;
+  var savedNote = null;     // «Сохранено: …» — один раз, после сохранения слов с фото
   var wordList = $("[data-word-list]");
   var hideToggle = $("[data-hide-translation]");
 
@@ -448,6 +610,21 @@
       ? "Колода выучена ✓"
       : "Выучено " + count.learned + " из " + total;
     $('[data-learn="missed"]').disabled = !count.learning;
+
+    // Своя колода: где хранится, скачать файл, удалить. Готовая колода со
+    // словами с фото: сколько их и как убрать.
+    $("[data-own]").hidden = !deck.own && !deck.extra;
+    $("[data-own-text]").textContent = deck.own
+      ? "Колода собрана по фото и хранится в этом браузере — на другом устройстве её не будет. " +
+        "Файл колоды можно скачать: отправить преподавателю или добавить на сайт."
+      : words(deck.extra || 0) + " добавлено по фото — они есть только в этом браузере.";
+    $("[data-own-download]").hidden = !deck.own;
+    $("[data-own-delete]").textContent = deck.own ? "Удалить колоду" : "Убрать добавленные слова";
+
+    var note = $("[data-saved-note]");
+    note.textContent = savedNote || "";
+    note.hidden = !savedNote;
+    savedNote = null;
   }
 
   hideToggle.addEventListener("change", function () {
@@ -777,6 +954,23 @@
       speak(sayBtn.getAttribute("data-say"));
       return;
     }
+    if (e.target.closest("[data-own-download]") && deckOnPage) {
+      downloadDeck(deckOnPage);
+      return;
+    }
+    if (e.target.closest("[data-own-delete]") && deckOnPage) {
+      var own = deckOnPage;
+      if (own.own) {
+        if (!window.confirm("Удалить колоду «" + own.title + "»?\nСлова и прогресс по ней пропадут.")) return;
+        deleteOwnDeck(own);
+        navigate("", true);
+      } else {
+        if (!window.confirm("Убрать из колоды «" + own.title + "» слова, добавленные по фото?")) return;
+        removeExtra(own);
+        renderDeck(own);
+      }
+      return;
+    }
     var row = e.target.closest(".fc-word");
     if (row && hideTranslation) {
       setRevealed(row, !row.classList.contains("is-revealed"));
@@ -923,6 +1117,18 @@
     }
     session = null;
     busy = false;
+    // #photo — проверка слов с фото (js/photo-cards.js). Без фото в работе
+    // (например, страницу перезагрузили) показывать нечего — к списку.
+    if (routedHash === "#photo") {
+      deckOnPage = null;
+      if (window.PhotoCards && window.PhotoCards.active()) {
+        document.title = "Карточки по фото — Карточки — Китайский язык";
+        show("photo");
+      } else {
+        navigate("", true);
+      }
+      return;
+    }
     if (deck) {
       deckOnPage = deck;
       document.title = deck.title + " — Карточки — Китайский язык";
@@ -951,8 +1157,29 @@
   window.addEventListener("hashchange", onAddressChange);
   window.addEventListener("popstate", onAddressChange);
 
+  // Для js/photo-cards.js: список колод, сохранение слов и переходы. Сам
+  // он не знает, как устроены колоды и адреса раздела.
+  window.Flashcards = {
+    list: function () {
+      return decks.map(function (d) {
+        return { id: d.id, title: d.title, size: d.words.length, own: !!d.own };
+      });
+    },
+    save: saveWords,
+    openPhoto: function () {
+      if (window.location.hash === "#photo") route();
+      else navigate("#photo");
+    },
+    // Сохранили — на страницу колоды вместо записи #photo в истории.
+    openDeck: function (id, note) {
+      savedNote = note || null;
+      navigate(deckHash(id), true);
+    }
+  };
+
   loadDecks(function (files) {
     collectDecks(files);
+    collectOwnDecks();
     route();
   });
 })();
