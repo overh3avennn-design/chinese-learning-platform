@@ -40,7 +40,7 @@
 
   <!-- Первый экран главной. Стили — css/home.css; классы hm-* не
        пересекаются с общими стилями остальных страниц. На телефоне тот же
-       блок — компактная заставка: короткая строка вместо абзаца, без
+       блок во весь первый экран: заставка, абзац и внизу поиск, без
        кнопок и нижней полосы. -->
   <section class="hm-hero">
     <div class="hm-body">
@@ -51,26 +51,32 @@
 
       <div class="hm-aside">
         <p class="hm-lead">
-          <span class="hm-lead-long">
           За китайским языком стоят тысячелетия истории, мудрости и опыта.
           Я хочу, чтобы этот путь был открыт каждому: материалы по уровням HSK,
           культура Китая и учебники — в одном месте.
           <br>Для изучения нужно только ваше желание, а сайт постарается обеспечить удобство.
-          </span>
-          <span class="hm-lead-short">Материалы HSK, словарь и карточки — всё для изучения китайского в одном месте.</span>
         </p>
 
         <!-- Поиск по словарю — одна форма на обе версии: на компьютере под
-             абзацем перед кнопками, на телефоне сразу под заставкой. Запрос
+             абзацем перед кнопками, на телефоне внизу первого экрана. Запрос
              уходит в словарь как ?q=…, и там поиск запускается сразу
-             (js/dictionary.js). -->
-        <form class="hm-search" action="dictionary/index.html" method="get" role="search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input type="search" name="q" placeholder="Слово или пиньинь" aria-label="Поиск по словарю"
-                 autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
-          <button type="submit">Найти</button>
-        </form>
-        <p class="hm-search-hint">Например: <b lang="zh-CN">学习</b> · <span lang="zh-Latn">xuéxí</span> · учиться</p>
+             (js/dictionary.js). Кисточка открывает клетку, где иероглиф
+             рисуют пальцем или мышкой (js/handwriting.js, как в словаре):
+             выбранные иероглифы встают в поле (data-hw-compose), искать —
+             кнопкой «Найти». Клетка встаёт между формой и подсказкой. -->
+        <div class="hm-finder">
+          <form class="hm-search" action="dictionary/index.html" method="get" role="search" data-dict-form data-hw-compose>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" name="q" placeholder="Слово или пиньинь" aria-label="Поиск по словарю" data-dict-input
+                   autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+            <button class="hm-hw-btn" type="button" data-hw-toggle aria-expanded="false"
+                    aria-label="Нарисовать иероглиф" title="Нарисовать иероглиф от руки">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.2 10.8 7.3-7.3"/><path d="M11.4 9.2l3.4 3.4"/><path d="M11.4 9.2C8.9 8.7 6.6 10.4 6.4 13c-.2 2.4-1.2 4.4-3.4 6.1 3.7 1.4 8.1.6 10.4-1.9 1.5-1.6 1.8-3.4 1.4-4.6"/></svg>
+            </button>
+            <button class="hm-search-go" type="submit">Найти</button>
+          </form>
+          <p class="hm-search-hint">Например: <b lang="zh-CN">学习</b> · <span lang="zh-Latn">xuéxí</span> · учиться</p>
+        </div>
 
         <div class="hm-actions-row">
           <a href="library/index.html" class="hm-btn">Открыть библиотеку</a>
@@ -98,15 +104,16 @@
     </div>
   </section>
 
-  <!-- Только телефон (класс hm-phone): плитки разделов, занятия и нижняя
-       панель — по макету home-mobile.html. На компьютере их нет, а
-       разделов «О платформе» и подвала нет на телефоне. -->
+  <!-- Только телефон (класс hm-phone): плитки разделов и «Контакты» — ниже
+       первого экрана, при прокрутке они проявляются (data-reveal,
+       js/main.js). На компьютере их нет, а разделов «О платформе» и
+       подвала нет на телефоне. Нижняя панель — общая, из шапки. -->
   <section class="hm-phone hm-block" aria-labelledby="hm-sections-title">
-    <h2 class="hm-block-title" id="hm-sections-title">Разделы</h2>
+    <h2 class="hm-block-title" id="hm-sections-title" data-reveal>Разделы</h2>
     <div class="hm-tiles">
       <!-- Нажимается вся плитка (ссылка заголовка растянута на неё), кнопки
            уровней лежат поверх и ведут прямо на страницу уровня. -->
-      <div class="hm-tile hm-tile--main">
+      <div class="hm-tile hm-tile--main" data-reveal>
         <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">书</span>
         <a class="hm-tile-name" href="library/index.html">Библиотека&nbsp;→</a>
         <p class="hm-tile-desc">Учебники, грамматика, фонетика и&nbsp;иероглифика по&nbsp;уровням</p>
@@ -120,19 +127,19 @@
         </nav>
       </div>
 
-      <a class="hm-tile" href="dictionary/index.html">
+      <a class="hm-tile" href="dictionary/index.html" data-reveal>
         <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">词</span>
         <span class="hm-tile-name">Словарь</span>
         <span class="hm-tile-desc">БКРС прямо на&nbsp;сайте</span>
       </a>
 
-      <a class="hm-tile" href="flashcards/index.html">
+      <a class="hm-tile" href="flashcards/index.html" data-reveal>
         <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">卡</span>
         <span class="hm-tile-name">Карточки</span>
         <span class="hm-tile-desc">Слова свайпами</span>
       </a>
 
-      <a class="hm-tile hm-tile--wide" href="assistant/index.html">
+      <a class="hm-tile hm-tile--wide" href="assistant/index.html" data-reveal>
         <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">问</span>
         <span class="hm-tile-body">
           <span class="hm-tile-name">ИИ-помощник <span class="hm-badge">скоро</span></span>
@@ -143,20 +150,17 @@
     </div>
   </section>
 
-  <section class="hm-phone hm-block" aria-labelledby="hm-lesson-title">
-    <div class="hm-lesson">
-      <div>
-        <h2 class="hm-lesson-title" id="hm-lesson-title">Занятия с&nbsp;преподавателем</h2>
-        <p class="hm-lesson-text">Пробное занятие — разберём ваш уровень и&nbsp;составим план подготовки.</p>
-      </div>
-      <div class="hm-lesson-row">
-        <a class="hm-lesson-btn" href="support/contacts.html">Записаться на урок</a>
-        <a class="hm-lesson-btn hm-lesson-tg" href="https://t.me/kski12" target="_blank" rel="noopener" aria-label="Написать в Telegram">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 3.5 2.8 10.6c-.9.3-.9 1.6 0 1.9l4.6 1.5 1.8 5.6c.2.7 1.1.9 1.6.4l2.6-2.4 4.7 3.5c.6.4 1.4.1 1.6-.6L22.9 4.8c.2-.9-.6-1.6-1.4-1.3Z"/><path d="m7.4 14 10-7.1-7.6 8.5"/></svg>
-        </a>
-      </div>
-    </div>
-  </section>
+  <!-- «Контакты» — в нижней панели их нет, поэтому они здесь, в конце
+       главной: вся плитка — кнопка на страницу «Контакты». -->
+  <div class="hm-phone hm-block">
+    <a class="hm-contact" href="support/contacts.html" data-reveal>
+      <span class="hm-contact-body">
+        <span class="hm-contact-title">Контакты</span>
+        <span class="hm-contact-text">Готов предоставить занятия с&nbsp;преподавателем. А&nbsp;если есть пожелания к&nbsp;платформе — пишите, постараюсь исправить.</span>
+      </span>
+      <svg class="hm-contact-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </div>
 
   <main class="hm-main">
     <div class="container">
@@ -189,7 +193,7 @@
         <p class="hm-tg-line">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 3.5 2.8 10.7c-.8.3-.8 1.4 0 1.7l4.7 1.6 1.8 5.6c.2.7 1.1.9 1.6.4l2.7-2.6 4.9 3.6c.6.4 1.4.1 1.6-.6L22.9 5c.2-1-.6-1.8-1.4-1.5Z"/><path d="m7.5 14 11-7.5-8.3 9.2"/></svg>
           <span>Telegram:</span>
-          <a href="https://t.me/kski12" target="_blank" rel="noopener">@kski12</a>
+          <a href="https://t.me/easily_chinesly" target="_blank" rel="noopener">@easily_chinesly</a>
         </p>
       </section>
     </div>
@@ -219,30 +223,7 @@
     </div>
   </footer>
 
-  <!-- Нижняя панель навигации телефонной версии — вместо бургера в шапке. -->
-  <nav class="hm-phone hm-tabbar" aria-label="Основная навигация">
-    <a href="index.html" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>
-      Главная
-    </a>
-    <a href="library/index.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H19v-3"/><path d="M8 7h7"/></svg>
-      Библиотека
-    </a>
-    <a href="dictionary/index.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      Словарь
-    </a>
-    <a href="flashcards/index.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="14" height="15" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/></svg>
-      Карточки
-    </a>
-    <a href="assistant/index.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
-      ИИ
-    </a>
-  </nav>
-
   <script src="js/main.js"></script>
+  <script src="js/handwriting.js"></script>
 </body>
 </html>

@@ -1,11 +1,13 @@
 /* Весь скрипт сайта одним файлом: заглушки вместо обложек, прелоадер,
-   фильмы с Яндекс Диска, кнопка «назад» и работа внутри Telegram (Mini
-   App бота @chinese_free_bot). Шапка — отдельный компонент
-   components/site-header. Каждый блок сам проверяет,
+   фильмы с Яндекс Диска, кнопка «назад», появление плиток главной и
+   работа внутри Telegram (Mini App бота @chinese_free_bot). Шапка —
+   отдельный компонент components/site-header. Каждый блок сам проверяет,
    есть ли на странице то, с чем он работает, поэтому файл подключается ко
    всем страницам одинаково.
-   Анимаций скролла на сайте нет: колесо, клавиатура и якорные ссылки
-   работают нативно, фон под содержимым не движется. */
+   Прокрутку сайт не перехватывает: колесо, клавиатура и якорные ссылки
+   работают нативно, фон под содержимым не движется. С прокруткой связано
+   только одно — плитки телефонной главной проявляются, когда до них
+   докручивают (initReveal). */
 (function () {
   "use strict";
 
@@ -350,6 +352,30 @@
     back.textContent = "← Библиотека";
   }
 
+  // ------------------------------------- появление плиток при прокрутке
+  // Плитки разделов и «Контакты» телефонной версии главной (data-reveal)
+  // проявляются, когда до них докручивают, — чуть выше нижней панели.
+  // Прячет их только класс reveal-ready (css/home.css), поэтому без
+  // IntersectionObserver и при prefers-reduced-motion они просто видны.
+  function initReveal() {
+    var items = document.querySelectorAll("[data-reveal]");
+    if (!items.length || !window.IntersectionObserver || !window.matchMedia) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-shown");
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -80px 0px" });
+
+    Array.prototype.forEach.call(items, function (item) {
+      observer.observe(item);
+    });
+    document.documentElement.classList.add("reveal-ready");
+  }
+
   // ----------------------------------------------- Telegram Mini App
   // Сайт открывается и как приложение внутри Telegram — кнопкой в боте
   // @chinese_free_bot. Telegram передаёт данные запуска в адресе первой
@@ -429,5 +455,6 @@
   initPreloader();
   initYandexFilms();
   initBackLink();
+  initReveal();
   initTelegramApp();
 })();

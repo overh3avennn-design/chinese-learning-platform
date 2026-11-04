@@ -1,6 +1,8 @@
 /* Главная страница: неподвижное видео-фон, первый экран, разделы и подвал.
    До 900px — своя телефонная версия по макету home-mobile.html (в конце
-   файла, под @media): компактная заставка, плитки и нижняя панель.
+   файла, под @media): первый экран во всё окно, ниже плитки разделов и
+   «Контакты». Нижняя панель — общая для всех страниц, из шапки
+   (components/site-header).
 
    Подключается только в index.html, после общего css/style.css. Всё здесь
    привязано к body.page-home или к классам hm-* / .container, которых в
@@ -24,14 +26,10 @@ body.page-home {
   /* Шрифт поиска по словарю и телефонной версии — из макета home-mobile.html. */
   --font-manrope: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* Цвет виден только, пока видео не загрузилось. */
+  /* Цвет виден только, пока видео не загрузилось. Поля под вырез iPhone
+     (viewport-fit=cover) — общие для всех страниц, в header.css. */
   background-color: var(--hm-bg);
   color: var(--hm-text);
-  /* viewport-fit=cover (в index.html — ради нижней панели телефона)
-     пускает страницу под вырез iPhone. Фон уходит под него, а содержимое
-     остаётся в безопасной зоне, как и без cover. Вне iPhone отступы — 0. */
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
 }
 
 body.page-home a:focus-visible,
@@ -217,9 +215,14 @@ video.bg {
 /* ------------------------------------------------------ поиск по словарю */
 
 /* Одна форма на обе версии: на компьютере — под абзацем, перед кнопками,
-   на телефоне — сразу под заставкой. Вид из макета home-mobile.html:
-   светлое поле с лупой и кнопкой «Найти». Шире 620px не бывает; на
-   компьютере его держит колонка абзаца (450px, на планшете 520px). */
+   на телефоне — внизу первого экрана. Вид из макета home-mobile.html:
+   светлое поле с лупой и кнопкой «Найти», перед ней — кисточка
+   рукописного ввода. Шире 620px не бывает; на компьютере его держит
+   колонка абзаца (450px, на планшете 520px). */
+.hm-finder {
+  position: relative;
+}
+
 .hm-search {
   display: flex;
   align-items: center;
@@ -243,7 +246,7 @@ video.bg {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), 0 0 0 2px var(--hm-gold);
 }
 
-.hm-search svg {
+.hm-search > svg {
   flex: none;
   width: 20px;
   height: 20px;
@@ -271,7 +274,7 @@ video.bg {
   opacity: 1;
 }
 
-.hm-search button {
+.hm-search .hm-search-go {
   flex: none;
   height: 44px;
   margin: 0;
@@ -287,8 +290,100 @@ video.bg {
   transition: background-color 0.2s ease;
 }
 
-.hm-search button:hover {
+.hm-search .hm-search-go:hover {
   background-color: #2a2e35;
+}
+
+/* Кисточка — иконка в поле. Пока клетка для рисования открыта, кнопка
+   золотая. */
+.hm-search .hm-hw-btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0 -4px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background-color: transparent;
+  color: #15181d;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.hm-search .hm-hw-btn svg {
+  width: 22px;
+  height: 22px;
+  opacity: 0.75;
+}
+
+.hm-search .hm-hw-btn:hover {
+  background-color: rgba(21, 24, 29, 0.08);
+}
+
+.hm-search .hm-hw-btn[aria-expanded="true"] {
+  background-color: var(--hm-gold);
+}
+
+.hm-search .hm-hw-btn[aria-expanded="true"] svg {
+  opacity: 1;
+}
+
+/* Клетка рукописного ввода (js/handwriting.js) встаёт под формой.
+   Устройство и раскладка общие со словарём (style.css), здесь — цвета
+   главной: тёмный нейтральный фон и золото вместо красного. */
+.hm-finder .hw {
+  background-color: #15191f;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--hm-text);
+  text-align: left;
+}
+
+.hm-finder .hw .hz-btn {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--hm-text);
+}
+
+.hm-finder .hw .hz-btn:hover {
+  border-color: rgba(244, 243, 240, 0.5);
+}
+
+.hm-finder .hw-cand:first-child {
+  border-color: rgba(205, 176, 121, 0.6);
+}
+
+.hm-finder .hw-cand:hover {
+  border-color: var(--hm-gold);
+}
+
+.hm-finder .hw-msg {
+  color: rgba(244, 243, 240, 0.72);
+}
+
+.hm-finder .hw-msg.is-error {
+  color: var(--hm-gold-hover);
+}
+
+/* На компьютере клетка всплывает под полем поверх подсказки и кнопок, а
+   не раздвигает первый экран. Пока она открыта, блок с полем — над
+   нижней полосой экрана (у неё тот же z-index, и она ниже в разметке). */
+@media (min-width: 900px) {
+  .hm-finder .hw {
+    position: absolute;
+    top: 64px;
+    right: 0;
+    left: 0;
+    z-index: 5;
+    grid-template-columns: 200px minmax(0, 1fr);
+    margin: 0;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  }
+
+  .hm-body:has(.hw:not([hidden])) {
+    z-index: 3;
+  }
 }
 
 .hm-search-hint {
@@ -666,15 +761,15 @@ body.page-home .hm-main {
 
 /* ================================================ телефон: до 900px */
 
-/* На телефоне у главной своя раскладка по макету home-mobile.html:
-   компактная заставка, поиск, плитки разделов, блок «Занятия» и нижняя
-   панель вместо бургера. Блоки только для телефона помечены в разметке
-   классом hm-phone. Все правила телефона — в @media ниже, поэтому
-   компьютерную версию (от 900px) они не задевают. */
+/* На телефоне у главной своя раскладка по макету home-mobile.html: первый
+   экран во всё окно (заставка, абзац, внизу поиск), ниже — плитки
+   разделов и «Контакты». Меню — общая нижняя панель из шапки. Блоки
+   только для телефона помечены в разметке классом hm-phone. Все правила
+   телефона — в @media ниже, поэтому компьютерную версию (от 900px) они
+   не задевают. */
 
 @media (min-width: 900px) {
-  .hm-phone,
-  .hm-lead-short {
+  .hm-phone {
     display: none;
   }
 }
@@ -688,19 +783,13 @@ body.page-home .hm-main {
     --hm-glass-strong: rgba(18, 22, 29, 0.72);
     --hm-line: rgba(255, 255, 255, 0.12);
     --hm-radius: 18px;
-    --hm-tabbar-h: 64px;
     /* Фон — картинка с горами, постер того же видео. Само видео на
        телефоне не скачивается (<source media> в index.html); поверх
        картинки то же затемнение .hm-bg-shade, что и на компьютере. */
     --hero-image: url("../images/hero-poster.jpg");
-    /* Конец страницы не уходит под нижнюю панель. */
-    padding-bottom: calc(var(--hm-tabbar-h) + env(safe-area-inset-bottom) + 24px);
-  }
-
-  /* Фокус с клавиатуры и прокрутка к элементу тоже не прячут его под
-     панель. html здесь — только главной: файл подключён лишь к ней. */
-  html {
-    scroll-padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    /* Под «Контактами» — зазор над нижней панелью. Место под саму панель
+       внизу каждой страницы оставляет header.css. */
+    padding-bottom: calc(var(--site-tabbar-space, 0px) + 24px);
   }
 
   body.page-home::before {
@@ -717,12 +806,10 @@ body.page-home .hm-main {
     background: rgba(14, 16, 19, 0.72);
   }
 
-  /* Видео, заставка «欢迎» (без видео ей нечего ждать), длинный абзац,
-     кнопки и нижняя полоса первого экрана, разделы и подвал — только на
-     компьютере. */
+  /* Видео, заставка «欢迎» (без видео ей нечего ждать), кнопки и нижняя
+     полоса первого экрана, разделы и подвал — только на компьютере. */
   video.bg,
   body.page-home .preloader,
-  .hm-lead-long,
   .hm-actions-row,
   .hm-strip,
   .hm-main,
@@ -734,61 +821,33 @@ body.page-home .hm-main {
     text-decoration: none;
   }
 
-  /* ------------------------------------------------------------- шапка */
+  /* ------------------------------------------------------ первый экран */
 
-  /* Шапка общая (components/site-header), но без бургера: меню здесь —
-     нижняя панель. В строке логотип и Telegram — на месте бургера других
-     страниц, поэтому при переходе в раздел меняется только эта кнопка.
-     Отступ сверху — под вырез iPhone, если страница заходит под строку
-     состояния (вне iPhone он 0). */
-  body.page-home .site-header {
-    height: calc(var(--sh-height) + env(safe-area-inset-top));
-    padding-top: env(safe-area-inset-top);
-  }
-
-  body.page-home .site-header.site-header--compact .site-header__menu {
-    display: contents;
-  }
-
-  body.page-home .site-header .site-header__nav,
-  body.page-home .site-header .site-header__divider,
-  body.page-home .site-header .site-header__cta,
-  body.page-home .site-header .site-header__burger {
-    display: none;
-  }
-
-  body.page-home .site-header.site-header--compact .site-header__actions {
-    justify-self: end;
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-
-  body.page-home .site-header.site-header--compact .site-header__tg {
-    width: 40px;
-    height: 40px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 8px;
-    background-color: rgba(18, 22, 29, 0.35);
-    color: var(--sh-text);
-  }
-
-  body.page-home .site-header.site-header--compact .site-header__tg:hover {
-    border-color: var(--sh-gold);
-    color: var(--sh-gold);
-  }
-
-  /* ------------------------------------------------ компактная заставка */
-
+  /* Первый экран — во всё окно между шапкой и нижней панелью: сверху
+     заставка и абзац, как на компьютере, внизу поиск. Плитки разделов —
+     ниже, их видно при прокрутке. svh — высота окна при развёрнутых
+     панелях браузера, поэтому поиск виден сразу. Шапка — 66px, до 560px
+     60px (--hm-header-h ниже), плюс вырез iPhone. */
+  /* Слоёв (isolation, z-index) у первого экрана на телефоне нет: клетка
+     рукописного ввода внутри него прибита к низу окна и должна лечь
+     поверх плиток и нижней панели, как клавиатура. */
   .hm-hero {
-    display: block;
-    min-height: 0;
+    isolation: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - var(--hm-header-h) - env(safe-area-inset-top, 0px) - var(--site-tabbar-space, 0px));
+    min-height: calc(100svh - var(--hm-header-h) - env(safe-area-inset-top, 0px) - var(--site-tabbar-space, 0px));
     overflow: visible;
   }
 
+  /* stretch — вместо end компьютерной сетки: блоки во всю ширину. */
   .hm-body {
-    display: block;
-    padding: 8px 16px 0;
+    z-index: auto;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 16px 20px;
   }
 
   .hm-title,
@@ -809,9 +868,12 @@ body.page-home .hm-main {
     color: rgba(244, 243, 240, 0.95);
   }
 
+  /* На низком окне (iPhone SE, панели браузера) 中文 мельче, чтобы
+     абзац и поиск уместились на первом экране. */
   .hm-hanzi {
     margin-top: -2px;
-    font-size: clamp(92px, 27vw, 230px);
+    font-size: clamp(72px, 27vw, 230px);
+    font-size: clamp(72px, min(27vw, 14svh), 230px);
     letter-spacing: 0.02em;
     background: linear-gradient(180deg, var(--hm-text) 55%, #a9aaab 100%);
     -webkit-background-clip: text;
@@ -822,21 +884,30 @@ body.page-home .hm-main {
   }
 
   .hm-aside {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     max-width: none;
     margin: 0;
   }
 
+  /* Абзац — тот же, что на компьютере, тем же шрифтом и цветом. */
   .hm-lead {
-    max-width: 34ch;
-    margin: 10px auto 0;
-    font-family: var(--font-manrope);
-    font-size: 15.5px;
-    line-height: 1.5;
-    color: var(--hm-text-soft);
+    max-width: 36ch;
+    margin: 14px auto 0;
+    font-size: 16.5px;
+    line-height: 1.6;
+  }
+
+  /* Поиск — внизу первого экрана, над нижней панелью. */
+  .hm-finder {
+    margin-top: auto;
+    padding-top: 24px;
   }
 
   .hm-search {
     max-width: none;
+    margin-top: 0;
   }
 
   .hm-search-hint {
@@ -1040,112 +1111,83 @@ body.page-home .hm-main {
     letter-spacing: 0.02em;
   }
 
-  /* ------------------------------------------- занятия с преподавателем */
+  /* ------------------------------------------------------------ контакты */
 
-  .hm-lesson {
+  /* «Контакты» — в конце главной, потому что в нижней панели их нет. Вся
+     плитка — кнопка на страницу «Контакты». */
+  .hm-contact {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 14px;
     padding: 18px 16px;
     border: 1px solid rgba(205, 176, 121, 0.35);
     border-radius: var(--hm-radius);
     background: linear-gradient(135deg, rgba(205, 176, 121, 0.14), rgba(18, 22, 29, 0.55));
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: var(--hm-text);
+    transition: transform 0.12s ease, border-color 0.2s ease;
   }
 
-  .hm-lesson-title {
-    margin: 0;
+  .hm-contact:active {
+    transform: scale(0.98);
+    border-color: var(--hm-gold);
+  }
+
+  .hm-contact-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .hm-contact-title {
+    display: block;
     font-family: var(--font-cormorant);
     font-weight: 600;
-    font-size: 24px;
+    font-size: 26px;
     line-height: 1.15;
-    color: var(--hm-text);
   }
 
-  .hm-lesson-text {
-    margin: 6px 0 0;
+  .hm-contact-text {
+    display: block;
+    margin-top: 6px;
     font-size: 14px;
     line-height: 1.45;
     color: var(--hm-text-soft);
   }
 
-  .hm-lesson-row {
-    display: flex;
-    gap: 10px;
-  }
-
-  .hm-lesson-btn {
-    flex: 1;
-    display: grid;
-    place-items: center;
-    height: 50px;
-    border-radius: 14px;
-    background-color: var(--hm-text);
-    color: #15181d;
-    font-weight: 600;
-    font-size: 15.5px;
-  }
-
-  .hm-lesson-tg {
+  .hm-contact-arrow {
     flex: none;
-    width: 50px;
-    border: 1px solid var(--hm-line);
-    background-color: transparent;
-    color: var(--hm-text);
-  }
-
-  .hm-lesson-tg svg {
     width: 22px;
     height: 22px;
-  }
-
-  /* ---------------------------------------------------- нижняя панель */
-
-  /* Высота — 64px плюс полоска «Домой» на iPhone; в альбомной ориентации
-     пункты не заходят под вырез. */
-  .hm-tabbar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 900;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    height: calc(var(--hm-tabbar-h) + env(safe-area-inset-bottom));
-    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    border-top: 1px solid var(--hm-line);
-    background-color: rgba(18, 22, 29, 0.94);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    font-family: var(--font-manrope);
-    line-height: normal;
-  }
-
-  .hm-tabbar a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    color: var(--hm-text-mute);
-    font-size: 11px;
-    font-weight: 500;
-  }
-
-  .hm-tabbar svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .hm-tabbar a[aria-current="page"] {
-    color: var(--hm-text);
-  }
-
-  .hm-tabbar a[aria-current="page"] svg {
     color: var(--hm-gold);
   }
 
-  body.page-home .hm-tabbar a:focus-visible {
-    outline-offset: -2px;
+  /* --------------------------------------------- появление при прокрутке */
+
+  /* Плитки и «Контакты» проявляются, когда до них докручивают: класс
+     reveal-ready ставит js/main.js, если движение не выключено, а
+     is-shown — когда элемент показался в окне. Без скрипта всё просто
+     видно. Сдвиг — свойством translate: transform остаётся нажатию. */
+  html.reveal-ready [data-reveal]:not(.is-shown) {
+    opacity: 0;
+  }
+
+  html.reveal-ready [data-reveal].is-shown {
+    animation: hm-reveal 0.6s ease-out backwards;
+  }
+}
+
+@keyframes hm-reveal {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+}
+
+/* Шапка на телефоне ниже — первый экран вычитает её высоту. */
+@media (max-width: 560px) {
+  .hm-hero {
+    --hm-header-h: 60px;
   }
 }
 
@@ -1169,13 +1211,15 @@ body.page-home .hm-main {
   .hm-trial,
   .hm-trial svg,
   .hm-search,
-  .hm-search button,
+  .hm-search .hm-search-go,
+  .hm-search .hm-hw-btn,
   .hm-strip-item h2,
   .hm-more,
   .hm-more svg,
   .hm-tg-line a,
   .hm-footer-nav a,
-  .hm-tile {
+  .hm-tile,
+  .hm-contact {
     transition: none;
   }
 }

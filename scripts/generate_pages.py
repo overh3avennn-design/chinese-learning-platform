@@ -221,7 +221,7 @@ def head(title, depth):
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{esc(title)} — Китайский язык</title>
   <link rel="icon" href="{p}favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="{p}favicon-32.png">

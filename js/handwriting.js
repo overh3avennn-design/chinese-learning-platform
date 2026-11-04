@@ -14,7 +14,11 @@
    На компьютере клетка раскрывается под строкой поиска, на телефоне —
    панелью внизу экрана, как клавиатура: поле и результаты видны над ней.
    Подключается на странице словаря после js/dictionary.js: ищет, отправляя
-   форму поиска, так что сам поиск остаётся в dictionary.js. */
+   форму поиска, так что сам поиск остаётся в dictionary.js.
+
+   Есть и в поиске на главной (index.html). Там отправка формы уводит в
+   словарь, поэтому у формы атрибут data-hw-compose: выбранный иероглиф
+   только встаёт в поле, слово набирают целиком и ищут кнопкой «Найти». */
 (function () {
   "use strict";
 
@@ -22,6 +26,7 @@
   var toggle = form && form.querySelector("[data-hw-toggle]");
   var input = form && form.querySelector("[data-dict-input]");
   if (!toggle || !input) return;
+  var compose = form.hasAttribute("data-hw-compose");
 
   var API = "https://inputtools.google.com/request?ime=handwriting&app=translate&dbg=0&cs=1&oe=UTF-8";
   var AREA = 1000;          // черты уходят в Google в квадрате AREA×AREA
@@ -80,7 +85,9 @@
         tool("erase", "Стереть", "Стереть последний знак в поле поиска") +
         tool("done", "Готово", "Закрыть рукописный ввод") +
       "</div>";
-    var row = form.querySelector(".dict-search-row");
+    // Клетка — под строкой поиска: в словаре строка внутри формы, на
+    // главной строка — сама форма.
+    var row = form.querySelector(".dict-search-row") || form;
     row.parentNode.insertBefore(pad, row.nextSibling);
     toggle.setAttribute("aria-controls", pad.id);
     canvas = pad.querySelector(".hw-canvas");
@@ -374,7 +381,7 @@
     input.value = (replaceQuery || !CJK.test(current) ? "" : current) + text;
     replaceQuery = false;
     clearBoard();
-    search();
+    if (!compose) search();
   }
 
   // Последний знак в поле — по символам, а не по UTF-16: редкие иероглифы
@@ -384,7 +391,7 @@
     chars.pop();
     input.value = chars.join("");
     replaceQuery = false;
-    search();
+    if (!compose) search();
   }
 
   // Ищет js/dictionary.js — по отправке формы.

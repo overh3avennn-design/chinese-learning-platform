@@ -1,5 +1,6 @@
 /* Общая шапка сайта: логотип, меню, Telegram и — только на главной — кнопка
-   «Записаться на урок».
+   «Записаться на урок». На телефоне (до 900px) меню — нижняя панель
+   разделов: её скрипт вставляет сразу после шапки, а бургер прячут стили.
 
    Подключается на каждой странице двумя строками: стили в <head>
        <link rel="stylesheet" href="…/components/site-header/header.css">
@@ -23,7 +24,25 @@
     { label: "Контакты", href: "support/contacts.html" }
   ];
   var CTA_HREF = "support/contacts.html";
-  var TELEGRAM_URL = "https://t.me/kski12";
+  var TELEGRAM_URL = "https://t.me/easily_chinesly";
+
+  // Нижняя панель телефона: пять главных разделов. «Контактов» в ней нет —
+  // они внизу главной, а Telegram остаётся в шапке. Иконки — содержимое
+  // <svg viewBox="0 0 24 24">.
+  var TABS = [
+    { label: "Главная", href: "index.html",
+      icon: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>' },
+    { label: "Библиотека", href: "library/index.html",
+      icon: '<path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H19v-3"/><path d="M8 7h7"/>' },
+    { label: "Словарь", href: "dictionary/index.html",
+      icon: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>' },
+    { label: "Карточки", href: "flashcards/index.html",
+      icon: '<rect x="3" y="6" width="14" height="15" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/>' },
+    { label: "ИИ", href: "assistant/index.html",
+      icon: '<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>' }
+  ];
+  // Граница телефонной раскладки — та же, что в header.css.
+  var PHONE_MAX = "899.98px";
 
   // До какой ширины окна меню, Telegram и кнопка спрятаны в бургер. Порог
   // подбирался под строку из семи пунктов (~910px из колонки 920px), поэтому
@@ -73,6 +92,14 @@
       (state ? ' aria-current="' + state + '"' : "") + ">" + item.label + "</a></li>";
   }).join("");
 
+  var tabs = TABS.map(function (tab) {
+    var state = current(tab.href);
+    return '<a class="site-tabbar__link" href="' + prefix + tab.href + '"' +
+      (state ? ' aria-current="' + state + '"' : "") + ">" +
+      '<svg class="site-tabbar__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      tab.icon + "</svg>" + tab.label + "</a>";
+  }).join("");
+
   // На широком окне .site-header__menu не рисуется (display: contents) и
   // меню с правой частью стоят прямо в строке шапки; в режиме бургера это
   // выпадающая панель. Подпись «Написать в Telegram» видна только в панели
@@ -108,6 +135,12 @@
   var header = script.nextElementSibling;
   var menu = header.querySelector(".site-header__menu");
   var burger = header.querySelector(".site-header__burger");
+
+  // Панель — соседом шапки, а не внутри неё: уезжающая при прокрутке
+  // шапка (transform) утащила бы с собой и прибитую к низу окна панель.
+  // На широком окне её не видно (header.css).
+  header.insertAdjacentHTML("afterend",
+    '<nav class="site-tabbar" aria-label="Разделы сайта">' + tabs + "</nav>");
 
   // ------------------------------------------------------------ бургер
   function isOpen() {
@@ -151,6 +184,17 @@
   if (compact.addEventListener) compact.addEventListener("change", syncCompact);
   else compact.addListener(syncCompact);
   syncCompact();
+
+  // На телефоне бургера нет: панель, открытую на окне пошире, закрываем,
+  // когда окно сузилось до телефона.
+  var phone = window.matchMedia("(max-width: " + PHONE_MAX + ")");
+
+  function syncPhone() {
+    if (phone.matches) setOpen(false);
+  }
+
+  if (phone.addEventListener) phone.addEventListener("change", syncPhone);
+  else phone.addListener(syncPhone);
 
   // ---------------------------------------------------------- прокрутка
   // Страницу прокрутили — у шапки появляется фон. При прокрутке вниз шапка
