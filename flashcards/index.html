@@ -19,12 +19,13 @@
   <script src="../components/site-header/header.js"></script>
   <div class="bg-fixed" aria-hidden="true"></div>
 
-  <!-- Раздел «Карточки». Восемь экранов на одной странице — список колод
-       и папок, страница колоды, страница папки, редактор папки, изучение,
-       итоги, «Колода выучена» и проверка слов с фото; переключает их
-       js/flashcards.js по адресу (#deck=<id> — страница колоды,
-       #folder=<id> — папки, …&learn — изучение, #new-folder и
-       #folder=<id>&edit — редактор, #photo — слова с фото), поэтому кнопка
+  <!-- Раздел «Карточки». Девять экранов на одной странице — список колод
+       и папок, страница колоды, страница папки, редактор папки, редактор
+       колоды, изучение, итоги, «Колода выучена» и проверка слов с фото;
+       переключает их js/flashcards.js по адресу (#deck=<id> — страница
+       колоды, #folder=<id> — папки, …&learn — изучение, #new-folder и
+       #folder=<id>&edit — редактор папки, #new-deck и #deck=<id>&edit —
+       редактор своей колоды, #photo — слова с фото), поэтому кнопка
        «Назад» в браузере ведёт на шаг назад: из изучения — к колоде, от
        колоды — к папке или списку. Колоды и папки сайта лежат в
        flashcards/decks/, свои колоды и папки ученика — в его браузере. Фото
@@ -81,7 +82,7 @@
 
       <section class="section" data-own-decks hidden>
         <h2>Мои колоды</h2>
-        <p class="fc-own-hint">Собраны по фото и хранятся в этом браузере.</p>
+        <p class="fc-own-hint">Собраны вами — вручную или по фото — и хранятся в этом браузере.</p>
         <div class="card-grid" data-own-grid></div>
       </section>
 
@@ -134,6 +135,7 @@
       <section class="fc-own" data-own hidden>
         <p class="fc-own-text" data-own-text></p>
         <div class="fc-own-actions">
+          <a class="btn btn-secondary" href="#" data-own-edit hidden>Изменить колоду</a>
           <button class="btn btn-secondary" type="button" data-own-download>Скачать файл колоды</button>
           <button class="fc-reset" type="button" data-own-delete>Удалить колоду</button>
         </div>
@@ -209,6 +211,45 @@
 
       <p class="fc-reset-line" data-folder-delete-line hidden>
         <button class="fc-reset" type="button" data-folder-delete>Удалить папку</button>
+      </p>
+    </div>
+
+    <!-- Редактор своей колоды (#new-deck, #deck=<id>&edit): название и
+         слова. Таблица — как у слов с фото (те же классы), строки строит
+         js/deck-editor.js; по иероглифам он подставляет пиньинь и перевод
+         из словаря БКРС и меняет цифры тонов на значки (ni3 → nǐ). -->
+    <div class="fc-view fc-deck-page fc-deck-edit" data-view="deck-edit" hidden>
+      <a class="fc-back" href="#" data-back="">← Назад</a>
+      <h1 class="page-title" data-deck-edit-title>Новая колода</h1>
+      <p class="page-subtitle">Впишите слова — иероглифы, пиньинь и перевод. Колода сохранится в этом браузере, учить её можно так же, как готовые.</p>
+
+      <form class="fc-folder-form" data-deck-form novalidate>
+        <label class="fc-field">
+          <span class="fc-field-label">Название колоды</span>
+          <input class="fc-input" type="text" maxlength="60" autocomplete="off" data-deck-name-input placeholder="Например: Урок 7">
+        </label>
+
+        <section class="fc-edit" aria-label="Слова колоды">
+          <p class="fc-photo-hint">
+            Пиньинь и перевод можно не вписывать — их подставит словарь (пометка <span class="fc-mark is-added">БКРС</span>), проверьте их.
+            Пиньинь можно набрать и цифрами тонов: ni3 hao3 → nǐ hǎo.
+          </p>
+          <div class="fc-edit-head" aria-hidden="true">
+            <span>Иероглифы</span><span>Пиньинь</span><span>Перевод</span>
+          </div>
+          <ol class="fc-edit-list" data-deck-rows></ol>
+          <button class="btn btn-secondary fc-edit-add" type="button" data-deck-add-row>+ Добавить слово</button>
+        </section>
+
+        <p class="fc-save-error" data-deck-error role="alert" hidden></p>
+        <div class="fc-photo-buttons">
+          <button class="btn btn-primary" type="submit" data-deck-save>Создать колоду</button>
+          <a class="btn btn-secondary" href="#" data-back="">Отмена</a>
+        </div>
+      </form>
+
+      <p class="fc-reset-line" data-deck-delete-line hidden>
+        <button class="fc-reset" type="button" data-deck-delete>Удалить колоду</button>
       </p>
     </div>
 
@@ -400,6 +441,7 @@
     </div>
   </main>
   <script src="decks/index.js"></script>
+  <script src="../js/deck-editor.js"></script>
   <script src="../js/flashcards.js"></script>
   <script src="../js/home-screen.js"></script>
   <script src="../js/dict-lookup.js"></script>

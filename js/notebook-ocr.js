@@ -1419,6 +1419,9 @@
     read: read,
     cancel: cancel,
     supported: supported,
+    // Перевод для карточки из статей БКРС — ещё и для редактора колоды
+    // (js/deck-editor.js): shortMeaning(статьи, чтение) → «друг, приятель».
+    shortMeaning: shortMeaning,
     _toWords: toWords      // для проверки на готовых строках
   };
 })();

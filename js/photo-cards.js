@@ -354,9 +354,15 @@
     cell.setAttribute("data-mark", kind);
   }
 
+  // Строки только этой таблицы: у редактора колоды (js/deck-editor.js)
+  // своя таблица с теми же классами.
+  function rows() {
+    return Array.prototype.slice.call(list.querySelectorAll(".fc-edit-row"));
+  }
+
   // Подписи для экранных дикторов: «Пиньинь, слово 3 — взято из словаря».
   function renumber() {
-    $$(".fc-edit-row").forEach(function (row, i) {
+    rows().forEach(function (row, i) {
       FIELDS.forEach(function (f) {
         var cell = row.querySelector(".fc-cell-" + f);
         var kind = cell.getAttribute("data-mark");
@@ -376,7 +382,7 @@
   }
 
   function filledCount() {
-    return $$(".fc-edit-row").filter(function (row) {
+    return rows().filter(function (row) {
       return readRow(row).hanzi;
     }).length;
   }
@@ -425,7 +431,7 @@
   function save() {
     var found = [];
     var missing = 0;
-    $$(".fc-edit-row").forEach(function (row) {
+    rows().forEach(function (row) {
       var w = readRow(row);
       row.classList.remove("is-invalid");
       if (!w.hanzi && !w.pinyin && !w.translation) return;
@@ -541,7 +547,7 @@
   list.addEventListener("keydown", function (e) {
     if (e.key !== "Enter" || e.isComposing || e.keyCode === 229 || !e.target.matches("input")) return;
     e.preventDefault();
-    var all = $$(".fc-edit-list input");
+    var all = Array.prototype.slice.call(list.querySelectorAll("input"));
     var next = all[all.indexOf(e.target) + 1];
     if (!next) {
       addRow({});

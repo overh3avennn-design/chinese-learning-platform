@@ -2740,17 +2740,23 @@ body.home .hero-video + main .btn-primary:hover {
   -webkit-box-orient: vertical;
 }
 
-/* «+ Новая папка» — пунктирная пустая плашка (.card.is-empty), содержимое
-   по центру; высотой — как соседние плашки ряда. */
-.fc-folder-new {
+/* «+ Новая папка» и «+ Новая колода» — пунктирные пустые плашки
+   (.card.is-empty), содержимое по центру; высотой — как соседние плашки
+   ряда. Справа у папки — место под край «стопки», как у плашек папок. */
+.fc-folder-new,
+.fc-deck-new {
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-height: 7.5rem;
+}
+
+.fc-folder-new {
   margin-right: 6px;
 }
 
-.fc-folder-new:hover h3 a {
+.fc-folder-new:hover h3 a,
+.fc-deck-new:hover h3 a {
   color: var(--color-accent);
 }
 

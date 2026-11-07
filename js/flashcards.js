@@ -8,11 +8,13 @@
    прямо с диска (file://), а там fetch к соседним файлам браузер
    запрещает. Тег <script> работает и с диска, и на сайте.
 
-   Свои колоды — те, что ученик собрал из фото тетради (js/photo-cards.js),
-   и слова, которые он добавил с фото в готовые колоды. Лежат в localStorage
-   этого браузера (ключ flashcards-user) в том же формате, что и файлы, и
-   проходят ту же проверку cleanDeck — поэтому свайпы и прогресс работают
-   с ними так же. Свою колоду можно скачать файлом для decks/.
+   Свои колоды — те, что ученик собрал из фото тетради (js/photo-cards.js)
+   или вписал сам в редакторе колоды (js/deck-editor.js, экраны #new-deck
+   и #deck=<id>&edit), и слова, которые он добавил с фото в готовые колоды.
+   Лежат в localStorage этого браузера (ключ flashcards-user) в том же
+   формате, что и файлы, и проходят ту же проверку cleanDeck — поэтому
+   свайпы и прогресс работают с ними так же. Свою колоду можно изменить,
+   удалить и скачать файлом для decks/.
 
    Папки — несколько колод вместе. Папки сайта (их видят все) задаёт
    window.DECK_FOLDERS в decks/index.js, свои папки ученик собирает на
@@ -48,7 +50,8 @@
     done: $('[data-view="done"]'),
     photo: $('[data-view="photo"]'),
     folder: $('[data-view="folder"]'),
-    edit: $('[data-view="folder-edit"]')
+    edit: $('[data-view="folder-edit"]'),
+    deckEdit: $('[data-view="deck-edit"]')
   };
 
   var reduceMotion = window.matchMedia &&
@@ -442,6 +445,38 @@
     return { id: deck.id, added: added.length, skipped: words.length - added.length, stored: saveUser() };
   }
 
+  // Своя колода из редактора (js/deck-editor.js): id — изменить её
+  // (название и слова целиком), null — новая. Повторы слов (тот же иероглиф
+  // и пиньинь) — один раз. Прогресс хранится по словам, поэтому у слов,
+  // которые остались в колоде, он не теряется.
+  function saveOwnDeck(id, title, list) {
+    var user = loadUser();
+    var words = cleanWords(list);
+    if (!words.length) throw new Error("Добавьте хотя бы одно слово.");
+    var deck = id ? deckById[id] : null;
+    if (id && (!deck || !deck.own)) throw new Error("Такой колоды больше нет — она могла быть удалена в другой вкладке.");
+    title = String(title || "").trim().slice(0, 60);
+    if (deck) {
+      user.decks.forEach(function (d) {
+        if (d.id !== id) return;
+        d.title = title || id;
+        d.words = plainWords(words);
+      });
+      deck.title = title || id;
+      deck.words = words;
+    } else {
+      id = "my-" + Date.now().toString(36);
+      while (deckById[id]) id += "x";
+      var raw = { id: id, title: title || id, words: plainWords(words) };
+      user.decks.push(raw);
+      deck = cleanDeck(raw, "");
+      deck.own = true;
+      deckById[id] = deck;
+      decks.push(deck);
+    }
+    return { id: id, size: words.length, stored: saveUser() };
+  }
+
   // Удалённая колода уходит и из своих папок (сами папки остаются).
   function deleteOwnDeck(deck) {
     var user = loadUser();
@@ -674,9 +709,21 @@
     return card;
   }
 
+  // Первая плашка в «Колодах» — создать свою колоду; вид как у «+ Новая папка».
+  function newDeckCard() {
+    var card = el("article", "card is-empty fc-deck-new");
+    var h3 = el("h3");
+    var link = el("a", null, "+ Новая колода");
+    link.href = "#new-deck";
+    h3.appendChild(link);
+    card.appendChild(h3);
+    card.appendChild(el("p", null, "Впишите свои слова"));
+    return card;
+  }
+
   // Папки: свои (новые первыми), потом папки сайта. Колоды из папок
   // остаются и в сетках ниже; свои колоды — отдельной сеткой «Мои колоды»,
-  // новые первыми.
+  // новые первыми. В «Колодах» первой стоит плашка «+ Новая колода».
   function renderList() {
     var grid = $("[data-deck-grid]");
     var ownGrid = $("[data-own-grid]");
@@ -695,6 +742,7 @@
     folderGrid.appendChild(newFolderCard());
     $("[data-folder-hint]").hidden = folders.length > 0;
 
+    grid.appendChild(newDeckCard());
     decks.forEach(function (deck) {
       var card = deckCard(deck);
       if (deck.own) {
@@ -861,13 +909,16 @@
     $("[data-deck-size]").textContent = words(deck.words.length);
     renderSummary(views.deck, set, byDeck);
 
-    // Своя колода: где хранится, скачать файл, удалить. Готовая колода со
-    // словами с фото: сколько их и как убрать.
+    // Своя колода: где хранится, изменить, скачать файл, удалить. Готовая
+    // колода со словами с фото: сколько их и как убрать.
     $("[data-own]").hidden = !deck.own && !deck.extra;
     $("[data-own-text]").textContent = deck.own
-      ? "Колода собрана по фото и хранится в этом браузере — на другом устройстве её не будет. " +
+      ? "Колода собрана вами и хранится в этом браузере — на другом устройстве её не будет. " +
         "Файл колоды можно скачать: отправить преподавателю или добавить на сайт."
       : words(deck.extra || 0) + " добавлено по фото — они есть только в этом браузере.";
+    var editLink = $("[data-own-edit]");
+    editLink.hidden = !deck.own;
+    editLink.setAttribute("href", deckHash(deck.id, "edit"));
     $("[data-own-download]").hidden = !deck.own;
     $("[data-own-delete]").textContent = deck.own ? "Удалить колоду" : "Убрать добавленные слова";
     showNote($("[data-saved-note]"));
@@ -1008,6 +1059,26 @@
     if (wasNew) navigate(folderHash(res.folder.id), true);
     else goBack(folderHash(res.folder.id));
   });
+
+  // ------------------------------------------------- редактор колоды
+  // #new-deck — новая колода, #deck=<id>&edit — своя. Таблицу слов ведёт
+  // js/deck-editor.js (он подключён раньше этого файла), здесь — адрес,
+  // «Назад» и показ экрана. Без него редактора нет — к списку или колоде.
+  function openDeckEditor(deck) {
+    var view = views.deckEdit;
+    if (!view || !window.DeckEditor) {
+      navigate(deck ? deckHash(deck.id) : "", true);
+      return;
+    }
+    var back = deck ? deckHash(deck.id) : "";
+    Array.prototype.forEach.call(view.querySelectorAll("[data-back]"), function (node) {
+      node.setAttribute("data-back", back);
+      node.setAttribute("href", back || "#");
+    });
+    window.DeckEditor.open(deck ? { id: deck.id, title: deck.title, words: plainWords(deck.words) } : null);
+    document.title = (deck ? "Изменить колоду" : "Новая колода") + " — Карточки — Китайский язык";
+    show("deckEdit");
+  }
 
   hideToggle.addEventListener("change", function () {
     hideTranslation = hideToggle.checked;
@@ -1572,6 +1643,11 @@
       openEditor(folder);
       return;
     }
+    // Так же редактор колоды: готовую колоду (из decks/) не меняют.
+    if (routedHash === "#new-deck" || (deck && deck.own && mode === "edit")) {
+      openDeckEditor(deck);
+      return;
+    }
     if (set) {
       deckOnPage = deck;
       folderOnPage = folder;
@@ -1607,8 +1683,8 @@
   window.addEventListener("hashchange", onAddressChange);
   window.addEventListener("popstate", onAddressChange);
 
-  // Для js/photo-cards.js: список колод, сохранение слов и переходы. Сам
-  // он не знает, как устроены колоды и адреса раздела.
+  // Для js/photo-cards.js и js/deck-editor.js: список колод, сохранение
+  // слов и переходы. Сами они не знают, как устроены колоды и адреса раздела.
   window.Flashcards = {
     list: function () {
       return decks.map(function (d) {
@@ -1616,14 +1692,23 @@
       });
     },
     save: saveWords,
+    saveDeck: saveOwnDeck,
+    // Удалить свою колоду из редактора — и к списку колод.
+    deleteDeck: function (id) {
+      var deck = deckById[id];
+      if (deck && deck.own) deleteOwnDeck(deck);
+      navigate("", true);
+    },
     openPhoto: function () {
       if (window.location.hash === "#photo") route();
       else navigate("#photo");
     },
-    // Сохранили — на страницу колоды вместо записи #photo в истории.
-    openDeck: function (id, note) {
+    // Сохранили — на страницу колоды вместо записи #photo или #new-deck в
+    // истории; back — колоду меняли в редакторе: назад к ней.
+    openDeck: function (id, note, back) {
       savedNote = note || null;
-      navigate(deckHash(id), true);
+      if (back) goBack(deckHash(id));
+      else navigate(deckHash(id), true);
     }
   };
 
