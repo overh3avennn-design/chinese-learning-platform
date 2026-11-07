@@ -18,4 +18,5 @@ window.DECK_FILES = [
   "21-10-conf.js",
   "klim-tekst-3.js",
   "6-urok.js",
+  "tetrad-7-11.js",
 ];
