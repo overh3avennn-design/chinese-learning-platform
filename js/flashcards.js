@@ -1219,6 +1219,7 @@
     $('[data-again="missed"]').hidden = !missed;
     $("[data-reset-done]").hidden = true;
     show("result");
+    if (window.maybeOfferHomeScreen) window.maybeOfferHomeScreen();
   }
 
   // -------------------------------------------------------- свайп

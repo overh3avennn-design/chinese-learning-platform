@@ -1,0 +1,70 @@
+/* Плашка «Добавить на главный экран» в Telegram (js/home-screen.js).
+   Фон, размытие и рамка — как у нижней панели разделов
+   (components/site-header/header.css), текст и тень — токены css/style.css,
+   кнопки — обычные .btn сайта. На широком окне плашка у нижнего края по
+   центру, на телефоне — над нижней панелью (--site-tabbar-space из
+   header.css), не закрывая её. Ниже панели по z-index (850), выше страницы. */
+.hs-offer {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  z-index: 845;
+  box-sizing: border-box;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background-color: rgba(18, 22, 29, 0.94);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+  color: var(--color-text);
+  animation: hs-offer-in 0.25s ease-out;
+}
+
+.hs-offer__text {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.hs-offer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.hs-offer .btn {
+  font-family: inherit;
+}
+
+/* У .btn-secondary рамка 1px, у .btn-primary её нет — уравниваем высоту. */
+.hs-offer .btn-primary {
+  border: 1px solid transparent;
+}
+
+@keyframes hs-offer-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 899.98px) {
+  .hs-offer {
+    bottom: calc(var(--site-tabbar-space, 0px) + 12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-offer {
+    animation: none;
+  }
+}
