@@ -18,13 +18,15 @@
   <script src="../components/site-header/header.js"></script>
   <div class="bg-fixed" aria-hidden="true"></div>
 
-  <!-- Раздел «Карточки». Шесть экранов на одной странице — список колод,
-       страница колоды, изучение, итоги, «Колода выучена» и проверка слов с
-       фото; переключает их js/flashcards.js по адресу (#deck=<id> —
-       страница колоды, #deck=<id>&learn — изучение, #photo — слова с
-       фото), поэтому кнопка «Назад» в браузере ведёт на шаг назад: из
-       изучения — к колоде, от колоды — к списку. Колоды лежат в
-       flashcards/decks/, свои колоды ученика — в его браузере. Фото
+  <!-- Раздел «Карточки». Восемь экранов на одной странице — список колод
+       и папок, страница колоды, страница папки, редактор папки, изучение,
+       итоги, «Колода выучена» и проверка слов с фото; переключает их
+       js/flashcards.js по адресу (#deck=<id> — страница колоды,
+       #folder=<id> — папки, …&learn — изучение, #new-folder и
+       #folder=<id>&edit — редактор, #photo — слова с фото), поэтому кнопка
+       «Назад» в браузере ведёт на шаг назад: из изучения — к колоде, от
+       колоды — к папке или списку. Колоды и папки сайта лежат в
+       flashcards/decks/, свои колоды и папки ученика — в его браузере. Фото
        тетради читает и проверяет нейросеть (js/photo-cards.js →
        js/ai-cards.js → js/ai.js), а без неё (без VPN) оно распознаётся прямо
        в браузере (js/notebook-ocr.js) со сверкой по словарю БКРС
@@ -38,7 +40,7 @@
       <p class="page-subtitle">Учим слова по колодам: иероглиф — пиньинь — перевод</p>
 
       <p>
-        Выберите колоду. Перевернуть карточку — нажатием, дальше свайп вправо,
+        Выберите колоду или папку. Перевернуть карточку — нажатием, дальше свайп вправо,
         если слово знаете, и влево — если нет. Незнакомые слова вернутся в
         конце, а в следующий раз попадутся раньше остальных.
       </p>
@@ -66,6 +68,14 @@
           <li>Свайп вправо — слово выучено, влево — повторишь ещё раз.</li>
           <li>Ошибся со свайпом — «Предыдущая карточка» вернёт слово и отменит ответ.</li>
         </ul>
+      </section>
+
+      <!-- Папки: свои и папки сайта, последней — плашка «+ Новая папка».
+           Колоды из папок остаются и в общем списке ниже. -->
+      <section class="section">
+        <h2>Папки</h2>
+        <p class="fc-own-hint" data-folder-hint>Соберите несколько колод в одну папку — учить их можно будет все вместе.</p>
+        <div class="card-grid fc-folder-grid" data-folder-list></div>
       </section>
 
       <section class="section" data-own-decks hidden>
@@ -127,6 +137,78 @@
           <button class="fc-reset" type="button" data-own-delete>Удалить колоду</button>
         </div>
       </section>
+    </div>
+
+    <!-- Страница папки: сводка по всем её колодам, «Учить всю папку» —
+         слова всех колод вперемешку, ниже — сами колоды. -->
+    <div class="fc-view fc-deck-page" data-view="folder" hidden>
+      <a class="fc-back" href="#" data-back="">← Назад</a>
+      <h1 class="page-title fc-folder-heading">
+        <svg class="fc-folder-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4.2l2 2.2H19a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+        <span data-folder-name></span>
+      </h1>
+      <p class="page-subtitle" data-folder-size></p>
+      <p class="fc-saved" data-folder-note role="status" hidden></p>
+
+      <div class="fc-deck-summary">
+        <div class="fc-deck-counts">
+          <span class="fc-chip"><span class="fc-dot is-new" aria-hidden="true"></span>Новые <b data-count="new">0</b></span>
+          <span class="fc-chip is-miss"><span class="fc-dot is-learning" aria-hidden="true"></span>Изучаются <b data-count="learning">0</b></span>
+          <span class="fc-chip is-know"><span class="fc-dot is-learned" aria-hidden="true"></span>Выучено <b data-count="learned">0</b></span>
+        </div>
+        <div class="fc-progress" data-deck-progress><span></span></div>
+        <p class="card-meta" data-deck-learned></p>
+      </div>
+
+      <div class="fc-deck-actions">
+        <button class="btn btn-primary fc-learn" type="button" data-learn="due">Учить всю папку</button>
+        <button class="btn btn-secondary" type="button" data-learn="missed" disabled>Повторить незнакомые</button>
+      </div>
+
+      <section class="section">
+        <h2>Колоды в папке</h2>
+        <p class="fc-status" data-folder-empty hidden>В папке пока нет колод.</p>
+        <div class="card-grid" data-folder-grid></div>
+      </section>
+
+      <section class="fc-own" data-folder-own hidden>
+        <p class="fc-own-text">Папка собрана вами и хранится в этом браузере. Если её удалить, колоды останутся.</p>
+        <div class="fc-own-actions">
+          <a class="btn btn-secondary" href="#" data-folder-edit>Изменить папку</a>
+          <button class="fc-reset" type="button" data-folder-delete>Удалить папку</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Редактор папки (#new-folder, #folder=<id>&edit): название и колоды
+         галочками. Строки списка строит js/flashcards.js. -->
+    <div class="fc-view fc-deck-page fc-folder-edit" data-view="folder-edit" hidden>
+      <a class="fc-back" href="#" data-back="">← Назад</a>
+      <h1 class="page-title" data-edit-title>Новая папка</h1>
+      <p class="page-subtitle">Отметьте колоды, которые хотите держать вместе. Папку можно учить целиком — слова всех её колод вперемешку.</p>
+
+      <form class="fc-folder-form" data-folder-form novalidate>
+        <label class="fc-field">
+          <span class="fc-field-label">Название папки</span>
+          <input class="fc-input" type="text" maxlength="60" autocomplete="off" data-folder-title placeholder="Например: Учебник Клима">
+        </label>
+
+        <fieldset class="fc-pick">
+          <legend>Колоды <span class="fc-pick-count" data-pick-count></span></legend>
+          <p class="fc-status" data-pick-empty hidden>Колод пока нет.</p>
+          <ul class="fc-pick-list" data-pick-list></ul>
+        </fieldset>
+
+        <p class="fc-save-error" data-folder-error role="alert" hidden></p>
+        <div class="fc-photo-buttons">
+          <button class="btn btn-primary" type="submit" data-folder-save>Создать папку</button>
+          <a class="btn btn-secondary" href="#" data-back="">Отмена</a>
+        </div>
+      </form>
+
+      <p class="fc-reset-line" data-folder-delete-line hidden>
+        <button class="fc-reset" type="button" data-folder-delete>Удалить папку</button>
+      </p>
     </div>
 
     <div class="fc-view fc-study" data-view="study" hidden>
@@ -195,7 +277,7 @@
         </div>
         <div class="fc-result-stat is-know">
           <b data-result-learned></b>
-          <span>выучено в колоде</span>
+          <span>выучено в <span data-folder-word="папке">колоде</span></span>
         </div>
       </div>
 
@@ -210,9 +292,9 @@
 
       <div class="fc-result-actions">
         <button class="btn btn-primary" type="button" data-again="missed">Повторить только незнакомые</button>
-        <button class="btn btn-secondary" type="button" data-again="all">Пройти колоду заново</button>
+        <button class="btn btn-secondary" type="button" data-again="all">Пройти <span data-folder-word="папку">колоду</span> заново</button>
         <button class="btn btn-secondary" type="button" data-undo data-undo-result hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg> Вернуться к последней карточке</button>
-        <a class="btn btn-secondary" href="#" data-back-deck>← Назад к колоде</a>
+        <a class="btn btn-secondary" href="#" data-back-deck>← Назад к <span data-folder-word="папке">колоде</span></a>
       </div>
       <p class="fc-reset-line">
         <button class="fc-reset" type="button" data-reset>Сбросить прогресс</button>
@@ -220,13 +302,14 @@
       </p>
     </div>
 
-    <!-- «Учить карточки», когда невыученных слов не осталось. -->
+    <!-- «Учить карточки», когда невыученных слов не осталось. Слова
+         «колода» в data-folder-word у папки меняются на «папка». -->
     <div class="fc-view fc-deck-page" data-view="done" hidden>
       <a class="fc-back" href="#" data-back-deck>← Назад</a>
-      <h1 class="page-title">Колода выучена 🎉</h1>
+      <h1 class="page-title"><span data-folder-word="Папка">Колода</span> выучена 🎉</h1>
       <p class="page-subtitle" data-done-deck></p>
       <div class="fc-result-actions">
-        <button class="btn btn-primary" type="button" data-learn="all">Пройти всю колоду заново</button>
+        <button class="btn btn-primary" type="button" data-learn="all">Пройти всю <span data-folder-word="папку">колоду</span> заново</button>
       </div>
     </div>
 
