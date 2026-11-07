@@ -25,7 +25,9 @@
        фото), поэтому кнопка «Назад» в браузере ведёт на шаг назад: из
        изучения — к колоде, от колоды — к списку. Колоды лежат в
        flashcards/decks/, свои колоды ученика — в его браузере. Фото
-       тетради распознаёт нейросеть (js/photo-cards.js → js/ai.js). -->
+       тетради распознаётся прямо в браузере (js/photo-cards.js →
+       js/notebook-ocr.js), пиньинь и перевод сверяются со словарём БКРС
+       (js/dict-lookup.js). -->
   <main data-flashcards>
     <div class="fc-view" data-view="list">
       <nav class="breadcrumb" aria-label="Навигация">
@@ -47,7 +49,7 @@
         <span class="fc-photo-icon" aria-hidden="true">📷</span>
         <div class="fc-photo-body">
           <h2 class="fc-photo-cta-title" id="fc-photo-cta-title">Карточки по фото тетради</h2>
-          <p>Сфотографируйте страницу, где записаны иероглифы, пиньинь и перевод, — нейросеть распознает слова, а вы проверите их перед сохранением. Пока работает только с VPN.</p>
+          <p>Сфотографируйте страницу, где записаны иероглифы, пиньинь и перевод, — слова распознаются прямо на вашем устройстве и сверятся со словарём, а вы проверите их перед сохранением.</p>
         </div>
         <div class="fc-photo-actions">
           <button class="btn btn-primary" type="button" data-photo-camera hidden>Сфотографировать</button>
@@ -242,7 +244,7 @@
 
         <div class="fc-photo-state" data-state="loading" aria-live="polite">
           <p class="fc-photo-msg"><span class="fc-spinner" aria-hidden="true"></span><span data-loading-text>Распознаю слова…</span></p>
-          <p class="fc-photo-hint" data-loading-hint>Обычно это занимает 10–30 секунд.</p>
+          <p class="fc-photo-hint" data-loading-hint>Обычно это занимает от 10 секунд до минуты — зависит от телефона и числа строк.</p>
           <div class="fc-photo-buttons">
             <button class="btn btn-secondary" type="button" data-photo-cancel>Отменить</button>
           </div>
@@ -252,6 +254,7 @@
           <p class="fc-photo-msg is-error" data-error-text></p>
           <div class="fc-photo-buttons">
             <button class="btn btn-primary" type="button" data-photo-retry>Попробовать ещё раз</button>
+            <button class="btn btn-primary" type="button" data-photo-manual data-error-manual hidden>Ввести слова вручную</button>
             <button class="btn btn-secondary" type="button" data-photo-pick>Выбрать другое фото</button>
           </div>
         </div>
@@ -270,9 +273,14 @@
 
         <div class="fc-photo-state" data-state="review" hidden>
           <p class="fc-photo-msg" data-review-text></p>
-          <p class="fc-photo-hint" data-ai-legend hidden>
-            <span class="fc-ai-badge">ИИ</span> — этого не было на фото, нейросеть дописала сама.
-            Проверьте такие места.
+          <p class="fc-photo-hint" data-legend="unsure" hidden>
+            <span class="fc-mark is-unsure">?</span> — прочитано неуверенно, сверьте с фото.
+          </p>
+          <p class="fc-photo-hint" data-legend="added" hidden>
+            <span class="fc-mark is-added">БКРС</span> — этого не было на фото, взято из словаря.
+          </p>
+          <p class="fc-photo-hint" data-legend="offline" hidden>
+            Словарь не загрузился — всё взято только с фото, без проверки. Проверьте слова внимательнее.
           </p>
         </div>
       </div>
@@ -305,7 +313,8 @@
   </main>
   <script src="decks/index.js"></script>
   <script src="../js/flashcards.js"></script>
-  <script src="../js/ai.js"></script>
+  <script src="../js/dict-lookup.js"></script>
+  <script src="../js/notebook-ocr.js"></script>
   <script src="../js/photo-cards.js"></script>
 
   <footer class="site-footer">

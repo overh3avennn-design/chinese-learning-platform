@@ -25,7 +25,12 @@ Cloudflare Worker, через который сайт обращается к н
 | --- | --- | --- |
 | `chat` | ИИ-помощник (`assistant/`) | `QWEN_MODEL` |
 | `explain-word` | «Объяснить» в словаре (окно слова) | `QWEN_MODEL` |
-| `notebook-cards` | «Карточки по фото тетради» | `QWEN_VISION_MODEL` |
+| `notebook-cards` | сайт больше не вызывает (см. ниже) | `QWEN_VISION_MODEL` |
+
+«Карточки по фото тетради» с ноября 2026 распознают фото прямо в браузере
+(`js/notebook-ocr.js`, модели — в репозитории `chinese-dictionary-data`,
+папка `ocr/`) и без VPN. Задача `notebook-cards` оставлена в воркере как
+запасной вариант.
 
 ## Команды
 

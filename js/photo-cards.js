@@ -1,27 +1,32 @@
 /* Карточки по фото тетради (раздел «Карточки», экран #photo): фото
-   страницы → нейросеть распознаёт слова (задача "notebook-cards" через
-   js/ai.js) → ученик проверяет таблицу → слова уходят в новую или готовую
-   колоду через window.Flashcards (js/flashcards.js).
+   страницы → слова распознаются прямо в браузере и сверяются со словарём
+   (window.NotebookOCR, js/notebook-ocr.js) → ученик проверяет таблицу →
+   слова уходят в новую или готовую колоду через window.Flashcards
+   (js/flashcards.js). Фото никуда не отправляется.
 
-   Фото перед отправкой сжимается в браузере: длинная сторона — до
-   MAX_SIDE точек, JPEG. Иероглифы на странице тетради при этом читаются, а
-   запрос остаётся в пределах сотен килобайт — по мобильному интернету
-   уходит быстро. Подключается после js/flashcards.js и js/ai.js. */
+   Пометки в таблице: «?» — прочитано неуверенно, «БКРС» — на фото этого
+   не было, взято из словаря. Поправили поле — пометка снимается.
+   Подключается после js/flashcards.js, js/dict-lookup.js и
+   js/notebook-ocr.js. */
 (function () {
   "use strict";
 
   var root = document.querySelector("[data-flashcards]");
-  if (!root || !window.Flashcards || !window.AI) return;
+  if (!root || !window.Flashcards || !window.NotebookOCR) return;
 
-  var MAX_SIDE = 1600;
-  var QUALITY = 0.82;
-  var MAX_CHARS = 2.6 * 1024 * 1024;   // data:-адрес фото; воркер принимает запрос до 3 МБ
   var FIELDS = ["hanzi", "pinyin", "translation"];
   var LABELS = { hanzi: "Иероглифы", pinyin: "Пиньинь", translation: "Перевод" };
   var PLACEHOLDERS = { hanzi: "你好", pinyin: "nǐ hǎo", translation: "здравствуйте" };
   var MAX_LEN = { hanzi: 40, pinyin: 100, translation: 200 };
-  var AI_TITLE = "Этого не было на фото — вариант нейросети. Проверьте.";
-  var LOADING_HINT = "Обычно это занимает 10–30 секунд.";
+  var MARKS = {
+    unsure: { label: "?", title: "Прочитано неуверенно — сверьте с фото.", say: "прочитано неуверенно" },
+    added: { label: "БКРС", title: "Этого не было на фото — взято из словаря БКРС.", say: "взято из словаря" }
+  };
+  var LOADING_HINT = "Обычно это занимает от 10 секунд до минуты — зависит от телефона и числа строк.";
+  var STAGES = {
+    detect: "Ищу строки на фото…",
+    check: "Сверяю со словарём…"
+  };
   var DELETE_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
 
   function $(selector) {
@@ -64,7 +69,7 @@
   var saveBtn = $("[data-save]");
   var saveError = $("[data-save-error]");
 
-  var job = null;          // { token, url, image, ctrl } — текущее фото
+  var job = null;          // { token, url, image, busy } — текущее фото
   var active = false;      // на экране #photo есть что показать
 
   // «Сфотографировать» — только на телефонах и планшетах: на компьютере
@@ -100,44 +105,19 @@
     });
   }
 
-  // JPEG не больше MAX_SIDE по длинной стороне. Если data:-адрес всё равно
-  // велик, уменьшаем ещё. Поворот с камеры телефона (EXIF) браузер
-  // применяет к картинке сам.
-  function compress(image) {
-    var side = MAX_SIDE;
-    var quality = QUALITY;
-    for (var attempt = 0; attempt < 5; attempt++) {
-      var scale = Math.min(1, side / Math.max(image.naturalWidth, image.naturalHeight));
-      var w = Math.max(1, Math.round(image.naturalWidth * scale));
-      var h = Math.max(1, Math.round(image.naturalHeight * scale));
-      var canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      var ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#fff";             // прозрачный PNG — на белом, как бумага
-      ctx.fillRect(0, 0, w, h);
-      ctx.drawImage(image, 0, 0, w, h);
-      var data = canvas.toDataURL("image/jpeg", quality);
-      if (data.length <= MAX_CHARS && data.indexOf("data:image/jpeg") === 0) return data;
-      side = Math.round(side * 0.8);
-      quality = Math.max(0.6, quality - 0.08);
-    }
-    throw new Error("too large");
-  }
-
   function start(file) {
     stopRequest();
     clearJob();
     var token = {};
-    job = { token: token, url: URL.createObjectURL(file), image: null, ctrl: null };
+    job = { token: token, url: URL.createObjectURL(file), image: null, busy: false };
     active = true;
     img.src = job.url;
     setZoom(false);
-    setState("loading", "Сжимаю фото…");
+    setState("loading", "Открываю фото…");
     window.Flashcards.openPhoto();
     loadImage(job.url).then(function (image) {
       if (!job || job.token !== token) return;
-      job.image = compress(image);
+      job.image = image;
       recognize();
     }).catch(function () {
       if (!job || job.token !== token) return;
@@ -145,36 +125,55 @@
     });
   }
 
+  function mb(bytes) {
+    return Math.max(1, Math.round(bytes / 1048576));
+  }
+
+  // Что происходит: в первый раз — скачивание распознавателя с процентами,
+  // потом поиск строк, чтение строк по одной и сверка со словарём.
+  function onStatus(s) {
+    var text = STAGES[s.stage] || "Распознаю слова…";
+    var hint = LOADING_HINT;
+    if (s.stage === "download" && s.total) {
+      text = "Скачиваю распознаватель — " + Math.min(99, Math.floor(100 * s.loaded / s.total)) + "%";
+      hint = "Это нужно только в первый раз (около " + mb(s.total) + " МБ): дальше распознаватель хранится на устройстве.";
+    } else if (s.stage === "read" && s.total) {
+      // Число строк уточняется по ходу — проценты только растут.
+      readPct = Math.max(readPct, Math.min(99, Math.floor(100 * s.done / s.total)));
+      text = "Читаю страницу — " + readPct + "%";
+    }
+    $("[data-loading-text]").textContent = text;
+    $("[data-loading-hint]").textContent = hint;
+  }
+
+  var readPct = 0;
+
   function recognize() {
     var token = job.token;
-    var ctrl = window.AbortController ? new AbortController() : null;
-    job.ctrl = ctrl;
+    job.busy = true;
+    readPct = 0;
     setState("loading", "Распознаю слова…");
-    var slow = setTimeout(function () {
-      $("[data-loading-hint]").textContent = "Ещё немного — нейросеть внимательно читает страницу.";
-    }, 30000);
-    window.AI.ask("notebook-cards", { image: job.image }, {
-      signal: ctrl ? ctrl.signal : undefined,
-      timeout: 150000
+    window.NotebookOCR.read(job.image, {
+      onStatus: function (s) {
+        if (job && job.token === token && job.busy) onStatus(s);
+      }
     }).then(function (result) {
-      clearTimeout(slow);
       if (!job || job.token !== token) return;
-      job.ctrl = null;
+      job.busy = false;
       var found = result && Array.isArray(result.words) ? result.words : [];
-      if (found.length) showReview(found, !!result.truncated, false);
+      if (found.length) showReview(found, false, false, result.checked !== false);
       else setState("empty");
     }, function (err) {
-      clearTimeout(slow);
       if (!job || job.token !== token) return;
-      job.ctrl = null;
-      if (err.code !== "aborted") showError(err.message);
+      job.busy = false;
+      if (err.code !== "aborted") showError(err.message, err.code);
     });
   }
 
   function stopRequest() {
-    if (job && job.ctrl) {
-      job.ctrl.abort();
-      job.ctrl = null;
+    if (job && job.busy) {
+      job.busy = false;
+      window.NotebookOCR.cancel();
     }
   }
 
@@ -183,10 +182,10 @@
     job = null;
   }
 
-  // Ушли с экрана (кнопкой «Назад»), пока шло распознавание, — запрос
-  // останавливаем, а вернувшись, можно начать заново.
+  // Ушли с экрана (кнопкой «Назад»), пока шло распознавание, — оно
+  // останавливается, а вернувшись, можно начать заново.
   function onLeave() {
-    if (window.location.hash === "#photo" || !job || !job.ctrl) return;
+    if (window.location.hash === "#photo" || !job || !job.busy) return;
     stopRequest();
     showError("Распознавание остановлено. Нажмите «Попробовать ещё раз», чтобы начать снова.");
   }
@@ -206,9 +205,13 @@
     editBox.hidden = name !== "review";
   }
 
-  function showError(message) {
+  // code "unsupported" — браузер не умеет распознавать: повторять незачем,
+  // зато можно вписать слова вручную.
+  function showError(message, code) {
+    var unsupported = code === "unsupported";
     $("[data-error-text]").textContent = message;
-    $("[data-photo-retry]").hidden = !(job && job.image);
+    $("[data-photo-retry]").hidden = unsupported || !(job && job.image);
+    $("[data-error-manual]").hidden = !unsupported;
     setState("error");
   }
 
@@ -219,14 +222,19 @@
   }
 
   // ------------------------------------------------------- таблица слов
-  function showReview(found, truncated, manual) {
+  // checked — пиньинь и перевод сверены со словарём (false — словарь не
+  // загрузился, всё как прочитано).
+  function showReview(found, truncated, manual, checked) {
     list.textContent = "";
     found.forEach(function (w) { addRow(w); });
     if (!found.length) addRow({});
     renumber();
-    $("[data-ai-legend]").hidden = !found.some(function (w) {
-      return Array.isArray(w.added) && w.added.length;
+    ["unsure", "added"].forEach(function (kind) {
+      root.querySelector('[data-legend="' + kind + '"]').hidden = !found.some(function (w) {
+        return Array.isArray(w[kind]) && w[kind].length;
+      });
     });
+    root.querySelector('[data-legend="offline"]').hidden = manual || checked !== false;
     $("[data-review-text]").textContent = manual
       ? "Впишите слова: иероглифы, пиньинь и перевод."
       : "Найдено: " + words(found.length) + ". Проверьте их — исправьте ошибки, удалите лишнее, добавьте пропущенное." +
@@ -255,7 +263,8 @@
       }
       if (f === "hanzi") input.lang = "zh-CN";
       cell.appendChild(input);
-      if (Array.isArray(w.added) && w.added.indexOf(f) >= 0) markAi(cell, true);
+      if (Array.isArray(w.unsure) && w.unsure.indexOf(f) >= 0) mark(cell, "unsure");
+      else if (Array.isArray(w.added) && w.added.indexOf(f) >= 0) mark(cell, "added");
       row.appendChild(cell);
     });
     var del = el("button", "fc-edit-del");
@@ -268,27 +277,30 @@
     return row;
   }
 
-  function markAi(cell, on) {
-    var badge = cell.querySelector(".fc-ai-badge");
-    cell.classList.toggle("is-ai", on);
-    if (on && !badge) {
-      badge = el("span", "fc-ai-badge", "ИИ");
-      badge.setAttribute("aria-hidden", "true");
-      cell.appendChild(badge);
-      cell.title = AI_TITLE;
-    } else if (!on && badge) {
-      cell.removeChild(badge);
-      cell.removeAttribute("title");
-    }
+  // Пометка поля: "unsure", "added" или null — снять.
+  function mark(cell, kind) {
+    var badge = cell.querySelector(".fc-mark");
+    if (badge) cell.removeChild(badge);
+    cell.classList.remove("is-unsure", "is-added");
+    cell.removeAttribute("title");
+    cell.removeAttribute("data-mark");
+    if (!kind) return;
+    badge = el("span", "fc-mark is-" + kind, MARKS[kind].label);
+    badge.setAttribute("aria-hidden", "true");
+    cell.appendChild(badge);
+    cell.classList.add("is-" + kind);
+    cell.title = MARKS[kind].title;
+    cell.setAttribute("data-mark", kind);
   }
 
-  // Подписи для экранных дикторов: «Пиньинь, слово 3 — вариант нейросети».
+  // Подписи для экранных дикторов: «Пиньинь, слово 3 — взято из словаря».
   function renumber() {
     $$(".fc-edit-row").forEach(function (row, i) {
       FIELDS.forEach(function (f) {
         var cell = row.querySelector(".fc-cell-" + f);
+        var kind = cell.getAttribute("data-mark");
         cell.querySelector("input").setAttribute("aria-label", LABELS[f] + ", слово " + (i + 1) +
-          (cell.classList.contains("is-ai") ? " — вариант нейросети" : ""));
+          (kind ? " — " + MARKS[kind].say : ""));
       });
       row.querySelector("[data-del-row]").setAttribute("aria-label", "Удалить слово " + (i + 1));
     });
@@ -418,7 +430,7 @@
       return;
     }
     if (e.target.closest("[data-photo-manual]")) {
-      showReview([], false, true);
+      showReview([], false, true, true);
       var first = list.querySelector("input");
       if (first) first.focus();
       return;
@@ -449,8 +461,8 @@
   list.addEventListener("input", function (e) {
     var cell = e.target.closest(".fc-cell");
     if (!cell) return;
-    if (cell.classList.contains("is-ai")) {
-      markAi(cell, false);       // поправили — это уже не догадка нейросети
+    if (cell.hasAttribute("data-mark")) {
+      mark(cell, null);          // поправили — ученик проверил это поле сам
       renumber();
     }
     var row = cell.closest(".fc-edit-row");
