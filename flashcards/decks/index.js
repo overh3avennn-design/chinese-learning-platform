@@ -19,6 +19,7 @@ window.DECK_FILES = [
   "klim-tekst-3.js",
   "6-urok.js",
   "tetrad-7-11.js",
+  "rugatelstva.js",
 ];
 
 /* Папки сайта — несколько колод вместе; их видят все посетители. Свои
