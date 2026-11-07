@@ -2451,6 +2451,13 @@ body.home .hero-video + main .btn-primary:hover {
   border-color: rgba(167, 179, 196, 0.45);
 }
 
+/* «ИИ» — этого не было на фото, дописала нейросеть. */
+.fc-mark.is-ai {
+  color: #9dbcff;
+  background: rgba(143, 180, 255, 0.12);
+  border-color: rgba(143, 180, 255, 0.5);
+}
+
 /* Таблица слов: иероглифы | пиньинь | перевод | удалить. На телефоне —
    иероглифы и пиньинь в строку, перевод под ними во всю ширину. */
 .fc-edit-head,
@@ -2535,6 +2542,46 @@ body.home .hero-video + main .btn-primary:hover {
 .fc-cell.is-added .fc-input {
   padding-right: 3.2rem;
   border-style: dashed;
+}
+
+.fc-cell.is-ai .fc-input {
+  padding-right: 2.4rem;
+  border-style: dashed;
+  border-color: rgba(143, 180, 255, 0.55);
+}
+
+/* Замечание нейросети под словом: что не так, и кнопка «Исправить»,
+   если есть правильный вариант. Во всю ширину строки. */
+.fc-edit-note {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-accent-soft);
+}
+
+.fc-edit-note-text::before {
+  content: "⚠ ";
+}
+
+.fc-edit-fix {
+  padding: 0.2rem 0.75rem;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-text);
+  background: rgba(246, 82, 9, 0.16);
+  border: 1px solid rgba(246, 82, 9, 0.55);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.fc-edit-fix:hover,
+.fc-edit-fix:focus-visible {
+  background: rgba(246, 82, 9, 0.3);
 }
 
 .fc-cell .fc-mark {

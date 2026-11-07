@@ -14,7 +14,9 @@ enabled = true
 # Поменяли — снова npx wrangler deploy.
 #
 # QWEN_MODEL — модель для чата и «Объяснить», QWEN_VISION_MODEL — для фото
-# тетради (должна понимать картинки). Qwen3.8 Flash умеет и то и другое.
+# тетради (должна понимать картинки). С ноября 2026 qwen3.8-flash на фото
+# получает от Polza ошибку 520 через 40 с, поэтому для фото — qwen3.8-omni-flash
+# (фото не больше ~560 точек по длинной стороне: крупнее Polza не успевает).
 # Модель должна быть разрешена ключу Polza (белый список моделей ключа).
 #
 # QWEN_REASONING и QWEN_VISION_REASONING — «рассуждения» модели перед
@@ -30,7 +32,7 @@ enabled = true
 [vars]
 QWEN_BASE_URL = "https://polza.ai/api/v1"
 QWEN_MODEL = "qwen/qwen3.8-flash"
-QWEN_VISION_MODEL = "qwen/qwen3.8-flash"
+QWEN_VISION_MODEL = "qwen/qwen3.8-omni-flash"
 QWEN_REASONING = "none"
 QWEN_VISION_REASONING = "none"
 ALLOWED_ORIGINS = "https://overh3avennn-design.github.io,http://localhost:8000,http://127.0.0.1:8000"

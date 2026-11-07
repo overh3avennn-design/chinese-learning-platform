@@ -1,13 +1,16 @@
 /* Карточки по фото тетради (раздел «Карточки», экран #photo): фото
-   страницы → слова распознаются прямо в браузере и сверяются со словарём
-   (window.NotebookOCR, js/notebook-ocr.js) → ученик проверяет таблицу →
-   слова уходят в новую или готовую колоду через window.Flashcards
-   (js/flashcards.js). Фото никуда не отправляется.
+   страницы → слова читает нейросеть и проверяет их (window.AICards,
+   js/ai-cards.js), а когда она недоступна (без VPN) — распознавание прямо
+   в браузере со сверкой по словарю (window.NotebookOCR) → ученик
+   проверяет таблицу → слова уходят в новую или готовую колоду через
+   window.Flashcards (js/flashcards.js).
 
-   Пометки в таблице: «?» — прочитано неуверенно, «БКРС» — на фото этого
-   не было, взято из словаря. Поправили поле — пометка снимается.
-   Подключается после js/flashcards.js, js/dict-lookup.js и
-   js/notebook-ocr.js. */
+   Пометки в таблице: «?» — прочитано неуверенно или нейросеть нашла
+   ошибку, «ИИ» — на фото этого не было, дописала нейросеть, «БКРС» —
+   взято из словаря. Поправили поле — пометка снимается. Замечание
+   нейросети — под словом, с кнопкой «Исправить», если есть вариант.
+   Подключается после js/flashcards.js, js/dict-lookup.js,
+   js/notebook-ocr.js, js/ai.js и js/ai-cards.js. */
 (function () {
   "use strict";
 
@@ -20,12 +23,15 @@
   var MAX_LEN = { hanzi: 40, pinyin: 100, translation: 200 };
   var MARKS = {
     unsure: { label: "?", title: "Прочитано неуверенно — сверьте с фото.", say: "прочитано неуверенно" },
-    added: { label: "БКРС", title: "Этого не было на фото — взято из словаря БКРС.", say: "взято из словаря" }
+    added: { label: "БКРС", title: "Этого не было на фото — взято из словаря БКРС.", say: "взято из словаря" },
+    ai: { label: "ИИ", title: "Этого не было на фото — дописала нейросеть.", say: "дописано нейросетью" }
   };
+  var AI_HINT = "Обычно это занимает 10–30 секунд.";
   var LOADING_HINT = "Обычно это занимает от 10 секунд до минуты — зависит от телефона и числа строк.";
   var STAGES = {
     detect: "Ищу строки на фото…",
-    check: "Сверяю со словарём…"
+    check: "Сверяю со словарём…",
+    "ai-check": "Нейросеть проверяет слова…"
   };
   var DELETE_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
 
@@ -141,6 +147,11 @@
       // Число строк уточняется по ходу — проценты только растут.
       readPct = Math.max(readPct, Math.min(99, Math.floor(100 * s.done / s.total)));
       text = "Читаю страницу — " + readPct + "%";
+    } else if (s.stage === "ai-read") {
+      text = "Нейросеть читает страницу" + (s.total > 1 ? " — частей готово: " + s.done + " из " + s.total : "…");
+      hint = AI_HINT;
+    } else if (s.stage === "ai-check") {
+      hint = AI_HINT;
     }
     $("[data-loading-text]").textContent = text;
     $("[data-loading-hint]").textContent = hint;
@@ -153,7 +164,7 @@
     job.busy = true;
     readPct = 0;
     setState("loading", "Распознаю слова…");
-    window.NotebookOCR.read(job.image, {
+    engine().read(job.image, {
       onStatus: function (s) {
         if (job && job.token === token && job.busy) onStatus(s);
       }
@@ -161,7 +172,7 @@
       if (!job || job.token !== token) return;
       job.busy = false;
       var found = result && Array.isArray(result.words) ? result.words : [];
-      if (found.length) showReview(found, false, false, result.checked !== false);
+      if (found.length) showReview(found, false, false, result.checked !== false, result.via || "local");
       else setState("empty");
     }, function (err) {
       if (!job || job.token !== token) return;
@@ -173,8 +184,14 @@
   function stopRequest() {
     if (job && job.busy) {
       job.busy = false;
-      window.NotebookOCR.cancel();
+      engine().cancel();
     }
+  }
+
+  // Нейросеть с запасным распознаванием в браузере, а без js/ai-cards.js —
+  // только в браузере.
+  function engine() {
+    return window.AICards || window.NotebookOCR;
   }
 
   function clearJob() {
@@ -224,20 +241,29 @@
   // ------------------------------------------------------- таблица слов
   // checked — пиньинь и перевод сверены со словарём (false — словарь не
   // загрузился, всё как прочитано).
-  function showReview(found, truncated, manual, checked) {
+  // via — кто читал фото: "ai" (нейросеть), "mixed" (нейросеть и
+  // распознавание в браузере), "local" (только в браузере).
+  function showReview(found, truncated, manual, checked, via) {
     list.textContent = "";
     found.forEach(function (w) { addRow(w); });
     if (!found.length) addRow({});
     renumber();
-    ["unsure", "added"].forEach(function (kind) {
-      root.querySelector('[data-legend="' + kind + '"]').hidden = !found.some(function (w) {
-        return Array.isArray(w[kind]) && w[kind].length;
+    [["unsure", "unsure"], ["added", "added"], ["ai", "aiAdded"]].forEach(function (pair) {
+      root.querySelector('[data-legend="' + pair[0] + '"]').hidden = !found.some(function (w) {
+        return Array.isArray(w[pair[1]]) && w[pair[1]].length;
       });
     });
-    root.querySelector('[data-legend="offline"]').hidden = manual || checked !== false;
+    var offline = root.querySelector('[data-legend="offline"]');
+    offline.hidden = manual || checked !== false;
+    offline.textContent = via && via !== "local"
+      ? "Нейросеть не успела проверить слова — проверьте их внимательнее."
+      : "Словарь не загрузился — всё взято только с фото, без проверки. Проверьте слова внимательнее.";
+    var notes = found.filter(function (w) { return w.note; }).length;
     $("[data-review-text]").textContent = manual
       ? "Впишите слова: иероглифы, пиньинь и перевод."
-      : "Найдено: " + words(found.length) + ". Проверьте их — исправьте ошибки, удалите лишнее, добавьте пропущенное." +
+      : "Найдено: " + words(found.length) + "." +
+        (via === "ai" || via === "mixed" ? " Нейросеть прочитала и проверила их" + (notes ? " — посмотрите замечания под словами." : ".") : "") +
+        " Исправьте ошибки, удалите лишнее, добавьте пропущенное." +
         (truncated ? " Страница большая, и часть слов могла не войти — допишите их." : "");
     fillDecks();
     saveError.hidden = true;
@@ -264,6 +290,7 @@
       if (f === "hanzi") input.lang = "zh-CN";
       cell.appendChild(input);
       if (Array.isArray(w.unsure) && w.unsure.indexOf(f) >= 0) mark(cell, "unsure");
+      else if (Array.isArray(w.aiAdded) && w.aiAdded.indexOf(f) >= 0) mark(cell, "ai");
       else if (Array.isArray(w.added) && w.added.indexOf(f) >= 0) mark(cell, "added");
       row.appendChild(cell);
     });
@@ -273,15 +300,49 @@
     del.setAttribute("data-del-row", "");
     del.innerHTML = DELETE_ICON;
     row.appendChild(del);
+    if (w.note) row.appendChild(noteBox(w.note, w.suggest || {}));
     list.appendChild(row);
     return row;
+  }
+
+  // Замечание нейросети под словом. Есть вариант — кнопка «Исправить»
+  // подставляет его в поля (варианты хранятся в data-атрибутах кнопки).
+  function noteBox(note, suggest) {
+    var box = el("p", "fc-edit-note");
+    box.setAttribute("data-note", "");
+    box.appendChild(el("span", "fc-edit-note-text", note));
+    var fields = FIELDS.filter(function (f) { return suggest[f]; });
+    if (fields.length) {
+      var btn = el("button", "fc-edit-fix", "Исправить");
+      btn.type = "button";
+      btn.setAttribute("data-fix", "");
+      fields.forEach(function (f) { btn.setAttribute("data-fix-" + f, suggest[f]); });
+      btn.title = "Подставить: " + fields.map(function (f) { return suggest[f]; }).join(" · ");
+      box.appendChild(btn);
+    }
+    return box;
+  }
+
+  function applyFix(btn) {
+    var row = btn.closest(".fc-edit-row");
+    FIELDS.forEach(function (f) {
+      var v = btn.getAttribute("data-fix-" + f);
+      if (!v) return;
+      var cell = row.querySelector(".fc-cell-" + f);
+      cell.querySelector("input").value = v;
+      mark(cell, null);
+    });
+    var box = btn.closest("[data-note]");
+    box.parentNode.removeChild(box);
+    renumber();
+    updateCount();
   }
 
   // Пометка поля: "unsure", "added" или null — снять.
   function mark(cell, kind) {
     var badge = cell.querySelector(".fc-mark");
     if (badge) cell.removeChild(badge);
-    cell.classList.remove("is-unsure", "is-added");
+    cell.classList.remove("is-unsure", "is-added", "is-ai");
     cell.removeAttribute("title");
     cell.removeAttribute("data-mark");
     if (!kind) return;
@@ -453,6 +514,11 @@
       renumber();
       updateCount();
       (next ? next.querySelector("[data-del-row]") : $("[data-add-row]")).focus();
+      return;
+    }
+    var fix = e.target.closest("[data-fix]");
+    if (fix) {
+      applyFix(fix);
       return;
     }
     if (e.target.closest("[data-save]")) save();

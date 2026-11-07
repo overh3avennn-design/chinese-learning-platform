@@ -25,8 +25,9 @@
        фото), поэтому кнопка «Назад» в браузере ведёт на шаг назад: из
        изучения — к колоде, от колоды — к списку. Колоды лежат в
        flashcards/decks/, свои колоды ученика — в его браузере. Фото
-       тетради распознаётся прямо в браузере (js/photo-cards.js →
-       js/notebook-ocr.js), пиньинь и перевод сверяются со словарём БКРС
+       тетради читает и проверяет нейросеть (js/photo-cards.js →
+       js/ai-cards.js → js/ai.js), а без неё (без VPN) оно распознаётся прямо
+       в браузере (js/notebook-ocr.js) со сверкой по словарю БКРС
        (js/dict-lookup.js). -->
   <main data-flashcards>
     <div class="fc-view" data-view="list">
@@ -49,7 +50,7 @@
         <span class="fc-photo-icon" aria-hidden="true">📷</span>
         <div class="fc-photo-body">
           <h2 class="fc-photo-cta-title" id="fc-photo-cta-title">Карточки по фото тетради</h2>
-          <p>Сфотографируйте страницу, где записаны иероглифы, пиньинь и перевод, — слова распознаются прямо на вашем устройстве и сверятся со словарём, а вы проверите их перед сохранением.</p>
+          <p>Сфотографируйте страницу, где записаны иероглифы, пиньинь и перевод, — нейросеть прочитает слова, проверит их и допишет пропущенное (без VPN слова распознаются прямо на устройстве), а вы проверите всё перед сохранением.</p>
         </div>
         <div class="fc-photo-actions">
           <button class="btn btn-primary" type="button" data-photo-camera hidden>Сфотографировать</button>
@@ -274,7 +275,10 @@
         <div class="fc-photo-state" data-state="review" hidden>
           <p class="fc-photo-msg" data-review-text></p>
           <p class="fc-photo-hint" data-legend="unsure" hidden>
-            <span class="fc-mark is-unsure">?</span> — прочитано неуверенно, сверьте с фото.
+            <span class="fc-mark is-unsure">?</span> — прочитано неуверенно или нейросеть нашла ошибку, сверьте с фото.
+          </p>
+          <p class="fc-photo-hint" data-legend="ai" hidden>
+            <span class="fc-mark is-ai">ИИ</span> — этого не было в тетради, дописала нейросеть.
           </p>
           <p class="fc-photo-hint" data-legend="added" hidden>
             <span class="fc-mark is-added">БКРС</span> — этого не было на фото, взято из словаря.
@@ -315,6 +319,8 @@
   <script src="../js/flashcards.js"></script>
   <script src="../js/dict-lookup.js"></script>
   <script src="../js/notebook-ocr.js"></script>
+  <script src="../js/ai.js"></script>
+  <script src="../js/ai-cards.js"></script>
   <script src="../js/photo-cards.js"></script>
 
   <footer class="site-footer">

@@ -5,6 +5,8 @@
    AI.ask(task, data, { signal, timeout }) → Promise(result)
      Ошибка — Error с полями code и message; message по-русски, его можно
      показывать как есть. code "aborted" — запрос отменили сами.
+   AI.reachable(timeout) → Promise(true | false) — отвечает ли сервер ИИ
+     (из России без VPN — нет); результат помнится минуту.
    AI.explainWord(word, { pinyin, gloss }) → Promise({ word, pinyin,
      partOfSpeech, meaning, examples: [{ zh, pinyin, ru }],
      synonyms: [{ word, pinyin, difference }], note }) — объяснение слова;
@@ -75,6 +77,28 @@
       if (outer && outer.aborted) throw fail("aborted", "Запрос отменён.");
       throw fail("network", "Нет связи с сервером ИИ. Пока он работает только с VPN — включите VPN и попробуйте ещё раз.");
     });
+  }
+
+  // Доступен ли сервер ИИ: из России без VPN — нет, и запрос просто висит.
+  // Короткий GET адреса воркера; ответ запоминается на минуту.
+  var reach = null;
+  var reachAt = 0;
+
+  function reachable(timeout) {
+    if (reach && Date.now() - reachAt < 60000) return reach;
+    reachAt = Date.now();
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, timeout || 5000);
+    reach = fetch(ENDPOINT, { cache: "no-store", signal: ctrl ? ctrl.signal : undefined }).then(function (res) {
+      return res.json();
+    }).then(function (body) {
+      clearTimeout(timer);
+      return !!(body && body.ok && body.ready);
+    }, function () {
+      clearTimeout(timer);
+      return false;
+    });
+    return reach;
   }
 
   // Объяснение слова. Одно и то же слово второй раз не запрашивается, пока
@@ -318,6 +342,7 @@
 
   window.AI = {
     ask: ask,
+    reachable: reachable,
     explainWord: explainWord,
     markdown: markdown,
     inline: inline,
