@@ -879,8 +879,8 @@ body.page-home .hm-main {
      абзац и поиск уместились на первом экране. */
   .hm-hanzi {
     margin-top: 10px;
-    font-size: clamp(72px, 27vw, 230px);
-    font-size: clamp(72px, min(27vw, 14svh), 230px);
+    font-size: clamp(88px, 33vw, 280px);
+    font-size: clamp(88px, min(33vw, 17svh), 280px);
     letter-spacing: 0.02em;
     background: linear-gradient(180deg, var(--hm-text) 55%, #a9aaab 100%);
     -webkit-background-clip: text;
@@ -1095,19 +1095,6 @@ body.page-home .hm-main {
     width: 18px;
     height: 18px;
     opacity: 0.6;
-  }
-
-  .hm-badge {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 2px 8px;
-    border-radius: 999px;
-    vertical-align: 2px;
-    background-color: var(--hm-gold);
-    color: #15181d;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
   }
 
   /* ------------------------------------------------------------ контакты */
