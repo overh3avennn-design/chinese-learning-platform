@@ -21,7 +21,9 @@
     level_standards(), а не по всему списку standards.
     Шапка — общий компонент components/site-header: страница подключает его
     стили в <head> и скрипт первой строкой <body>, разметку и меню вставляет
-    скрипт. Футер одинаковый на всех страницах; относительные ссылки
+    скрипт. Каркас страницы (боковые поля темы v2 и <main class="page">) ставит
+    shell(), стили темы — css/theme.css. Футер одинаковый на всех страницах
+    (у словаря и ИИ-помощника своя третья ячейка); относительные ссылки
     считаются от глубины страницы (depth_prefix). Файл перезаписывается,
     только если его содержимое изменилось, поэтому повторный запуск
     ничего не меняет.
@@ -141,6 +143,7 @@ MANUAL_PAGES = [
     "support/contacts.html",
     "flashcards/index.html",
     "assistant/index.html",
+    "dictionary/index.html",
 ]
 
 HOME_PAGE = "index.html"
@@ -149,6 +152,20 @@ HEADER_CSS = "components/site-header/header.css"
 HEADER_JS = "components/site-header/header.js"
 # Весь скрипт сайта — один файл js/main.js, одинаковый на всех страницах.
 PAGE_SCRIPTS = ["js/main.js"]
+# Шрифты темы: Onest — интерфейс, Noto Sans SC — иероглифы.
+FONTS_URL = ("https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700"
+             "&family=Noto+Sans+SC:wght@300;400&display=swap")
+# Подвал: страница «Контакты» и Telegram.
+CONTACTS_PAGE = "support/contacts.html"
+TELEGRAM_URL = "https://t.me/easily_chinesly"
+TELEGRAM_NAME = "@easily_chinesly"
+# Боковые поля страниц библиотеки (видны на широком окне): слева столбик
+# бледных иероглифов раздела и подпись, справа — вторая подпись.
+RAIL = {
+    "hanzi": "材料库",
+    "left": "все материалы — по уровням и разделам",
+    "right": "учебники · материалы · культура",
+}
 
 # Оформление страниц additional/ и practice/: крошка, кнопка «назад»,
 # подзаголовок, заглушка.
@@ -222,43 +239,69 @@ def head(title, depth):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>{esc(title)} — Китайский язык</title>
+  <title>{esc(title)} — chineasy</title>
+  <meta name="theme-color" content="#D6DBE6">
   <link rel="icon" href="{p}favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="{p}favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="{p}favicon-192.png">
   <link rel="apple-touch-icon" href="{p}apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link href="{FONTS_URL}" rel="stylesheet">
+  <link rel="stylesheet" href="{p}css/theme.css">
   <link rel="stylesheet" href="{p}css/style.css">
   <link rel="stylesheet" href="{p}{HEADER_CSS}">
 </head>
 <body>
   <script src="{p}{HEADER_JS}"></script>
-  <div class="bg-fixed" aria-hidden="true"></div>
+'''
+
+
+def shell(main):
+    """Каркас страницы: боковые поля (видны на широком окне) и контент между ними.
+
+    main — содержимое страницы без тега <main>; здесь оно получает отступ и
+    встаёт в <main class="page"><div class="container">.
+    """
+    hanzi = "".join(f"<span>{ch}</span>" for ch in RAIL["hanzi"])
+    size = " rail__hanzi--3" if len(RAIL["hanzi"]) > 2 else ""
+    body = "\n".join("    " + line if line.strip() else line
+                     for line in main.strip("\n").split("\n"))
+    return f'''  <div class="layout">
+    <aside class="rail rail--left" aria-hidden="true">
+      <div class="rail__hanzi{size}" lang="zh-CN">{hanzi}</div>
+      <div class="rail__text">{RAIL["left"]}</div>
+    </aside>
+    <main class="page">
+      <div class="container">
+{body}
+      </div>
+    </main>
+    <aside class="rail rail--right" aria-hidden="true">
+      <div class="rail__text">{RAIL["right"]}</div>
+      <span class="rail__dot"></span>
+    </aside>
+  </div>
 '''
 
 
 def footer(content, depth):
     p = depth_prefix(depth)
-    nav = {item["id"]: item for item in content["nav"]}
-    links = ""
-    for nav_id in content["footer_links"]:
-        item = nav[nav_id]
-        links += f'''
-        <a href="{p}{attr(item["href"])}">{esc(item["label"])}</a>'''
     script_tags = "".join(f'''
   <script src="{p}{src}"></script>''' for src in PAGE_SCRIPTS)
     return f'''
   <footer class="site-footer">
-    <div class="footer-inner">
-      <div>
-        <strong class="footer-brand">Китайский язык</strong>
-        <p class="footer-tagline">Образовательная платформа · V1</p>
-      </div>
-      <div class="footer-links">{links}
-      </div>
-      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    <div class="site-footer__brand">
+      <a class="site-footer__logo" href="{p}index.html"><span class="seal seal--sm" lang="zh-CN" aria-hidden="true">中</span>chineasy.</a>
+      <small>образовательная платформа · V2</small>
+    </div>
+    <div>
+      <small><a href="{p}{CONTACTS_PAGE}">контакты</a></small>
+      <span>Telegram: <a href="{TELEGRAM_URL}" target="_blank" rel="noopener">{TELEGRAM_NAME}</a></span>
+    </div>
+    <div>
+      <small>платформа</small>
+      <span>Есть пожелания к платформе — пишите в Telegram.</span>
     </div>
   </footer>{script_tags}
 </body>
@@ -268,7 +311,7 @@ def footer(content, depth):
 
 def page(content, rel_path, title, main):
     depth = rel_path.count("/")
-    return head(title, depth) + with_disk_note(main) + footer(content, depth)
+    return head(title, depth) + shell(with_disk_note(main)) + footer(content, depth)
 
 
 def with_disk_note(main):
@@ -542,7 +585,6 @@ def hsk_section_page(content, level_slug, level, std, index, resources=()):
     </nav>'''
 
     main = f'''
-  <main>
     <nav class="breadcrumb" aria-label="Навигация">
       <a href="{p}index.html">Главная</a> / <a href="../../index.html">Библиотека</a> / <a href="../index.html">{esc(level_name)}</a> / {esc(std["title"])} / {esc(section_title)}
     </nav>
@@ -550,7 +592,6 @@ def hsk_section_page(content, level_slug, level, std, index, resources=()):
     <p class="page-subtitle">{esc(level_name)} · {esc(std["title"])} · {esc(block["subtitle"])}</p>
 
     <p>{esc(section["desc"])}</p>{body}{nav_next}
-  </main>
 '''
     title = f'{section_title} ({level_name}, {std["title"]})'
     return rel_path, page(content, rel_path, title, main)
@@ -630,7 +671,6 @@ def hsk_index(content, level_slug, level, resources=()):
     standards_line = " · ".join(f'{std["title"]} ({std["label"]})' for std, _ in pairs)
 
     main = f'''
-  <main>
     <nav class="breadcrumb" aria-label="Навигация">
       <a href="{p}index.html">Главная</a> / <a href="../index.html">Библиотека</a> / {esc(level_name)}
     </nav>
@@ -639,7 +679,6 @@ def hsk_index(content, level_slug, level, resources=()):
 
     <p>{intro}
     </p>{groups}{nav_next}
-  </main>
 '''
     return rel_path, page(content, rel_path, level_name, main)
 
@@ -657,7 +696,6 @@ def collection_page(content, group, entry, resources=()):
     body = content_blocks(items, depth, placeholder=style["placeholder"])
 
     main = f'''
-  <main>
     <nav class="breadcrumb"><a href="{p}index.html">Главная</a> / <a href="../index.html">Библиотека</a> / <a href="index.html">{style["crumb"]}</a> / {title}</nav>
     <h1 class="page-title">{title}</h1>
     <p class="page-subtitle">{style["subtitle"]}</p>
@@ -666,7 +704,6 @@ def collection_page(content, group, entry, resources=()):
     <nav class="nav-next">
       <a href="index.html" class="btn btn-secondary">← {style["back"]}</a>
     </nav>
-  </main>
 '''
     return rel_path, page(content, rel_path, entry["title"], main)
 
@@ -870,7 +907,7 @@ def chrome_blocks(text, is_home):
     if is_home:  # у главной свой <head> (шрифты, прелоадер) и свой подвал, общая только шапка
         return {"подключение шапки": header_includes(text)}
     blocks = {}
-    m = re.search(r'<!DOCTYPE html>.*?<div class="bg-fixed" aria-hidden="true"></div>', text, re.S)
+    m = re.search(r'<!DOCTYPE html>.*?<body[^>]*>', text, re.S)
     blocks["<head> и начало <body>"] = m.group(0) if m else ""
     blocks["подключение шапки"] = header_includes(text)
     m = re.search(r'<footer class="site-footer">.*</html>', text, re.S)
@@ -885,12 +922,12 @@ def expected_chrome(content, rel_path):
 
 
 def html_pages():
-    """Страницы сайта. data/ и scripts/ — служебные папки, там страниц нет."""
+    """Страницы сайта. data/ и scripts/ — служебные папки, design/ — макеты темы."""
     found = []
     for path in glob.glob(os.path.join(BASE, "**", "*.html"), recursive=True):
         rel_path = os.path.relpath(path, BASE).replace(os.sep, "/")
         parts = rel_path.split("/")
-        if parts[0] in ("data", "scripts") or any(p.startswith((".", "__")) for p in parts):
+        if parts[0] in ("data", "scripts", "design") or any(p.startswith((".", "__")) for p in parts):
             continue
         found.append(rel_path)
     return sorted(found)

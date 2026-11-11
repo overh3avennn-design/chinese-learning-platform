@@ -3,88 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>ИИ-помощник — Китайский язык</title>
+  <title>ИИ-помощник — chineasy</title>
+  <meta name="theme-color" content="#D6DBE6">
   <link rel="icon" href="../favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="../favicon-192.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../components/site-header/header.css">
 </head>
 <body>
   <script src="../components/site-header/header.js"></script>
-  <div class="bg-fixed" aria-hidden="true"></div>
 
   <!-- Раздел «ИИ-помощник»: чат с нейросетью Qwen о китайском — грамматика,
        слова, иероглифы, культура. Запросы идут через js/ai.js в воркер
        chinese-ai (папка ai-worker/), там же системный промпт. Диалог живёт
        в sessionStorage, пока открыта вкладка (js/assistant.js). -->
-  <main class="ai-page" data-assistant>
-    <nav class="breadcrumb" aria-label="Навигация">
-      <a href="../index.html">Главная</a> / ИИ-помощник
-    </nav>
-    <div class="ai-head">
-      <div>
-        <h1 class="page-title">ИИ-помощник</h1>
-        <p class="page-subtitle">Объясняет грамматику, слова, иероглифы и культуру Китая — по-русски и с примерами. Пока работает только с VPN</p>
-      </div>
-      <button class="btn btn-secondary ai-new" type="button" data-new-chat hidden>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-        Новый диалог
-      </button>
-    </div>
+  <div class="layout">
+    <aside class="rail rail--left" aria-hidden="true">
+      <div class="rail__hanzi" lang="zh-CN"><span>助</span><span>手</span></div>
+      <div class="rail__text">объясняет по-русски и с примерами</div>
+    </aside>
+    <main class="page ai-page" data-assistant>
+      <div class="container">
+        <nav class="breadcrumb" aria-label="Навигация">
+          <a href="../index.html">Главная</a> / ИИ-помощник
+        </nav>
+        <div class="ai-head">
+          <div>
+            <h1 class="page-title">ИИ-помощник</h1>
+            <p class="page-subtitle">Объясняет грамматику, слова, иероглифы и культуру Китая — по-русски и с примерами. Пока работает только с VPN</p>
+          </div>
+          <button class="btn btn-secondary ai-new" type="button" data-new-chat hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Новый диалог
+          </button>
+        </div>
 
-    <section class="ai-intro" data-intro aria-labelledby="ai-intro-title">
-      <h2 class="ai-intro-title" id="ai-intro-title">О чём спросить</h2>
-      <p>
-        Задайте вопрос своими словами: как работает грамматика, чем похожие
-        слова отличаются друг от друга, из чего состоит иероглиф, что
-        празднуют в Китае. Помощник ответит с примерами — иероглифы, пиньинь
-        и перевод.
-      </p>
-      <div class="ai-prompts" data-prompts>
-        <button class="ai-prompt" type="button">Объясни разницу 了 и 过</button>
-        <button class="ai-prompt" type="button">Когда говорят 二, а когда 两?</button>
-        <button class="ai-prompt" type="button">Чем отличаются 的, 地 и 得?</button>
-        <button class="ai-prompt" type="button">Как сравнивать с помощью 比?</button>
-        <button class="ai-prompt" type="button">Как задать вопрос без 吗?</button>
-        <button class="ai-prompt" type="button">Из каких частей состоит иероглиф 好?</button>
-        <button class="ai-prompt" type="button">Как запомнить четыре тона?</button>
-        <button class="ai-prompt" type="button">Как в Китае празднуют Новый год?</button>
-      </div>
-    </section>
+        <section class="ai-intro" data-intro aria-labelledby="ai-intro-title">
+          <h2 class="ai-intro-title" id="ai-intro-title">О чём спросить</h2>
+          <p>
+            Задайте вопрос своими словами: как работает грамматика, чем похожие
+            слова отличаются друг от друга, из чего состоит иероглиф, что
+            празднуют в Китае. Помощник ответит с примерами — иероглифы, пиньинь
+            и перевод.
+          </p>
+          <div class="ai-prompts" data-prompts>
+            <button class="ai-prompt" type="button">Объясни разницу 了 и 过</button>
+            <button class="ai-prompt" type="button">Когда говорят 二, а когда 两?</button>
+            <button class="ai-prompt" type="button">Чем отличаются 的, 地 и 得?</button>
+            <button class="ai-prompt" type="button">Как сравнивать с помощью 比?</button>
+            <button class="ai-prompt" type="button">Как задать вопрос без 吗?</button>
+            <button class="ai-prompt" type="button">Из каких частей состоит иероглиф 好?</button>
+            <button class="ai-prompt" type="button">Как запомнить четыре тона?</button>
+            <button class="ai-prompt" type="button">Как в Китае празднуют Новый год?</button>
+          </div>
+        </section>
 
-    <div class="ai-log" data-log aria-live="polite"></div>
+        <div class="ai-log" data-log aria-live="polite"></div>
 
-    <form class="ai-form" data-form>
-      <label class="ai-label" for="ai-input">Ваш вопрос</label>
-      <div class="ai-form-row">
-        <textarea class="ai-input" id="ai-input" data-input rows="1" maxlength="1500"
-                  placeholder="Спросите о китайском…" enterkeyhint="send"></textarea>
-        <button class="btn btn-primary ai-send" type="submit" data-send aria-label="Отправить" title="Отправить">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
-        </button>
+        <form class="ai-form" data-form>
+          <label class="ai-label" for="ai-input">Ваш вопрос</label>
+          <div class="ai-form-row">
+            <textarea class="ai-input" id="ai-input" data-input rows="1" maxlength="1500"
+                      placeholder="Спросите о китайском…" enterkeyhint="send"></textarea>
+            <button class="btn btn-primary ai-send" type="submit" data-send aria-label="Отправить" title="Отправить">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+            </button>
+          </div>
+        </form>
+        <p class="ai-note">Нейросеть может ошибаться — сверяйтесь с учебником и <a href="../dictionary/index.html">словарём</a>. Диалог хранится только в этой вкладке.</p>
       </div>
-    </form>
-    <p class="ai-note">Нейросеть может ошибаться — сверяйтесь с учебником и <a href="../dictionary/index.html">словарём</a>. Диалог хранится только в этой вкладке.</p>
-  </main>
+    </main>
+    <aside class="rail rail--right" aria-hidden="true">
+      <div class="rail__text">грамматика · слова · иероглифы · культура</div>
+      <span class="rail__dot"></span>
+    </aside>
+  </div>
 
   <footer class="site-footer">
-    <div class="footer-inner">
-      <div>
-        <strong class="footer-brand">Китайский язык</strong>
-        <p class="footer-tagline">Образовательная платформа · V1</p>
-      </div>
-      <div class="footer-links">
-        <a href="../library/index.html">Библиотека</a>
-        <a href="../flashcards/index.html">Карточки</a>
-        <a href="../support/contacts.html">Контакты</a>
-      </div>
-      <p class="footer-source">Ответы: нейросеть Qwen (Alibaba) через Polza.ai</p>
-      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    <div class="site-footer__brand">
+      <a class="site-footer__logo" href="../index.html"><span class="seal seal--sm" lang="zh-CN" aria-hidden="true">中</span>chineasy.</a>
+      <small>образовательная платформа · V2</small>
+    </div>
+    <div>
+      <small><a href="../support/contacts.html">контакты</a></small>
+      <span>Telegram: <a href="https://t.me/easily_chinesly" target="_blank" rel="noopener">@easily_chinesly</a></span>
+    </div>
+    <div class="site-footer__source">
+      <small>источник ответов</small>
+      <span>Нейросеть Qwen (Alibaba) через Polza.ai</span>
     </div>
   </footer>
   <script src="../js/ai.js"></script>
