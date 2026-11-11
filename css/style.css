@@ -1,35 +1,9 @@
 /* chineasy — стили внутренних страниц (тема v2).
    Основа темы — css/theme.css: переменные, каркас, панель, строки, кнопки,
-   поле, подвал; он подключается раньше. Здесь — компоненты страниц:
-   библиотека и материалы, фильмы, контакты, карточки, ИИ-помощник,
-   словарь, окно слова и рукописный ввод. Главная — css/home.css. */
-
-/* Старые имена переменных: ими написаны компоненты, которые ещё не
-   переведены на тему v2. Значения — из новой темы. Когда правило
-   переписано, оно берёт переменные из theme.css напрямую. */
-:root {
-  --color-primary: var(--text);
-  --color-primary-dark: var(--text-hover);
-  --color-accent: var(--accent-text);
-  --color-accent-soft: var(--accent-text);
-  --color-know: var(--text);
-  --color-know-soft: var(--text);
-  --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-surface-solid: var(--surface);
-  --color-text: var(--text);
-  --color-text-muted: var(--text-2);
-  --color-border: var(--line);
-  --color-chinese: var(--text);
-  --font-sans: var(--font);
-  --font-display: var(--font);
-  --font-chinese: var(--font-zh);
-  --max-width: var(--container);
-  --radius: 0px;
-  --shadow: none;
-  --shadow-text: none;
-  --header-height: var(--header-h);
-}
+   поле, подвал; он подключается раньше. Здесь — компоненты страниц, по
+   порядку: библиотека и материалы, фильмы, контакты, карточки,
+   ИИ-помощник, словарь, окно слова и рукописный ввод. Главная —
+   css/home.css. */
 
 /* Подзаголовок страницы под .page-title. */
 .page-subtitle {
@@ -38,22 +12,6 @@
   font-size: 17px;
   line-height: 1.5;
   color: var(--text-2);
-}
-
-/* Хлебные крошки старой разметки — как .crumbs темы. */
-.breadcrumb {
-  margin: 0 0 20px;
-  font-size: 14px;
-  color: var(--text-2);
-}
-
-.breadcrumb a {
-  color: var(--text-2);
-  text-decoration: none;
-}
-
-.breadcrumb a:hover {
-  color: var(--accent-text);
 }
 
 /* ============================================================ библиотека
@@ -975,27 +933,6 @@ a.side-row:hover {
   .lib-tiles .tile__more {
     display: none;
   }
-}
-
-/* Sections */
-/* Секция старой разметки: h2 без класса выглядит как метка секции темы
-   (.section-label) — подпись и линия до края. */
-.section > h2:not([class]) {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 0 0 20px;
-  font-size: 15px;
-  line-height: 1.4;
-  font-weight: 600;
-  color: var(--text-2);
-}
-
-.section > h2:not([class])::after {
-  content: "";
-  flex: 1 1 auto;
-  height: 1px;
-  background: var(--line);
 }
 
 /* Фильмы с Яндекс Диска (library/culture/films.html). Список и плеер
@@ -2300,7 +2237,7 @@ a.side-row:hover {
 }
 
 .fc-hanzi {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: clamp(4.5rem, 24vw, 7.5rem);
   line-height: 1.1;
   color: var(--text);
@@ -2326,7 +2263,7 @@ a.side-row:hover {
 }
 
 .fc-hanzi-small {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 1.6rem;
   line-height: 1.2;
   color: var(--text);
@@ -2577,7 +2514,7 @@ a.side-row:hover {
 }
 
 .fc-missed-hanzi {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 22px;
   color: var(--text);
 }
@@ -2802,7 +2739,7 @@ a.side-row:hover {
    шрифт меньше, чтобы уместиться в колонку, а не раздвигать её. */
 .fc-word-hanzi {
   min-width: 0;
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: calc(var(--fc-hanzi-size) * 5 / max(5, var(--fc-hanzi-len, 5)));
   line-height: 1.2;
   color: var(--text);
@@ -3088,7 +3025,7 @@ a.side-row:hover {
 }
 
 .fc-cell-hanzi .fc-input {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 18px;
   color: var(--text);
 }
@@ -5063,7 +5000,7 @@ html.hz-lock {
 }
 
 .hz-word {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 3.4rem;
   line-height: 1.15;
   color: var(--text);
@@ -5190,7 +5127,7 @@ html.hz-lock {
   align-items: center;
   gap: 0.6rem;
   margin: 0;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-ai-head {
@@ -5243,7 +5180,7 @@ html.hz-lock {
 }
 
 .hz-ai-zh {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 1.25rem;
   color: var(--text);
 }
@@ -5255,13 +5192,13 @@ html.hz-lock {
 
 .hz-ai-ru {
   font-size: 0.92rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-ai-word {
   padding: 0;
   font: inherit;
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 1.05rem;
   font-weight: 400;
   color: var(--text);
@@ -5289,7 +5226,7 @@ button.hz-ai-word:hover {
 .hz-ai-foot {
   margin: 0.9rem 0 0;
   font-size: 0.78rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-ai-card.is-error p {
@@ -5379,7 +5316,7 @@ button.hz-ai-word:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-char,
@@ -5396,7 +5333,7 @@ button.hz-ai-word:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 5rem;
   color: var(--text);
 }
@@ -5460,7 +5397,7 @@ button.hz-ai-word:hover {
 
 .hz-badge text {
   fill: #fff;
-  font-family: var(--font-sans);
+  font-family: var(--font);
   font-size: 58px;
   font-weight: 700;
   text-anchor: middle;
@@ -5505,7 +5442,7 @@ button.hz-ai-word:hover {
   margin: 0;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-card-info p,
@@ -5522,7 +5459,7 @@ button.hz-ai-word:hover {
   margin-top: 0.15rem !important;
   font-size: 0.92rem;
   line-height: 1.45;
-  color: var(--color-text-muted);
+  color: var(--text-2);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -5547,7 +5484,7 @@ button.hz-ai-word:hover {
   font-weight: 600;
   letter-spacing: 0;
   text-transform: lowercase;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-layout {
@@ -5567,7 +5504,7 @@ button.hz-ai-word:hover {
 }
 
 .hz-part + .hz-part {
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--line);
 }
 
 .hz-part-btn {
@@ -5600,7 +5537,7 @@ button.hz-ai-word:hover {
 .hz-part-char {
   flex: none;
   width: 1.6em;
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 1.5rem;
   line-height: 1.2;
   text-align: center;
@@ -5639,7 +5576,7 @@ button.hz-ai-word:hover {
 }
 
 .hz-part-name {
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-tag {
@@ -5655,7 +5592,7 @@ button.hz-ai-word:hover {
 .hz-part-gloss {
   font-size: 0.82rem;
   line-height: 1.4;
-  color: var(--color-text-muted);
+  color: var(--text-2);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -5669,13 +5606,13 @@ button.hz-ai-word:hover {
 .hz-chev {
   flex: none;
   font-size: 1.2rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-radical {
   margin-top: 0.75rem !important;
   font-size: 0.875rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-radical[hidden] {
@@ -5683,7 +5620,7 @@ button.hz-ai-word:hover {
 }
 
 .hz-radical b {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 1.15rem;
   font-weight: 400;
   color: var(--hz-p0);
@@ -5714,7 +5651,7 @@ button.hz-ai-word:hover {
 }
 
 .hz-link b {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-weight: 400;
 }
 
@@ -5731,7 +5668,7 @@ button.hz-ai-word:hover {
 .hz-panel {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--line);
 }
 
 .hz-panel[hidden] {
@@ -5769,12 +5706,12 @@ button.hz-ai-word:hover {
 
 .hz-step {
   font-size: 0.95rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-step b {
   font-size: 1.15rem;
-  color: var(--color-text);
+  color: var(--text);
 }
 
 .hz-controls {
@@ -5870,7 +5807,7 @@ button.hz-ai-word:hover {
   min-height: 2.6em;
   font-size: 0.9rem;
   line-height: 1.45;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-write-msg.is-miss {
@@ -5898,7 +5835,7 @@ button.hz-ai-word:hover {
   padding: 0;
   font: inherit;
   font-size: 0.7rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
   background: none;
   border: 0;
   cursor: pointer;
@@ -5914,7 +5851,7 @@ button.hz-ai-word:hover {
 }
 
 .hz-cell path { fill: var(--hz-ghost); }
-.hz-cell path.is-ink { fill: var(--color-chinese); }
+.hz-cell path.is-ink { fill: var(--text); }
 .hz-cell path.is-p0 { fill: var(--hz-p0); }
 .hz-cell path.is-p1 { fill: var(--hz-p1); }
 .hz-cell path.is-p2 { fill: var(--hz-p2); }
