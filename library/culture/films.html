@@ -26,36 +26,37 @@
     </aside>
     <main class="page">
       <div class="container">
-        <nav class="breadcrumb" aria-label="Навигация">
-          <a href="../../index.html">Главная</a> / <a href="../index.html">Библиотека</a> / <a href="index.html">Культура Китая</a> / Фильмы
+        <nav class="crumbs" aria-label="Навигация">
+          <a href="../../index.html">главная</a><span aria-hidden="true">/</span><a href="../index.html">библиотека</a><span aria-hidden="true">/</span><a href="index.html">культура Китая</a><span aria-hidden="true">/</span><span aria-current="page">фильмы</span>
         </nav>
-        <h1 class="page-title">Фильмы про культуру Китая</h1>
-        <p class="page-subtitle">Документальные фильмы об истории и культуре Китая</p>
 
-        <p>
-          Выберите фильм — он откроется в плеере на этой странице. Сами видео
-          хранятся на Яндекс Диске, список подгружается оттуда при открытии страницы.
+        <section class="panel panel--hero panel--solo">
+          <div class="panel__main">
+            <div class="title-row">
+              <h1 class="page-title page-title--long">фильмы про культуру Китая</h1>
+              <p class="title-pinyin"><b lang="zh-Latn">diànyǐng</b><span lang="zh-CN">电影</span></p>
+            </div>
+            <p class="hero-meta">документальные фильмы об истории и культуре Китая</p>
+            <p class="lead">Выберите фильм — он откроется в плеере на этой странице. Сами видео хранятся на Яндекс Диске, список подгружается оттуда при открытии страницы.</p>
+            <span class="sun" aria-hidden="true"></span>
+          </div>
+        </section>
+        <!-- /hero -->
+        <p class="note" role="note">
+          <svg class="note__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5"/><path d="M12 17.4v.1"/></svg>
+          <span><b>Смотрите фильмы с выключенным VPN.</b> Видео хранятся на Яндекс Диске, а Яндекс не пускает подключения через VPN: с включённым VPN список фильмов не загрузится и плеер не запустится. Выключите VPN и обновите страницу.</span>
         </p>
 
         <!-- Список фильмов собирает js/main.js (initYandexFilms): берёт
              публичную папку из data-yadisk-public, читает её через API
-             Яндекс Диска и раскладывает видео карточками. Новые фильмы достаточно
+             Яндекс Диска и раскладывает видео строками. Новые фильмы достаточно
              положить в эту папку на Диске — править страницу не нужно. -->
-        <div class="film-vpn" role="note">
-          <span class="film-vpn-icon" aria-hidden="true">⚠</span>
-          <p>
-            <strong>Смотрите фильмы с выключенным VPN.</strong>
-            Видео хранятся на Яндекс Диске, а Яндекс не пускает подключения через VPN:
-            с включённым VPN список фильмов не загрузится и плеер не запустится.
-            Выключите VPN и обновите страницу.
-          </p>
-        </div>
-
         <section class="section films" data-yadisk-public="https://disk.yandex.ru/d/m8KBkUbYJi5Qsg">
+          <h2 class="section-label">фильмы</h2>
           <div class="film-player" hidden>
             <video controls playsinline preload="metadata"></video>
             <div class="film-player-info">
-              <h2 class="film-player-title"></h2>
+              <h3 class="film-player-title"></h3>
               <p class="film-player-note" hidden></p>
             </div>
           </div>
@@ -69,7 +70,7 @@
         </section>
 
         <nav class="nav-next">
-          <a href="index.html" class="btn btn-secondary">← Культура Китая</a>
+          <a href="index.html" class="btn btn--outline">← культура Китая</a>
         </nav>
       </div>
     </main>

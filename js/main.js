@@ -242,24 +242,24 @@
   }
 
   // ------------------------------------------------- кнопка «назад»
-  // Часть разделов открывается двумя путями: с главной библиотеки (блок
-  // «Все разделы») и из своего раздела-родителя («Учебники», «Материалы»).
-  // В разметке «назад» ведёт к родителю. Карточки на главной библиотеки
-  // добавляют к адресу ?from=library — тогда кнопка возвращает в
-  // библиотеку. Адрес библиотеки берём из хлебных крошек страницы.
+  // Часть разделов открывается двумя путями: с главной библиотеки и из
+  // своего раздела-родителя («учебники», «материалы»). В разметке «назад»
+  // ведёт к родителю. Ссылки на главной библиотеки добавляют к адресу
+  // ?from=library — тогда кнопка возвращает в библиотеку. Адрес библиотеки
+  // берём из хлебных крошек страницы.
   function initBackLink() {
     if (new URLSearchParams(location.search).get("from") !== "library") return;
 
     var back = Array.prototype.find.call(document.querySelectorAll(".nav-next a"), function (a) {
       return a.textContent.trim().charAt(0) === "←";
     });
-    var library = Array.prototype.find.call(document.querySelectorAll(".breadcrumb a"), function (a) {
-      return a.textContent.trim() === "Библиотека";
+    var library = Array.prototype.find.call(document.querySelectorAll(".crumbs a"), function (a) {
+      return a.textContent.trim().toLowerCase() === "библиотека";
     });
     if (!back || !library) return;
 
     back.setAttribute("href", library.getAttribute("href"));
-    back.textContent = "← Библиотека";
+    back.textContent = "← библиотека";
   }
 
   // ------------------------------------- подсказка в поле на телефоне

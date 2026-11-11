@@ -25,14 +25,34 @@
     </aside>
     <main class="page">
       <div class="container">
-        <nav class="breadcrumb"><a href="../../index.html">Главная</a> / <a href="../index.html">Библиотека</a> / <a href="index.html">Практика</a> / Письменные упражнения</nav>
-        <h1 class="page-title">Письменные упражнения</h1>
-        <p class="page-subtitle">Практика и контекст</p>
-        <p>Письма, отзывы и творческие задания.</p>
-        <div class="placeholder-note">Добавьте тексты, диалоги, ссылки на аудио и видео.</div>
+        <nav class="crumbs" aria-label="Навигация">
+          <a href="../../index.html">главная</a><span aria-hidden="true">/</span><a href="../index.html">библиотека</a><span aria-hidden="true">/</span><a href="index.html">практика</a><span aria-hidden="true">/</span><span aria-current="page">письменные упражнения</span>
+        </nav>
+
+        <section class="panel panel--hero">
+          <div class="panel__main">
+            <div class="title-row">
+              <h1 class="page-title page-title--long">письменные упражнения</h1>
+            </div>
+            <p class="hero-meta">практика и контекст</p>
+            <p class="lead">Письма, отзывы и творческие задания.</p>
+            <span class="sun" aria-hidden="true"></span>
+          </div>
+          <div class="panel__side">
+            <h2 class="panel__head">практика и контекст</h2>
+            <a class="side-row" href="reading.html"><span class="side-row__num">01</span><span class="side-row__title">тексты для чтения</span><span class="side-row__note"></span></a>
+            <a class="side-row" href="dialogues.html"><span class="side-row__num">02</span><span class="side-row__title">диалоги и разговоры</span><span class="side-row__note">пока пусто</span></a>
+            <a class="side-row" href="speaking.html"><span class="side-row__num">03</span><span class="side-row__title">упражнения на говорение</span><span class="side-row__note"></span></a>
+            <a class="side-row" href="listening.html"><span class="side-row__num">04</span><span class="side-row__title">аудирование</span><span class="side-row__note">пока пусто</span></a>
+            <div class="side-row" aria-current="page"><span class="side-row__num">05</span><span class="side-row__title">письменные упражнения</span><span class="side-row__note">пока пусто</span></div>
+          </div>
+        </section>
+        <!-- /hero -->
+
+        <p class="note note--empty">Добавьте тексты, диалоги, ссылки на аудио и видео.</p>
 
         <nav class="nav-next">
-          <a href="index.html" class="btn btn-secondary">← Практика и контекст</a>
+          <a href="index.html" class="btn btn--outline">← практика и контекст</a>
         </nav>
       </div>
     </main>

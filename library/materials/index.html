@@ -26,37 +26,43 @@
     </aside>
     <main class="page">
       <div class="container">
-        <nav class="breadcrumb" aria-label="Навигация">
-          <a href="../../index.html">Главная</a> / <a href="../index.html">Библиотека</a> / Материалы
+        <nav class="crumbs" aria-label="Навигация">
+          <a href="../../index.html">главная</a><span aria-hidden="true">/</span><a href="../index.html">библиотека</a><span aria-hidden="true">/</span><span aria-current="page">материалы</span>
         </nav>
-        <h1 class="page-title">Материалы</h1>
-        <p class="page-subtitle">Вспомогательные материалы к занятиям и подготовке к экзамену</p>
 
-        <p>
-          Лексика и презентации к отдельным урокам, разборы грамматики, тест на определение
-          уровня и билеты к устному экзамену. Сами учебники лежат в разделе
-          <a href="../textbooks/index.html">«Учебники»</a>.
-        </p>
-
-        <div class="card-grid is-pairs">
-          <article class="card">
-            <h3><a href="../textbooks/materials.html">Материалы к занятиям</a></h3>
-            <p>Лексика урока, презентации, тест на определение уровня.</p>
-            <p class="card-meta">PDF · презентации · изображения</p>
-          </article>
-          <article class="card">
-            <h3><a href="../grammar/index.html">Грамматика</a></h3>
-            <p>Разборы грамматических тем с примерами и упражнениями.</p>
-          </article>
-          <article class="card">
-            <h3><a href="../textbooks/exam-tickets.html">Билеты к экзамену</a></h3>
-            <p>Тексты с пиньинь для пересказа и подготовки к устному экзамену.</p>
-            <p class="card-meta">DOCX</p>
-          </article>
-        </div>
+        <section class="panel panel--hero">
+          <div class="panel__main">
+            <div class="title-row">
+              <h1 class="page-title">материалы</h1>
+              <p class="title-pinyin"><b lang="zh-Latn">cáiliào</b><span lang="zh-CN">材料</span></p>
+            </div>
+            <p class="hero-meta">вспомогательные материалы к занятиям и подготовке к экзамену</p>
+            <p class="lead">Лексика и презентации к отдельным урокам, разборы грамматики, тест на определение уровня и билеты к устному экзамену. Сами учебники лежат в разделе <a href="../textbooks/index.html">«Учебники»</a>.</p>
+            <span class="sun" aria-hidden="true"></span>
+          </div>
+          <div class="panel__side">
+            <h2 class="panel__head">разделы</h2>
+            <a class="row row--plain" href="../textbooks/materials.html">
+              <span class="row__num">01</span>
+              <span class="row__body"><span class="row__title">материалы к занятиям</span><span class="row__text">Лексика урока, презентации, тест на определение уровня · PDF · презентации · изображения</span></span>
+              <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            </a>
+            <a class="row row--plain" href="../grammar/index.html">
+              <span class="row__num">02</span>
+              <span class="row__body"><span class="row__title">грамматика</span><span class="row__text">Разборы грамматических тем с примерами и упражнениями</span></span>
+              <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            </a>
+            <a class="row row--plain" href="../textbooks/exam-tickets.html">
+              <span class="row__num">03</span>
+              <span class="row__body"><span class="row__title">билеты к экзамену</span><span class="row__text">Тексты с пиньинь для пересказа и подготовки к устному экзамену · DOCX</span></span>
+              <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            </a>
+          </div>
+        </section>
+        <!-- /hero -->
 
         <nav class="nav-next">
-          <a href="../index.html" class="btn btn-secondary">← Библиотека</a>
+          <a href="../index.html" class="btn btn--outline">← библиотека</a>
         </nav>
       </div>
     </main>

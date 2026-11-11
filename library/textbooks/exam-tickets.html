@@ -26,57 +26,59 @@
     </aside>
     <main class="page">
       <div class="container">
-        <nav class="breadcrumb" aria-label="Навигация">
-          <a href="../../index.html">Главная</a> / <a href="../index.html">Библиотека</a> / <a href="../materials/index.html">Материалы</a> / Билеты к экзамену
+        <nav class="crumbs" aria-label="Навигация">
+          <a href="../../index.html">главная</a><span aria-hidden="true">/</span><a href="../index.html">библиотека</a><span aria-hidden="true">/</span><a href="../materials/index.html">материалы</a><span aria-hidden="true">/</span><span aria-current="page">билеты к экзамену</span>
         </nav>
-        <h1 class="page-title">Билеты к экзамену</h1>
-        <p class="page-subtitle">Тексты с пиньинь для чтения и пересказа на устном экзамене</p>
-        <div class="film-vpn" role="note">
-          <span class="film-vpn-icon" aria-hidden="true">⚠</span>
-          <p>
-            <strong>Если файл не открывается — выключите VPN.</strong>
-            Материалы хранятся на Яндекс Диске, а Яндекс часто не пускает подключения через VPN.
-          </p>
-        </div>
 
-        <p>Каждый билет — небольшой текст на китайском языке с пиньинь-подсказками к сложным словам. Используются для подготовки к пересказу на экзамене.</p>
+        <section class="panel panel--hero">
+          <div class="panel__main">
+            <div class="title-row">
+              <h1 class="page-title page-title--long">билеты к экзамену</h1>
+              <p class="title-pinyin"><b lang="zh-Latn">kǎoshì</b><span lang="zh-CN">考试</span></p>
+            </div>
+            <p class="hero-meta">тексты с пиньинь для чтения и пересказа на устном экзамене</p>
+            <p class="lead">Каждый билет — небольшой текст на китайском языке с пиньинь-подсказками к сложным словам. Используются для подготовки к пересказу на экзамене.</p>
+            <span class="sun" aria-hidden="true"></span>
+          </div>
+          <div class="panel__side">
+            <h2 class="panel__head">материалы</h2>
+            <a class="side-row" href="materials.html"><span class="side-row__num">01</span><span class="side-row__title">материалы к занятиям</span><span class="side-row__note"></span></a>
+            <a class="side-row" href="../grammar/index.html"><span class="side-row__num">02</span><span class="side-row__title">грамматика</span><span class="side-row__note"></span></a>
+            <div class="side-row" aria-current="page"><span class="side-row__num">03</span><span class="side-row__title">билеты к экзамену</span><span class="side-row__note"></span></div>
+          </div>
+        </section>
+        <!-- /hero -->
+        <p class="note" role="note">
+          <svg class="note__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5"/><path d="M12 17.4v.1"/></svg>
+          <span><b>Если файл не открывается — выключите VPN.</b> Материалы хранятся на Яндекс Диске, а Яндекс часто не пускает подключения через VPN.</span>
+        </p>
 
         <section class="section">
-          <h2>Содержание раздела</h2>
-          <div class="material-grid">
-              <article class="material-card">
-                <a class="material-cover" href="https://yadi.sk/d/-T3tpGNijH8LaA" data-ext="DOCX" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true"><img src="../../images/previews/exam-tickets-basic.jpg" alt="" loading="lazy"></a>
-                <div class="material-body">
-                  <h3 class="material-title"><a href="https://yadi.sk/d/-T3tpGNijH8LaA" target="_blank" rel="noopener">Билеты — основной комплект</a></h3>
-                  <p class="material-desc">Тексты с пиньинь-подсказками к сложным словам — для чтения и пересказа на экзамене.</p>
-                  <div class="material-foot">
-                    <span class="material-type">DOCX</span>
-                    <span class="material-actions">
-                      <a class="material-action is-open" href="https://yadi.sk/d/-T3tpGNijH8LaA" target="_blank" rel="noopener">Открыть</a>
-                      <a class="material-action" href="https://yadi.sk/d/-T3tpGNijH8LaA" target="_blank" rel="noopener">Скачать</a>
-                    </span>
-                  </div>
-                </div>
-              </article>
-              <article class="material-card">
-                <a class="material-cover" href="https://yadi.sk/d/UHvV2ZyOL3wORQ" data-ext="DOCX" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true"><img src="../../images/previews/exam-tickets-2026-s2.jpg" alt="" loading="lazy"></a>
-                <div class="material-body">
-                  <h3 class="material-title"><a href="https://yadi.sk/d/UHvV2ZyOL3wORQ" target="_blank" rel="noopener">Билеты — 2 семестр, 2026</a></h3>
-                  <p class="material-desc">Комплект билетов второго семестра 2026 года.</p>
-                  <div class="material-foot">
-                    <span class="material-type">DOCX</span>
-                    <span class="material-actions">
-                      <a class="material-action is-open" href="https://yadi.sk/d/UHvV2ZyOL3wORQ" target="_blank" rel="noopener">Открыть</a>
-                      <a class="material-action" href="https://yadi.sk/d/UHvV2ZyOL3wORQ" target="_blank" rel="noopener">Скачать</a>
-                    </span>
-                  </div>
-                </div>
-              </article>
-          </div>
+          <h2 class="section-label">содержание раздела</h2>
+          <ul class="list rows">
+              <li class="row mat">
+                <span class="row__num">01</span>
+                <span class="row__body"><a class="row__title" href="https://yadi.sk/d/-T3tpGNijH8LaA" target="_blank" rel="noopener">Билеты — основной комплект</a><span class="row__text">Тексты с пиньинь-подсказками к сложным словам — для чтения и пересказа на экзамене.</span></span>
+                <span class="row__tags"><span class="tag">DOCX</span></span>
+                <span class="mat__actions">
+                  <a class="btn btn--sm" href="https://yadi.sk/d/-T3tpGNijH8LaA" target="_blank" rel="noopener">открыть</a>
+                  <a class="btn btn--sm btn--outline" href="https://yadi.sk/d/-T3tpGNijH8LaA" target="_blank" rel="noopener">скачать</a>
+                </span>
+              </li>
+              <li class="row mat">
+                <span class="row__num">02</span>
+                <span class="row__body"><a class="row__title" href="https://yadi.sk/d/UHvV2ZyOL3wORQ" target="_blank" rel="noopener">Билеты — 2 семестр, 2026</a><span class="row__text">Комплект билетов второго семестра 2026 года.</span></span>
+                <span class="row__tags"><span class="tag">DOCX</span></span>
+                <span class="mat__actions">
+                  <a class="btn btn--sm" href="https://yadi.sk/d/UHvV2ZyOL3wORQ" target="_blank" rel="noopener">открыть</a>
+                  <a class="btn btn--sm btn--outline" href="https://yadi.sk/d/UHvV2ZyOL3wORQ" target="_blank" rel="noopener">скачать</a>
+                </span>
+              </li>
+          </ul>
         </section>
 
         <nav class="nav-next">
-          <a href="../materials/index.html" class="btn btn-secondary">← Материалы</a>
+          <a href="../materials/index.html" class="btn btn--outline">← материалы</a>
         </nav>
       </div>
     </main>

@@ -56,6 +56,927 @@
   color: var(--accent-text);
 }
 
+/* ============================================================ библиотека
+   Общие части внутренних страниц и страницы библиотеки: главная, уровни
+   HSK, разделы уровней, подборки и страницы материалов. Разметку уровней,
+   разделов и подборок собирает scripts/generate_pages.py, остальные
+   страницы ручные. */
+
+/* Длинный заголовок страницы («основная грамматика») — мельче. */
+.page-title--long {
+  font-size: 40px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* Первый экран внутренней страницы: панель, слева заголовок, абзац и
+   «солнце», справа список. Текст лежит над «солнцем». */
+.panel--hero .panel__main {
+  padding-bottom: 40px;
+}
+
+.panel--hero .panel__main > :not(.sun) {
+  position: relative;
+  z-index: 1;
+}
+
+.panel--solo .panel__main {
+  border-right: 0;
+}
+
+/* Строка над абзацем: «HSK 1 · HSK 2.0 · 150 слов». */
+.hero-meta {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+/* Крупные строки правой ячейки растягиваются на всю её высоту. */
+.panel__side > .row {
+  flex: 1 1 auto;
+}
+
+/* Строка правой ячейки: номер | название | примечание (иероглифы и
+   пиньинь). Текущая страница отмечена красной точкой. */
+.side-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 28px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.side-row:last-child {
+  border-bottom: 0;
+}
+
+.side-row__num {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.side-row__title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.side-row__note {
+  font-size: 14px;
+  white-space: nowrap;
+  color: var(--text-2);
+}
+
+a.side-row:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.side-row[aria-current] .side-row__title::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: middle;
+}
+
+/* Примечание: значок и текст в рамке (VPN и Яндекс Диск, машинный
+   перевод, «раздел наполняется»). */
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 20px 0 0;
+  padding: 14px 20px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.note b,
+.note strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.note__icon {
+  flex: none;
+  margin-top: 1px;
+}
+
+.note--empty {
+  margin-top: 48px;
+  padding: 28px;
+  border-style: dashed;
+  border-color: var(--line-strong);
+}
+
+/* Примечание под списком — без рамки. */
+.note--plain {
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+}
+
+/* Абзац под меткой секции. */
+.section-intro {
+  margin: 0 0 20px;
+  max-width: 720px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+/* Раздел на странице уровня: шапка (название, иероглифы, описание) и
+   строки материалов в одной рамке. */
+.lib-group + .lib-group {
+  margin-top: 20px;
+}
+
+.lib-group__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 16px;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.lib-group__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.lib-group__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.lib-group__title a:hover {
+  color: var(--accent-text);
+}
+
+.lib-group__zh {
+  font-size: 14px;
+  white-space: nowrap;
+  color: var(--text-2);
+}
+
+.lib-group__text {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.lib-group__note {
+  margin: 0;
+  padding: 14px 28px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+/* Разделы, куда материалы ещё не добавлены, — одной строкой. */
+.lib-empty {
+  margin: 20px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.lib-empty a {
+  color: var(--text-2);
+}
+
+.lib-empty a:hover {
+  color: var(--accent-text);
+}
+
+/* Список строк: линии между пунктами рисует сам список. */
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rows > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.rows .row {
+  border-bottom: 0;
+}
+
+.row__tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 230px;
+}
+
+/* Строка файла: номер | название и описание | метка | «открыть» и
+   «скачать». Название открывает файл, как и кнопка. */
+.mat {
+  grid-template-columns: 48px minmax(0, 1fr) auto auto;
+}
+
+.mat .row__title {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.mat .row__title:hover {
+  color: var(--accent-text);
+}
+
+.mat__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Заглушка и сообщения в рамке (страница карточек). */
+.placeholder-note {
+  margin: 20px 0 0;
+  padding: 14px 20px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+/* Пустой раздел в списке подборки. */
+.row.is-empty .row__title {
+  color: var(--text-2);
+}
+
+/* Картинка в тексте страницы: упражнение, таблица. */
+.lib-figure {
+  display: block;
+  max-width: 100%;
+  margin: 0 0 16px;
+  border: 1px solid var(--line);
+}
+
+.lib-figure--sm {
+  max-width: min(100%, 420px);
+}
+
+/* Сноска под строками правой ячейки панели. */
+.panel__foot {
+  margin: 0;
+  padding: 14px 28px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+/* Шаг списка-инструкции: обычный текст со ссылками. */
+.row__step {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Кнопки «назад» и «дальше» внизу страницы. */
+.nav-next {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 48px;
+}
+
+/* ---------------------------------------- главная библиотеки */
+
+/* Подпись секции-ссылка («учебники», «материалы») выглядит как обычная. */
+.section-label a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.section-label a:hover {
+  color: var(--accent-text);
+}
+
+.lib-hero .sun {
+  right: 48px;
+  bottom: -100px;
+  width: 180px;
+  height: 180px;
+}
+
+/* Кнопка «путь обучения» и подпись рядом с ней. */
+.lib-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.lib-path__note {
+  max-width: 220px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+/* Уровни HSK — таблица: уровень | по HSK 2.0 | что умеете | стандарты. */
+.levels__inner {
+  min-width: 760px;
+}
+
+.levels__head,
+.levels__row {
+  display: grid;
+  grid-template-columns: 130px 110px minmax(0, 1fr) 120px 24px;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.levels__head {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.levels__row {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.levels__row:last-child {
+  border-bottom: 0;
+}
+
+.levels__row:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.levels__row:hover .row__arrow {
+  color: var(--accent-text);
+}
+
+.levels__name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.levels__name b {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* «начните здесь» — красным текстом. */
+.levels__name em {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+.levels__cefr {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.levels__text {
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.levels__std {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+/* Учебники: плитки серий, каждая ведёт на страницу серии. */
+.books {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.book {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  min-height: 260px;
+  padding: 24px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.book:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.book:hover .book__meta svg {
+  color: var(--accent-text);
+}
+
+.book__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.book__num {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.book__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.book__zh {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.book__title {
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.book__text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.book__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.book__meta svg {
+  flex: none;
+}
+
+.lib-ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  margin: 20px 0 0;
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+/* Материалы к занятиям: слева название с бледными иероглифами, справа
+   строки разделов. */
+.lib-feature {
+  flex: 1 1 380px;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 360px;
+  padding: 40px;
+  border-right: 1px solid var(--line);
+}
+
+.lib-feature__text {
+  margin: 16px 0 0;
+  max-width: 340px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.lib-feature__rows {
+  flex: 1 1 460px;
+}
+
+.lib-row {
+  grid-template-columns: 36px minmax(0, 1fr) auto 24px;
+  gap: 14px;
+  padding: 22px 28px;
+}
+
+.lib-row.row--plain {
+  grid-template-columns: 36px minmax(0, 1fr) 24px;
+}
+
+.lib-row .row__title {
+  font-size: 18px;
+}
+
+.lib-row .row__body {
+  gap: 3px;
+}
+
+.lib-row .row__tags {
+  max-width: 190px;
+}
+
+/* Чтение, культура и справочное: плитки по три в ряд. */
+.lib-tiles {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.lib-tiles .tile {
+  min-height: 240px;
+}
+
+.lib-tiles .tile__hanzi {
+  font-size: 76px;
+}
+
+.lib-tiles .tile__title {
+  font-size: 21px;
+}
+
+.lib-tiles .tile__more {
+  margin-top: 8px;
+}
+
+@media (max-width: 960px) {
+  .page-title--long {
+    font-size: 28px;
+  }
+
+  /* На телефоне панель первого экрана распадается: заголовок и абзац
+     стоят на фоне страницы, без рамки и «солнца», правая ячейка —
+     отдельным блоком в рамке. */
+  .panel--hero {
+    display: block;
+    border: 0;
+    background: none;
+  }
+
+  .panel--hero .panel__main {
+    gap: 8px;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+
+  .panel--hero .sun {
+    display: none;
+  }
+
+  .panel--hero .lead {
+    max-width: none;
+    font-size: 14px;
+  }
+
+  .panel--hero .panel__side {
+    margin-top: 16px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .hero-meta {
+    font-size: 13px;
+  }
+
+  .side-row {
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .side-row__note {
+    font-size: 13px;
+  }
+
+  .note {
+    margin-top: 16px;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .note--empty {
+    margin-top: 24px;
+    padding: 20px 16px;
+  }
+
+  .section-intro {
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+
+  .lib-group + .lib-group {
+    margin-top: 14px;
+  }
+
+  .lib-group__head {
+    padding: 14px 16px;
+  }
+
+  .lib-group__title {
+    font-size: 16px;
+  }
+
+  .lib-group__zh,
+  .lib-group__text {
+    font-size: 13px;
+  }
+
+  .lib-group__note {
+    padding: 12px 16px;
+  }
+
+  /* Строка на телефоне: номер | текст | стрелка, метки — под текстом. */
+  .row,
+  .row--plain {
+    grid-template-columns: 24px minmax(0, 1fr) 16px;
+    column-gap: 10px;
+    row-gap: 8px;
+  }
+
+  .row > .row__tags {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: flex-start;
+    max-width: none;
+  }
+
+  .row > .row__arrow {
+    grid-column: 3;
+    grid-row: 1;
+    width: 16px;
+    height: 16px;
+  }
+
+  .row__num {
+    font-size: 13px;
+  }
+
+  /* Строка файла: метка и кнопки — под названием, кнопки поровну. */
+  .mat {
+    grid-template-columns: 24px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .mat > .row__tags {
+    grid-row: auto;
+  }
+
+  .mat > .mat__actions {
+    grid-column: 2;
+  }
+
+  .mat__actions .btn {
+    flex: 1 1 0;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .panel__foot {
+    padding: 12px 16px;
+  }
+
+  .row__step {
+    font-size: 15px;
+  }
+
+  .nav-next {
+    margin-top: 32px;
+  }
+
+  .nav-next .btn {
+    flex: 1 1 auto;
+  }
+
+  /* Главная библиотеки на телефоне. */
+  .lib-path {
+    margin-top: 6px;
+  }
+
+  /* «путь обучения · от нуля до HSK 6» — тёмная кнопка во всю ширину. */
+  .lib-path__btn {
+    justify-content: space-between;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 16px;
+  }
+
+  .lib-path__in {
+    font-weight: 400;
+    color: #C9CDD6;
+  }
+
+  .lib-levels {
+    margin-top: 16px;
+  }
+
+  .levels {
+    overflow: visible;
+  }
+
+  .levels__inner {
+    min-width: 0;
+  }
+
+  .levels__phone-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .levels__phone-head h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .levels__phone-head small {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+
+  /* Строка уровня: название | ступень | описание в одну строку | стрелка. */
+  .levels__row {
+    grid-template-columns: 66px 28px minmax(0, 1fr) 16px;
+    gap: 8px;
+    min-height: 50px;
+    padding: 0 14px 0 16px;
+  }
+
+  .levels__name b {
+    font-size: 15px;
+  }
+
+  .levels__cefr {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-2);
+  }
+
+  .levels__text {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .levels__row .row__arrow {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Учебники — лента карточек, прокручивается пальцем; края ленты — у
+     краёв экрана. */
+  .books {
+    display: flex;
+    gap: 8px;
+    margin: 0 calc(-1 * var(--page-pad));
+    padding: 0 var(--page-pad);
+    border: 0;
+    background: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .books::-webkit-scrollbar {
+    display: none;
+  }
+
+  .book {
+    flex: 0 0 210px;
+    justify-content: flex-start;
+    gap: 4px;
+    min-height: 0;
+    padding: 14px;
+    border: 1px solid var(--line);
+  }
+
+  .book__top,
+  .book__zh,
+  .book__meta {
+    display: none;
+  }
+
+  .book__body {
+    gap: 4px;
+  }
+
+  .book__title {
+    font-size: 15px;
+  }
+
+  .book__text {
+    font-size: 12px;
+  }
+
+  .lib-ask {
+    margin-top: 14px;
+    font-size: 14px;
+  }
+
+  .lib-feature {
+    flex-basis: auto;
+    min-height: 0;
+    padding: 24px 16px 96px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lib-feature .big-hanzi {
+    left: 12px;
+    bottom: -22px;
+    font-size: 96px;
+  }
+
+  .lib-feature__text {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .lib-feature__rows {
+    flex-basis: auto;
+  }
+
+  .lib-row,
+  .lib-row.row--plain {
+    grid-template-columns: 24px minmax(0, 1fr) 16px;
+    gap: 8px 10px;
+    padding: 14px 16px;
+  }
+
+  .lib-row .row__title {
+    font-size: 16px;
+  }
+
+  /* Плитки — по две в ряд, компактные: номер и бледный иероглиф сверху,
+     название и описание снизу. */
+  .lib-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lib-tiles .tile {
+    justify-content: flex-end;
+    gap: 4px;
+    min-height: 148px;
+    padding: 44px 14px 14px;
+  }
+
+  .lib-tiles .tile__num {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    font-size: 12px;
+  }
+
+  .lib-tiles .tile__hanzi {
+    top: 10px;
+    right: 12px;
+    font-size: 52px;
+  }
+
+  .lib-tiles .tile__body {
+    gap: 4px;
+  }
+
+  .lib-tiles .tile__title {
+    font-size: 16px;
+    letter-spacing: 0;
+  }
+
+  .lib-tiles .tile__text {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .lib-tiles .tile__more {
+    display: none;
+  }
+}
+
 /* Sections */
 /* Секция старой разметки: h2 без класса выглядит как метка секции темы
    (.section-label) — подпись и линия до края. */
@@ -151,449 +1072,173 @@
   font-weight: 500;
 }
 
-/* Разделы уровня на его главной странице: под заголовком стандарта сразу
-   идут материалы, поэтому у каждого раздела свой подзаголовок со ссылкой на
-   отдельную страницу раздела, описание и ниже карточки материалов. */
-.level-section {
-  margin: 2rem 0 0;
-}
-
-.level-section > h3 {
-  font-size: 1.1rem;
-  margin: 0 0 0.25rem;
-}
-
-.level-section > h3 a {
-  color: var(--color-text);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-}
-
-.level-section > h3 a:hover {
-  color: var(--color-accent);
-  border-bottom-color: var(--color-accent);
-}
-
-.level-section-desc {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-}
-
-.level-section .material-grid,
-.level-section .card-grid {
-  margin-top: 0.85rem;
-}
-
-.level-section .content-list {
-  margin-bottom: 0;
-}
-
-/* Разделы, куда материалы ещё не добавлены: не занимают на странице место
-   пустыми блоками, а собраны одной строкой в конце стандарта. */
-.level-empty {
-  margin: 2rem 0 0;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-}
-
-.level-empty a {
-  color: var(--color-text-muted);
-}
-
-.level-empty a:hover {
-  color: var(--color-accent);
-}
-
-/* Материалы раздела: карточка с обложкой первой страницы файла.
-   Обложки лежат в images/previews/ и собираются scripts/make_previews.py. */
-.material-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-  gap: 1rem;
-  margin: 1.25rem 0 0;
-}
-
-/* Карточка лежит на боку: слева небольшое превью, справа название,
-   описание и кнопки. Обложка во всю ширину карточки занимала полэкрана
-   и оттесняла текст вниз. */
-.material-card {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-}
-
-/* Под курсором карточка материала берётся красным ободком и мягким
-   свечением того же цвета — будто сзади зажгли подсветку. Свечение это
-   три тени подряд: плотный контур по краю, ореол вокруг карточки и
-   широкая подложка снизу; цвет — тот же --color-accent (#f65209).
-   :focus-within повторяет то же для перехода клавиатурой. */
-.material-card:hover,
-.material-card:focus-within {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px var(--color-accent),
-              0 0 18px rgba(246, 82, 9, 0.45),
-              0 12px 32px rgba(246, 82, 9, 0.22);
-  transform: translateY(-2px);
-}
-
-/* Превью на тёмной подложке, как книга на полке: у книг формат
-   вертикальный, у журналов горизонтальный, и подложка сглаживает разницу,
-   а обложка видна целиком, без обрезки. */
-.material-cover {
-  flex: 0 0 104px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem;
-  background: linear-gradient(160deg, rgba(36, 54, 92, 0.55), var(--color-primary-dark));
-  border-right: 1px solid var(--color-border);
-  overflow: hidden;
-}
-
-.material-cover img {
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  /* Потолок по высоте: у карточки с длинным описанием превью
-     не должно растягиваться на всю её высоту. */
-  max-height: 132px;
-  border-radius: 2px;
-  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.5);
-}
-
-/* Обложки ещё нет: вместо картинки плашка с расширением файла. */
-.material-fallback {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted);
-}
-
-.material-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  flex: 1;
-  min-width: 0;
-  padding: 0.85rem 1rem 0.85rem;
-}
-
-.material-title {
-  margin: 0;
-  font-size: 0.97rem;
-  line-height: 1.35;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-/* По названию открывается сам файл — как по обложке и по кнопке «Открыть».
-   Цвет берётся у заголовка, красным название становится под курсором. */
-.material-title a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.material-title a:hover {
-  color: var(--color-accent);
-}
-
-.material-desc {
-  margin: 0;
-  font-size: 0.84rem;
-  line-height: 1.5;
-  color: var(--color-text-muted);
-}
-
-.material-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: auto;
-  padding-top: 0.7rem;
-}
-
-.material-type {
-  font-size: 0.72rem;
-  background: rgba(238, 241, 246, 0.08);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-}
-
-.material-actions {
-  display: flex;
-  gap: 0.4rem;
-  margin-left: auto;
-}
-
-.material-action {
-  font-size: 0.8rem;
-  font-weight: 600;
-  white-space: nowrap;
-  text-decoration: none;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 0.25rem 0.6rem;
-  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
-}
-
-.material-action:hover {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
-}
-
-.material-action.is-open {
-  color: var(--color-primary-dark);
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-}
-
-.material-action.is-open:hover {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent-soft);
-  color: var(--color-primary-dark);
-}
-
 /* Фильмы с Яндекс Диска (library/culture/films.html). Список и плеер
    собирает js/main.js — initYandexFilms. Плеер появляется над списком,
-   когда выбран фильм; карточка фильма — кнопка того же вида, что карточка
-   материала: превью слева, название и формат справа. */
+   когда фильм выбран; карточка — кнопка с кадром фильма и названием. */
 .film-player {
-  margin: 0 0 2rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
+  margin: 0 0 20px;
+  border: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .film-player video {
   display: block;
   width: 100%;
   max-height: 70vh;
-  background: #000;
+  background: var(--text);
 }
 
 .film-player-info {
-  padding: 0.85rem 1.1rem 1rem;
+  padding: 16px 20px;
 }
 
-.section .film-player-title {
+.film-player-title {
   margin: 0;
-  padding: 0;
-  border: 0;
-  font-size: 1.1rem;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .film-player-note {
-  margin: 0.5rem 0 0;
-  font-size: 0.88rem;
-  color: var(--color-text-muted);
-}
-
-/* Предупреждение над списком: Яндекс Диск не отвечает через VPN. */
-.film-vpn {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  margin: 0 0 1.5rem;
-  padding: 0.85rem 1rem;
-  background: rgba(246, 82, 9, 0.10);
-  border: 1px solid var(--color-accent);
-  border-radius: var(--radius);
-  font-size: 0.92rem;
-}
-
-.film-vpn strong {
-  color: var(--color-accent);
-}
-
-.film-vpn-icon {
-  flex: none;
-  font-size: 1.2rem;
-  line-height: 1.3;
-}
-
-.film-vpn p {
-  margin: 0;
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--accent-text);
 }
 
 .film-status {
-  color: var(--color-text-muted);
+  margin: 0 0 16px;
+  font-size: 15px;
+  color: var(--text-2);
 }
 
 .film-status.is-error {
-  padding: 1rem;
-  background: rgba(246, 82, 9, 0.10);
-  border: 1px dashed var(--color-accent);
-  border-radius: var(--radius);
+  padding: 14px 20px;
+  border: 1px solid var(--line-strong);
+  color: var(--accent-text);
 }
 
-.section h3.film-group {
-  margin: 1.75rem 0 0.75rem;
+.film-group {
+  margin: 28px 0 12px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .film-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
 }
 
 .film-card {
   display: flex;
-  align-items: stretch;
-  width: 100%;
+  flex-direction: column;
   padding: 0;
-  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--text);
   font: inherit;
-  color: var(--color-text);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
+  text-align: left;
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
 .film-card:hover,
-.film-card:focus-visible,
-.film-card.is-active {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px var(--color-accent),
-              0 0 18px rgba(246, 82, 9, 0.45),
-              0 12px 32px rgba(246, 82, 9, 0.22);
-  transform: translateY(-2px);
+.film-card:focus-visible {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
 }
 
+.film-card.is-active {
+  border-color: var(--text);
+}
+
+/* Кадр 16:9; пока картинки нет — бледная подложка. */
 .film-cover {
   position: relative;
-  flex: 0 0 132px;
-  min-height: 84px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(160deg, rgba(36, 54, 92, 0.55), var(--color-primary-dark));
-  border-right: 1px solid var(--color-border);
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--hanzi-pale);
   overflow: hidden;
 }
 
 .film-cover img {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+/* Значок «смотреть»: тёмный квадрат с треугольником. Символ ▶ из скрипта
+   скрыт, треугольник нарисован рамками. */
 .film-play {
-  position: relative;
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  padding-left: 0.15rem;
-  border-radius: 50%;
-  font-size: 0.85rem;
-  color: var(--color-primary-dark);
-  background: var(--color-accent);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  width: 40px;
+  height: 40px;
+  background: var(--text);
+  color: var(--on-dark);
+  font-size: 0;
+}
+
+.film-play::before {
+  content: "";
+  margin-left: 3px;
+  border-style: solid;
+  border-width: 7px 0 7px 11px;
+  border-color: transparent transparent transparent currentColor;
 }
 
 .film-body {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  flex: 1;
-  min-width: 0;
-  padding: 0.85rem 1rem;
+  gap: 4px;
+  padding: 14px 16px 16px;
 }
 
 .film-title {
-  font-size: 0.97rem;
-  font-weight: 600;
+  font-size: 15px;
   line-height: 1.35;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
-.film-card:hover .film-title,
-.film-card.is-active .film-title {
-  color: var(--color-accent);
-}
-
 .film-meta {
-  margin-top: auto;
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
+  font-size: 13px;
+  color: var(--text-2);
 }
 
 .film-source {
-  margin: 1.5rem 0 0;
-  font-size: 0.88rem;
-  color: var(--color-text-muted);
+  margin: 20px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
 }
 
-/* Content lists */
-.content-list {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
-}
+/* Фильмы на телефоне — по два в ряд. */
+@media (max-width: 960px) {
+  .film-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
 
-.content-list li {
-  padding: 0.75rem 1rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
+  .film-body {
+    padding: 10px 12px 12px;
+  }
 
-.content-list .item-label {
-  flex: 1;
-}
+  .film-title {
+    font-size: 14px;
+  }
 
-.content-list .item-type {
-  font-size: 0.75rem;
-  background: rgba(238, 241, 246, 0.08);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  color: var(--color-text-muted);
-}
-
-.content-list a.download {
-  font-size: 0.85rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.placeholder-note {
-  font-style: italic;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-  padding: 1rem;
-  background: rgba(246, 82, 9, 0.10);
-  border: 1px dashed var(--color-accent);
-  border-radius: var(--radius);
-  margin: 1rem 0;
+  .film-play {
+    left: 8px;
+    bottom: 8px;
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* Contacts */
@@ -739,17 +1384,6 @@
   margin: 1rem 0 0;
   font-size: 0.875rem;
   color: var(--color-text-muted);
-}
-
-/* Nav next */
-.nav-next {
-  margin-top: 2.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
 }
 
 /* Steps list */
@@ -4422,191 +5056,6 @@ button.hz-ai-word:hover {
 @media (max-width: 640px) {
   .card-grid {
     grid-template-columns: 1fr;
-  }
-
-  /* Главная библиотеки: уровни HSK — низкие плашки, название и метка
-     уровня в одной строке, описание под ними. */
-  .card-grid.is-levels {
-    gap: 0.6rem;
-  }
-
-  .card-grid.is-levels .card {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: baseline;
-    column-gap: 0.75rem;
-    row-gap: 0.2rem;
-    padding: 0.7rem 1rem;
-  }
-
-  .card-grid.is-levels .card h3 {
-    margin: 0;
-  }
-
-  .card-grid.is-levels .card p {
-    grid-column: 1 / -1;
-    font-size: 0.85rem;
-  }
-
-  .card-grid.is-levels .card .card-meta {
-    grid-row: 1;
-    grid-column: 2;
-    margin: 0;
-    font-size: 0.75rem;
-  }
-
-  /* Сетки разделов библиотеки (is-pairs: «Дополнительно» и «Все разделы»
-     на главной библиотеки, обзоры «Учебников», «Материалов», «Культуры»
-     и т. д.) — по две карточки в ряд. Карточки уже, поэтому шрифт мельче,
-     а описание переносится по слогам и показывается целиком. Заголовок
-     переносится только целыми словами; слову, которое не влезает в
-     полкарточки на экране 360px, в разметке ставится мягкий перенос &shy;.
-     Последняя карточка без пары — во всю ширину. */
-  .card-grid.is-pairs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.6rem;
-  }
-
-  .card-grid.is-pairs .card {
-    padding: 0.8rem 0.85rem;
-    hyphens: auto;
-    -webkit-hyphens: auto;
-    overflow-wrap: break-word;
-  }
-
-  .card-grid.is-pairs .card:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-
-  .card-grid.is-pairs .card h3 {
-    margin-bottom: 0.35rem;
-    font-size: 0.95rem;
-    line-height: 1.3;
-    hyphens: manual;
-    -webkit-hyphens: manual;
-  }
-
-  .card-grid.is-pairs .card p {
-    font-size: 0.8rem;
-    line-height: 1.45;
-  }
-
-  .card-grid.is-pairs .card .card-meta {
-    margin-top: 0.5rem;
-    font-size: 0.72rem;
-  }
-
-  /* Материалы и фильмы на телефоне — тоже по две карточки в ряд. На боку
-     карточка в полэкрана не помещается, поэтому встаёт: превью сверху,
-     под ним название, описание целиком и кнопки «Открыть» / «Скачать»
-     поровну. Последняя карточка без пары (и единственная в разделе) —
-     во всю ширину и остаётся на боку, с превью слева. */
-  .material-grid,
-  .film-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.6rem;
-  }
-
-  .material-card:last-child:nth-child(odd),
-  .film-card:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-
-  .material-cover {
-    flex-basis: 84px;
-    padding: 0.6rem;
-  }
-
-  .material-body {
-    gap: 0.3rem;
-    padding: 0.7rem 0.75rem 0.75rem;
-  }
-
-  /* Названий материалов много и в них бывают слова длиннее полкарточки
-     («Диагностический», «(«Головоломка»)»), поэтому переносы автоматические,
-     но только в словах от 12 знаков (скобки и кавычки считаются) —
-     короткие переносятся целиком. Через .material-card — иначе
-     перебивает .section h3 с крупным шрифтом и отступом сверху. */
-  .material-card .material-title,
-  .film-title {
-    margin: 0;
-    font-size: 0.88rem;
-    line-height: 1.3;
-    hyphens: auto;
-    -webkit-hyphens: auto;
-    hyphenate-limit-chars: 12 4 4;
-    overflow-wrap: break-word;
-  }
-
-  .material-desc {
-    font-size: 0.78rem;
-    line-height: 1.45;
-    hyphens: auto;
-    -webkit-hyphens: auto;
-    overflow-wrap: break-word;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) {
-    flex-direction: column;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-cover {
-    flex: 0 0 auto;
-    height: 116px;
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-cover img {
-    max-height: 100%;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-foot {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.45rem;
-    padding-top: 0.5rem;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-type {
-    align-self: flex-start;
-    white-space: normal;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-actions {
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    margin-left: 0;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-action {
-    flex: 1 1 auto;
-    text-align: center;
-    font-size: 0.75rem;
-    padding: 0.35rem 0.3rem;
-  }
-
-  .film-body {
-    padding: 0.7rem 0.75rem;
-  }
-
-  .film-card:not(:last-child:nth-child(odd)) {
-    flex-direction: column;
-  }
-
-  .film-card:not(:last-child:nth-child(odd)) .film-cover {
-    flex: 0 0 auto;
-    aspect-ratio: 16 / 9;
-    min-height: 0;
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  /* На узком экране подпись, метка и ссылка не влезают в строку: метка
-     отжимала подпись в колонку из одного-двух слов. Ставим их друг под друга. */
-  .content-list li {
-    flex-direction: column;
-    align-items: flex-start;
   }
 
   /* Карточки: шапка экрана изучения ниже, кнопки итогов — во всю ширину. */

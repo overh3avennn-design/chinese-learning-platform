@@ -212,6 +212,10 @@ textarea {
   color: var(--accent-text);
 }
 
+.crumbs [aria-current] {
+  color: var(--text);
+}
+
 /* ------------------------- панель из двух ячеек (первый экран страницы) */
 
 .panel {
@@ -851,13 +855,25 @@ button.row:hover .row__arrow {
     line-height: 1.45;
   }
 
+  /* Крошки вида «главная / раздел» на телефоне не нужны: раздел и так
+     отмечен в нижней панели. На вложенных страницах крошки остаются. */
+  .crumbs--top {
+    display: none;
+  }
+
+  .crumbs {
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+
   .section {
-    margin-top: 48px;
+    margin-top: 22px;
   }
 
   .section-label {
     gap: 12px;
     margin-bottom: 12px;
+    font-size: 14px;
   }
 
   .section-title {
