@@ -3419,71 +3419,62 @@ a.side-row:hover {
   }
 }
 
-/* Раздел «Словарь» (dictionary/index.html, js/dictionary.js): строка
-   поиска и статьи 大БКРС карточками, как слова колоды в «Карточках». */
+/* Раздел «Словарь» (dictionary/index.html, js/dictionary.js): панель с
+   поиском и списком «как искать», под ней выдача. Первое точное
+   совпадение — крупная карточка .dict-main с блоком «написание»,
+   остальные статьи — строки .dict-row в рамке. Разметку выдачи строит
+   js/dictionary.js, блок «написание» — js/hanzi-window.js. */
+.dict-hero .sun {
+  bottom: -112px;
+}
+
 .dict-search {
-  margin-bottom: 1.5rem;
+  max-width: 580px;
+  margin: 4px 0 0;
 }
 
-/* Подпись поля для экранных дикторов: глазами её заменяет подсказка в
-   самом поле. */
-.dict-search-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.dict-search-row {
-  display: flex;
-  gap: 0.6rem;
+.dict-search .field {
+  height: 60px;
+  padding: 0 6px 0 18px;
 }
 
 /* Шрифт не меньше 16px: иначе iOS увеличивает страницу при вводе. */
-.dict-input {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface-solid);
-  color: var(--color-text);
-  font-family: var(--font-sans), var(--font-chinese);
-  font-size: 1.05rem;
-  -webkit-appearance: none;
-  appearance: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+.dict-search .field input {
+  height: 46px;
+  font-size: 18px;
 }
 
-.dict-input::placeholder {
-  color: var(--color-text-muted);
-  opacity: 0.8;
+.dict-search .icon-btn {
+  width: 46px;
+  height: 46px;
 }
 
-.dict-input:focus {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(246, 82, 9, 0.25);
-}
-
-.dict-submit {
-  flex-shrink: 0;
-  padding: 0.75rem 1.4rem;
+.dict-search .field__go {
+  height: 46px;
+  padding: 0 26px;
 }
 
 .dict-hint {
-  margin: 0.6rem 0 0;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+/* Пока открыта клетка рукописного ввода, подсказка под ней не нужна —
+   иначе она сползает на «солнце». */
+.dict-search:has(.hw:not([hidden])) .dict-hint {
+  display: none;
+}
+
+.dict-hero .side-row {
+  padding-top: 13px;
+  padding-bottom: 13px;
 }
 
 .dict-status {
-  margin: 0 0 1rem;
-  color: var(--color-text-muted);
+  margin: 24px 0 0;
+  font-size: 15px;
+  color: var(--text-2);
 }
 
 .dict-status:empty {
@@ -3491,96 +3482,116 @@ a.side-row:hover {
 }
 
 .dict-status.is-error {
-  color: var(--color-accent-soft);
+  color: var(--accent-text);
 }
 
-.dict-group {
-  margin-bottom: 2rem;
+.dict-results:not(:empty) {
+  margin-top: 96px;
 }
 
-.dict-group-title {
-  margin: 0 0 0.75rem;
-  padding-bottom: 0.4rem;
-  font-size: 1.1rem;
-  border-bottom: 2px solid var(--color-border);
+.dict-status:not(:empty) + .dict-results:not(:empty) {
+  margin-top: 24px;
+}
+
+/* «результаты · запрос» — подпись, линия и пояснение справа. */
+.dict-results-label {
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.dict-results-label::after {
+  display: none;
+}
+
+.dict-results-label h2 {
+  margin: 0;
+  font: inherit;
+}
+
+.dict-results-label__q {
+  color: var(--text);
+}
+
+.dict-results-label__line {
+  flex: 1 1 120px;
+  height: 1px;
+  background: var(--line);
+}
+
+.dict-results-label__note {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.dict-group + .dict-group,
+.dict-main-slot:not(:empty) + .dict-box {
+  margin-top: 24px;
+}
+
+.dict-box {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.dict-box[hidden] {
+  display: none;
+}
+
+.dict-box__title {
+  margin: 0;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .dict-list {
-  display: grid;
-  gap: 0.6rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.dict-entry {
-  padding: 1rem 1.15rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-
-.dict-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.2rem 0.9rem;
-  margin-bottom: 0.4rem;
-}
+/* ------------------------------------------------ текст статьи */
 
 .dict-hanzi {
-  font-family: var(--font-chinese);
-  font-size: 1.75rem;
-  line-height: 1.25;
-  color: var(--color-chinese);
-  overflow-wrap: anywhere;
-}
-
-.dict-pinyin {
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.dict-text {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
+  font-family: var(--font-zh);
+  font-weight: 400;
+  color: var(--text);
 }
 
 .dict-line {
   margin: 0;
 }
 
-.dict-line + .dict-line {
-  margin-top: 0.2rem;
-}
-
-/* Пример: китайская фраза цветом иероглифов, перевод приглушён. */
+/* Пример: китайская фраза цветом текста, перевод приглушён. */
 .dict-ex {
-  padding-left: 1rem;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
+  padding-left: 16px;
+  color: var(--text-2);
 }
 
 .dict-ex-zh {
-  font-family: var(--font-chinese);
-  color: var(--color-chinese);
+  font-family: var(--font-zh);
+  color: var(--text);
 }
 
 /* Пометки словаря (гл., см., уст.) и комментарии. */
 .dict-label {
-  font-size: 0.85em;
-  font-style: italic;
-  color: var(--color-accent-soft);
+  font-size: 0.9em;
+  color: var(--text-2);
 }
 
 .dict-note {
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .dict-ref {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
+  color: var(--text);
+  text-underline-offset: 0.15em;
+}
+
+.dict-ref:hover {
+  color: var(--accent-text);
 }
 
 /* Длинная статья видна первыми строками, остальное — по кнопке. */
@@ -3588,156 +3599,693 @@ a.side-row:hover {
   display: none;
 }
 
-.dict-toggle {
-  margin: 0;
-  padding: 0.45rem 0 0;
-  border: 0;
-  background: none;
-  color: var(--color-accent);
-  font: inherit;
-  font-size: 0.875rem;
+/* Дополнения к статьям БКРС (build.py, enrich). Подобранный пиньинь —
+   с пометкой «авто». */
+.dict-pinyin.is-auto,
+.hz-pinyin.is-auto,
+.hz-char-pinyin.is-auto,
+.hz-part-py.is-auto {
+  text-decoration: underline dotted var(--line-strong);
+  text-underline-offset: 0.2em;
+}
+
+.dict-auto,
+.hz-auto {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  vertical-align: middle;
+  color: var(--text-2);
+}
+
+.dict-tag,
+.hz-mt {
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--text-2);
+}
+
+.dict-no-ru {
+  color: var(--text-2);
+}
+
+.dict-words .dict-ref {
+  color: var(--text);
+}
+
+.dict-text.is-foreign .dict-line:not(.dict-mt):not(.dict-no-ru),
+.dict-article.is-foreign .dict-line {
+  color: var(--text-2);
+}
+
+/* ------------------------------------------- точное совпадение */
+
+/* Крупная карточка: слева иероглифы и статья, справа «написание».
+   Нажатие на карточку открывает окно слова. */
+.dict-main {
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.dict-main.has-card {
   cursor: pointer;
 }
 
-.dict-toggle:hover {
-  text-decoration: underline;
+.dict-main__word {
+  flex: 1 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 32px;
+  padding: 40px;
+}
+
+.dict-main .dict-hanzi {
+  flex: none;
+  max-width: 100%;
+  font-size: 140px;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+/* Чем длиннее слово, тем мельче иероглифы. */
+.dict-main .dict-hanzi.is-len-2 {
+  font-size: 104px;
+}
+
+.dict-main .dict-hanzi.is-len-3 {
+  font-size: 76px;
+}
+
+.dict-main .dict-hanzi.is-len-4 {
+  font-size: 60px;
+}
+
+.dict-main .dict-hanzi.is-len-5,
+.dict-main .dict-hanzi.is-len-6,
+.dict-main .dict-hanzi.is-len-7,
+.dict-main .dict-hanzi.is-len-8,
+.dict-main .dict-hanzi.is-len-9 {
+  flex: 1 1 100%;
+  font-size: 44px;
+  line-height: 1.2;
+}
+
+.dict-main__body {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dict-main__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.dict-main .dict-pinyin {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.dict-main .dict-text {
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.dict-main .dict-ex {
+  font-size: 15px;
+}
+
+.dict-main .dict-ex-zh {
+  font-size: 17px;
+}
+
+/* «показать всю статью · ещё N строк» — текст с подчёркиванием. */
+.dict-main .dict-toggle {
+  align-self: flex-start;
+  padding: 0 0 3px;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dict-main .dict-toggle:hover {
+  color: var(--accent-text);
+}
+
+.dict-main .dict-toggle,
+.dict-main__meta {
+  justify-self: start;
+  text-align: left;
+}
+
+.dict-main__meta {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.dict-main__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.dict-main__vpn {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* «написание»: порядок черт по шагам и строки о ключе и составе. */
+.dict-main__writing {
+  flex: 1 1 360px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px;
+  border-left: 1px solid var(--line);
+}
+
+.dict-main__writing[hidden] {
+  display: none;
+}
+
+.dict-main__writing-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.dict-main__writing-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dict-main__writing-head span {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.dict-writing {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hz-writing {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.hz-writing__char {
+  flex: none;
+  width: 28px;
+  font-family: var(--font-zh);
+  font-size: 24px;
+  line-height: 44px;
+  text-align: center;
+}
+
+.hz-writing__cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Клетка 田字格 с шагом порядка черт: будущие черты бледные, написанные —
+   серые, текущая — цветом текста. */
+.hz-wcell {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.hz-wcell::before,
+.hz-wcell::after {
+  content: "";
+  position: absolute;
+}
+
+.hz-wcell::before {
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px dashed var(--hanzi-pale);
+}
+
+.hz-wcell::after {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  border-left: 1px dashed var(--hanzi-pale);
+}
+
+.hz-wcell svg {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+}
+
+.hz-wcell path {
+  fill: var(--hanzi-pale);
+}
+
+.hz-wcell path[class^="is-"] {
+  fill: #9AA1AF;
+}
+
+.hz-wcell path.is-current {
+  fill: var(--text);
+}
+
+/* Много черт или несколько иероглифов — клетки мельче. */
+.hz-writing__cells:has(> :nth-child(9)) .hz-wcell {
+  width: 52px;
+  height: 52px;
+}
+
+.hz-writing__char + .hz-writing__cells .hz-wcell {
+  width: 44px;
+  height: 44px;
+}
+
+.hz-writing__cells:has(> :nth-child(9)) .hz-wcell svg,
+.hz-writing__char + .hz-writing__cells .hz-wcell svg {
+  padding: 5px;
+}
+
+.hz-facts {
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+
+.hz-fact {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.hz-fact:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.hz-fact dt {
+  color: var(--text-2);
+}
+
+.hz-fact dt[lang] {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.hz-fact dd {
+  margin: 0;
+}
+
+/* ------------------------------------------------ строки списка */
+
+/* Иероглифы | пиньинь | короткое значение | «статья» | стрелка. Нажатие
+   на строку открывает окно слова, «статья» раскрывает полный текст. */
+.dict-row {
+  display: grid;
+  grid-template-columns: 120px 150px minmax(0, 1fr) auto 24px;
+  align-items: center;
+  gap: 0 16px;
+  padding: 8px 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.dict-row:last-child {
+  border-bottom: 0;
+}
+
+.dict-row.has-card {
+  cursor: pointer;
+}
+
+.dict-row .dict-head {
+  display: contents;
+}
+
+.dict-row .dict-hanzi {
+  font-size: 24px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.dict-row .dict-hanzi.is-len-5,
+.dict-row .dict-hanzi.is-len-6,
+.dict-row .dict-hanzi.is-len-7,
+.dict-row .dict-hanzi.is-len-8,
+.dict-row .dict-hanzi.is-len-9 {
+  font-size: 18px;
+}
+
+.dict-row .dict-pinyin {
+  font-size: 15px;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+.dict-row .dict-text {
+  min-width: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* Короткое значение — не больше двух строк. */
+.dict-gloss {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dict-row__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+button.dict-row__more:hover {
+  color: var(--text);
+}
+
+.dict-row.is-open .dict-row__more svg {
+  transform: rotate(180deg);
+}
+
+.dict-row__open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+/* Полный текст статьи под строкой. */
+.dict-article {
+  grid-column: 2 / -1;
+  margin-top: 4px;
+  padding: 12px 0 10px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.55;
+  cursor: auto;
+}
+
+.dict-row:not(.is-open) .dict-article {
+  display: none;
+}
+
+.dict-article .dict-ex-zh {
+  font-size: 17px;
+}
+
+@media (hover: hover) {
+  .dict-row.has-card:hover {
+    background: var(--surface-2);
+  }
+
+  .dict-row.has-card:hover .dict-row__open {
+    color: var(--accent-text);
+  }
 }
 
 .dict-more {
-  display: block;
-  margin: 0 auto;
+  margin-top: 24px;
 }
 
 .dict-more[hidden] {
   display: none;
 }
 
-@media (max-width: 640px) {
-  .dict-entry {
-    padding: 0.85rem 0.9rem;
+@media (max-width: 960px) {
+  .dict-search {
+    max-width: none;
+    margin-top: 6px;
   }
 
-  .dict-hanzi {
-    font-size: 1.5rem;
+  .dict-search .field {
+    gap: 4px;
+    height: 54px;
+    padding: 0 5px 0 14px;
   }
 
-  .dict-submit {
-    padding: 0.75rem 1rem;
+  .dict-search .field input {
+    height: 44px;
+    font-size: 17px;
   }
-}
 
-/* Дополнения к статьям БКРС (build.py, enrich). Подобранный пиньинь —
-   с пометкой «авто», машинный перевод — с подписью; у статей, где в БКРС
-   перевод не на русском, сам текст статьи бледнее. */
-.dict-pinyin.is-auto,
-.hz-pinyin.is-auto,
-.hz-char-pinyin.is-auto,
-.hz-part-py.is-auto {
-  font-weight: 500;
-}
-
-.dict-auto,
-.hz-auto {
-  display: inline-block;
-  margin-left: 0.4rem;
-  padding: 0 0.35rem;
-  font-size: 0.62rem;
-  font-weight: 600;
-  line-height: 1.5;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  vertical-align: 0.2em;
-  color: var(--color-text-muted);
-  border: 1px dashed rgba(168, 184, 209, 0.45);
-  border-radius: 4px;
-  cursor: help;
-}
-
-.dict-tag,
-.hz-mt {
-  display: inline-block;
-  margin-right: 0.35rem;
-  padding: 0 0.45rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  line-height: 1.6;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  vertical-align: 0.1em;
-  color: #8fc3f0;
-  border: 1px solid rgba(143, 195, 240, 0.45);
-  border-radius: 999px;
-}
-
-.dict-no-ru {
-  color: var(--color-text-muted);
-}
-
-.dict-words .dict-ref {
-  color: var(--color-accent-soft);
-}
-
-.dict-text.is-foreign .dict-line:not(.dict-mt):not(.dict-no-ru) {
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-}
-
-/* Статья словаря нажимается целиком — открывает окно слова
-   (js/hanzi-window.js). Метка «字 Разбор» в шапке статьи показывает, что
-   так можно. */
-.dict-entry.has-card {
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-
-@media (hover: hover) {
-  .dict-entry.has-card:hover {
-    border-color: rgba(246, 82, 9, 0.45);
+  .dict-search .icon-btn {
+    width: 44px;
+    height: 44px;
   }
-}
 
-.dict-card-btn {
-  align-self: center;
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.75rem;
-  font: inherit;
-  font-size: 0.8rem;
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.08);
-  border: 1px solid rgba(246, 82, 9, 0.4);
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
-}
+  .dict-search .field__go {
+    height: 44px;
+    padding: 0 16px;
+  }
 
-.dict-card-btn:hover {
-  background: rgba(246, 82, 9, 0.16);
-  border-color: var(--color-accent);
-}
+  .dict-status {
+    margin-top: 16px;
+    font-size: 14px;
+  }
 
-.dict-card-btn .zh {
-  font-family: var(--font-chinese);
-  font-size: 0.95rem;
-}
+  .dict-results:not(:empty),
+  .dict-status:not(:empty) + .dict-results:not(:empty) {
+    margin-top: 16px;
+  }
 
-/* «ИИ Объяснить» стоит перед «字 Разбор»; вторая кнопка прижата к первой,
-   а не делит с ней свободное место. */
-.dict-card-btn + .dict-card-btn {
-  margin-left: -0.4rem;
-}
-
-.dict-explain-btn .ai {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-@media (max-width: 640px) {
-  .dict-card-btn .txt {
+  .dict-results-label {
     display: none;
+  }
+
+  /* Карточка точного совпадения: иероглифы слева, пиньинь и статья
+     справа, кнопки — во всю ширину под ними. */
+  .dict-main {
+    display: block;
+    padding: 18px;
+  }
+
+  .dict-main__word {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px 18px;
+    padding: 0;
+  }
+
+  .dict-main__body {
+    display: contents;
+  }
+
+  .dict-main .dict-hanzi {
+    grid-row: 1 / span 4;
+    align-self: start;
+    font-size: 80px;
+  }
+
+  .dict-main .dict-hanzi.is-len-2 {
+    font-size: 56px;
+  }
+
+  .dict-main .dict-hanzi.is-len-3 {
+    font-size: 40px;
+  }
+
+  .dict-main .dict-hanzi.is-len-4 {
+    font-size: 30px;
+  }
+
+  .dict-main .dict-hanzi.is-len-5,
+  .dict-main .dict-hanzi.is-len-6,
+  .dict-main .dict-hanzi.is-len-7,
+  .dict-main .dict-hanzi.is-len-8,
+  .dict-main .dict-hanzi.is-len-9 {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    font-size: 28px;
+  }
+
+  .dict-main__top .tag {
+    display: none;
+  }
+
+  .dict-main .dict-pinyin {
+    font-size: 22px;
+  }
+
+  .dict-main .dict-text {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .dict-main .dict-ex {
+    padding-left: 10px;
+    font-size: 14px;
+  }
+
+  .dict-main .dict-ex-zh {
+    font-size: 16px;
+  }
+
+  .dict-main__meta {
+    font-size: 13px;
+  }
+
+  .dict-main__actions {
+    grid-column: 1 / -1;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .dict-main__actions .btn {
+    flex: 1 1 0;
+    padding: 0 8px;
+    font-size: 14px;
+  }
+
+  /* Заголовок рамки на телефоне — как метка секции: подпись и линия. */
+  .dict-box {
+    border: 0;
+    background: none;
+  }
+
+  .dict-box__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 0 10px;
+    border: 0;
+    font-size: 14px;
+    color: var(--text-2);
+  }
+
+  .dict-box__title::after {
+    content: "";
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .dict-group + .dict-group,
+  .dict-main-slot:not(:empty) + .dict-box {
+    margin-top: 0;
+  }
+
+  .dict-list {
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .dict-row {
+    grid-template-columns: 52px 76px minmax(0, 1fr) auto 16px;
+    gap: 0 8px;
+    min-height: 52px;
+    padding: 4px 14px;
+  }
+
+  .dict-row .dict-hanzi {
+    font-size: 18px;
+  }
+
+  .dict-row .dict-hanzi.is-len-5,
+  .dict-row .dict-hanzi.is-len-6,
+  .dict-row .dict-hanzi.is-len-7,
+  .dict-row .dict-hanzi.is-len-8,
+  .dict-row .dict-hanzi.is-len-9 {
+    font-size: 15px;
+  }
+
+  .dict-row .dict-pinyin,
+  .dict-row .dict-text {
+    font-size: 13px;
+  }
+
+  .dict-gloss {
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* От кнопки «статья» остаётся стрелка-уголок. */
+  .dict-row__more span {
+    display: none;
+  }
+
+  button.dict-row__more {
+    justify-content: center;
+    width: 32px;
+    padding: 0;
+  }
+
+  .dict-row__open {
+    width: 16px;
+  }
+
+  .dict-row__open svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .dict-article {
+    grid-column: 1 / -1;
+    font-size: 14px;
+  }
+
+  .dict-article .dict-ex-zh {
+    font-size: 16px;
+  }
+
+  .dict-more {
+    width: 100%;
+    margin-top: 16px;
   }
 }
 
@@ -3753,22 +4301,20 @@ html.hz-lock {
 .hz {
   /* Цвета частей иероглифа (.is-p0 … .is-p3; первая часть — обычно ключ,
      поэтому золото, как у ключа) и текущей черты. */
-  --hz-p0: #e9b44c;
-  --hz-p1: #8fc3f0;
-  --hz-p2: #74d6a2;
-  --hz-p3: #d9a4f2;
-  --hz-current: #ff6a2b;
-  --hz-ghost: rgba(242, 217, 168, 0.12);
+  --hz-p0: #B3302A;
+  --hz-p1: #2E5E8C;
+  --hz-p2: #2F7A62;
+  --hz-p3: #7A4FA3;
+  --hz-current: var(--accent);
+  --hz-ghost: var(--hanzi-pale);
   width: min(720px, calc(100vw - 2rem));
   max-width: none;
   max-height: calc(100vh - 2rem);
   margin: auto;
   padding: 0;
-  color: var(--color-text);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   overflow: hidden;
 }
 
@@ -3786,7 +4332,7 @@ html.hz-lock {
 }
 
 .hz::backdrop {
-  background: rgba(4, 9, 18, 0.72);
+  background: rgba(47, 52, 65, 0.55);
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
 }
@@ -3830,21 +4376,19 @@ html.hz-lock {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   margin: 0.75rem -0.75rem 0 0;
   padding: 0;
-  color: var(--color-text-muted);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
 }
 
 .hz-close:hover {
-  color: var(--color-text);
-  border-color: var(--color-text-muted);
+  color: var(--text);
+  border-color: var(--text);
 }
 
 .hz-close svg {
@@ -3870,7 +4414,7 @@ html.hz-lock {
   font-family: var(--font-chinese);
   font-size: 3.4rem;
   line-height: 1.15;
-  color: var(--color-chinese);
+  color: var(--text);
   letter-spacing: 0.04em;
   overflow-wrap: anywhere;
 }
@@ -3906,20 +4450,18 @@ html.hz-lock {
   height: 48px;
   margin-top: 0.5rem;
   padding: 0;
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.1);
-  border: 1px solid rgba(246, 82, 9, 0.45);
-  border-radius: 50%;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--text);
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s;
 }
 
 .hz-say:hover {
-  background: rgba(246, 82, 9, 0.2);
+  background: var(--surface-2);
 }
 
 .hz-say:active {
-  transform: scale(0.94);
+  transform: none;
 }
 
 .hz-say[hidden] {
@@ -3953,20 +4495,19 @@ html.hz-lock {
   font: inherit;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.1);
-  border: 1px solid rgba(246, 82, 9, 0.45);
-  border-radius: 999px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--text);
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s;
+  text-transform: lowercase;
 }
 
 .hz-explain:hover {
-  background: rgba(246, 82, 9, 0.2);
+  background: var(--surface-2);
 }
 
 .hz-explain:active {
-  transform: scale(0.97);
+  transform: none;
 }
 
 .hz-explain[hidden] {
@@ -3987,9 +4528,9 @@ html.hz-lock {
 .hz-ai-card {
   padding: 1rem 1.1rem;
   line-height: 1.55;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(246, 82, 9, 0.35);
-  border-radius: 12px;
+  background: var(--surface-2);
+  border: 0;
+  border-left: 2px solid var(--line-strong);
 }
 
 .hz-ai-wait {
@@ -4016,9 +4557,8 @@ html.hz-lock {
 .hz-ai-pos {
   padding: 0.05rem 0.55rem;
   font-size: 0.8rem;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  color: var(--text-2);
+  border: 1px solid var(--line);
 }
 
 .hz-ai-meaning {
@@ -4027,11 +4567,11 @@ html.hz-lock {
 
 .hz-ai-sub {
   margin: 1rem 0 0.45rem;
-  font-size: 0.78rem;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  letter-spacing: 0;
+  text-transform: lowercase;
+  color: var(--text-2);
 }
 
 .hz-ai-examples,
@@ -4047,13 +4587,13 @@ html.hz-lock {
   display: flex;
   flex-direction: column;
   padding-left: 0.75rem;
-  border-left: 2px solid rgba(246, 82, 9, 0.45);
+  border-left: 2px solid var(--line);
 }
 
 .hz-ai-zh {
   font-family: var(--font-chinese);
-  font-size: 1.1rem;
-  color: var(--color-chinese);
+  font-size: 1.25rem;
+  color: var(--text);
 }
 
 .hz-ai-expy {
@@ -4071,19 +4611,19 @@ html.hz-lock {
   font: inherit;
   font-family: var(--font-chinese);
   font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-chinese);
+  font-weight: 400;
+  color: var(--text);
   background: none;
   border: 0;
 }
 
 button.hz-ai-word {
-  border-bottom: 1px dashed rgba(242, 217, 168, 0.5);
+  border-bottom: 1px dashed var(--line-strong);
   cursor: pointer;
 }
 
 button.hz-ai-word:hover {
-  color: #fff;
+  color: var(--accent-text);
   border-bottom-color: currentColor;
 }
 
@@ -4091,8 +4631,7 @@ button.hz-ai-word:hover {
   margin: 1rem 0 0;
   padding: 0.6rem 0.8rem;
   font-size: 0.92rem;
-  background: rgba(238, 241, 246, 0.05);
-  border-radius: 8px;
+  background: var(--surface);
 }
 
 .hz-ai-foot {
@@ -4103,27 +4642,28 @@ button.hz-ai-word:hover {
 
 .hz-ai-card.is-error p {
   margin: 0 0 0.6rem;
-  color: var(--color-accent-soft);
+  color: var(--accent-text);
 }
 
 .hz-ai-retry {
   padding: 0.35rem 0.9rem;
   font: inherit;
   font-size: 0.85rem;
-  color: var(--color-text);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line-strong);
   cursor: pointer;
+  min-height: 36px;
+  text-transform: lowercase;
 }
 
 .hz-section {
   margin: 0 0 0.75rem;
-  font-size: 0.8rem;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  letter-spacing: 0;
+  text-transform: lowercase;
+  color: var(--text-2);
 }
 
 .hz-cards {
@@ -4133,9 +4673,8 @@ button.hz-ai-word:hover {
 
 .hz-card {
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
 }
 
 /* Слева клетка, справа значение, под значением — «Состав». На телефоне
@@ -4207,7 +4746,7 @@ button.hz-ai-word:hover {
   justify-content: center;
   font-family: var(--font-chinese);
   font-size: 5rem;
-  color: var(--color-chinese);
+  color: var(--text);
 }
 
 .hz-retry {
@@ -4219,10 +4758,9 @@ button.hz-ai-word:hover {
   padding: 0.35rem 0.8rem;
   font: inherit;
   font-size: 0.8rem;
-  color: var(--color-text);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   cursor: pointer;
 }
 
@@ -4239,7 +4777,7 @@ button.hz-ai-word:hover {
 /* Черта — толстая линия вдоль оси, обрезанная по контуру черты. */
 .hz-ink {
   fill: none;
-  stroke: var(--color-chinese);
+  stroke: var(--text);
   stroke-width: 200;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -4285,21 +4823,20 @@ button.hz-ai-word:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 34px;
+  width: 44px;
+  height: 40px;
   padding: 0;
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.08);
-  border: 1px solid rgba(246, 82, 9, 0.38);
-  border-radius: 999px;
+  color: var(--text-2);
+  background: transparent;
+  border: 1px solid var(--line-strong);
   cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
 }
 
 .hz-icon:hover:not(:disabled),
 .hz-icon[aria-expanded="true"] {
-  background: rgba(246, 82, 9, 0.2);
-  border-color: var(--color-accent);
+  background: var(--surface);
+  border-color: var(--text);
+  color: var(--text);
 }
 
 .hz-icon:disabled {
@@ -4326,7 +4863,7 @@ button.hz-ai-word:hover {
 
 .hz-char-pinyin {
   font-size: 1.15rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .hz-char-gloss {
@@ -4354,10 +4891,10 @@ button.hz-ai-word:hover {
 
 .hz-parts-title {
   margin-bottom: 0.4rem !important;
-  font-size: 0.75rem;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: lowercase;
   color: var(--color-text-muted);
 }
 
@@ -4373,8 +4910,7 @@ button.hz-ai-word:hover {
   margin: 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border: 1px solid var(--line);
   overflow: hidden;
 }
 
@@ -4402,7 +4938,7 @@ button.hz-ai-word:hover {
 }
 
 .hz-part-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface);
 }
 
 .hz-part-btn:disabled .hz-chev {
@@ -4456,13 +4992,12 @@ button.hz-ai-word:hover {
 
 .hz-tag {
   padding: 0.05rem 0.45rem;
-  font-size: 0.7rem;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: lowercase;
   color: var(--hz-p0);
-  border: 1px solid rgba(233, 180, 76, 0.5);
-  border-radius: 999px;
+  border: 1px solid currentColor;
 }
 
 .hz-part-gloss {
@@ -4517,10 +5052,13 @@ button.hz-ai-word:hover {
   padding: 0;
   font: inherit;
   font-size: 0.85rem;
-  color: var(--color-accent-soft);
+  color: var(--text);
   background: none;
   border: 0;
   cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  text-transform: lowercase;
 }
 
 .hz-link b {
@@ -4530,6 +5068,7 @@ button.hz-ai-word:hover {
 
 .hz-link:hover {
   text-decoration: underline;
+  color: var(--accent-text);
 }
 
 .hz-link[hidden] {
@@ -4606,8 +5145,8 @@ button.hz-ai-word:hover {
   color: var(--text);
   background: transparent;
   border: 1px solid var(--line-strong);
-  border-radius: 0;
   cursor: pointer;
+  text-transform: lowercase;
 }
 
 .hz-btn:hover:not(:disabled) {
@@ -4633,24 +5172,25 @@ button.hz-ai-word:hover {
 
 .hz-btn.is-play {
   min-width: 124px;
-  color: #fff;
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+  color: var(--on-dark);
+  background: var(--text);
+  border-color: var(--text);
 }
 
 .hz-btn.is-play:hover:not(:disabled) {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent-soft);
+  background: var(--text-hover);
+  border-color: var(--text-hover);
 }
 
 .hz-btn[aria-pressed="true"] {
-  background: rgba(168, 184, 209, 0.14);
+  background: var(--text);
+  color: var(--on-dark);
+  border-color: var(--text);
 }
 
 .hz-speed {
   display: inline-flex;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  border: 1px solid var(--line-strong);
   overflow: hidden;
 }
 
@@ -4658,19 +5198,20 @@ button.hz-ai-word:hover {
   padding: 0.35rem 0.75rem;
   font: inherit;
   font-size: 0.8rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
   background: none;
   border: 0;
   cursor: pointer;
+  min-height: 36px;
 }
 
 .hz-speed button + button {
-  border-left: 1px solid var(--color-border);
+  border-left: 1px solid var(--line-strong);
 }
 
 .hz-speed button[aria-pressed="true"] {
-  color: var(--color-text);
-  background: rgba(168, 184, 209, 0.14);
+  color: var(--on-dark);
+  background: var(--text);
 }
 
 .hz-write-msg {
@@ -4681,11 +5222,11 @@ button.hz-ai-word:hover {
 }
 
 .hz-write-msg.is-miss {
-  color: var(--color-accent-soft);
+  color: var(--accent-text);
 }
 
 .hz-write-msg.is-done {
-  color: var(--color-know-soft);
+  color: var(--text);
 }
 
 /* Лента шагов: весь порядок черт сразу, нажатие — к этому шагу. */
@@ -4716,10 +5257,8 @@ button.hz-ai-word:hover {
   width: 46px;
   height: 46px;
   margin-bottom: 0.15rem;
-  background: rgba(0, 0, 0, 0.18);
-  border: 1px solid var(--color-border);
-  border-radius: 5px;
-  transition: border-color 0.15s;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
 }
 
 .hz-cell path { fill: var(--hz-ghost); }
@@ -4731,22 +5270,21 @@ button.hz-ai-word:hover {
 .hz-cell path.is-current { fill: var(--hz-current); }
 
 .hz-cell:hover svg {
-  border-color: var(--color-text-muted);
+  border-color: var(--line-strong);
 }
 
 .hz-cell[aria-current="step"] {
-  color: var(--color-accent-soft);
+  color: var(--text);
 }
 
 .hz-cell[aria-current="step"] svg {
-  border-color: var(--color-accent);
+  border-color: var(--text);
 }
 
 .hz-note {
   margin: 1rem 0 0;
   font-size: 0.75rem;
-  color: var(--color-text-muted);
-  opacity: 0.8;
+  color: var(--text-2);
 }
 
 .hz-note a {
@@ -4762,7 +5300,6 @@ button.hz-ai-word:hover {
     max-height: 94dvh;
     margin: auto 0 0;
     border-width: 1px 0 0;
-    border-radius: 16px 16px 0 0;
   }
 
   .hz[open] {
