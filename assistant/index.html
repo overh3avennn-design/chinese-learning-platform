@@ -30,53 +30,76 @@
     </aside>
     <main class="page ai-page" data-assistant>
       <div class="container">
-        <nav class="breadcrumb" aria-label="Навигация">
-          <a href="../index.html">Главная</a> / ИИ-помощник
+        <nav class="crumbs crumbs--top" aria-label="Навигация">
+          <a href="../index.html">главная</a><span aria-hidden="true">/</span><span aria-current="page">ИИ-помощник</span>
         </nav>
-        <div class="ai-head">
-          <div>
-            <h1 class="page-title">ИИ-помощник</h1>
-            <p class="page-subtitle">Объясняет грамматику, слова, иероглифы и культуру Китая — по-русски и с примерами. Пока работает только с VPN</p>
-          </div>
-          <button class="btn btn-secondary ai-new" type="button" data-new-chat hidden>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-            Новый диалог
-          </button>
-        </div>
 
-        <section class="ai-intro" data-intro aria-labelledby="ai-intro-title">
-          <h2 class="ai-intro-title" id="ai-intro-title">О чём спросить</h2>
-          <p>
-            Задайте вопрос своими словами: как работает грамматика, чем похожие
-            слова отличаются друг от друга, из чего состоит иероглиф, что
-            празднуют в Китае. Помощник ответит с примерами — иероглифы, пиньинь
-            и перевод.
-          </p>
-          <div class="ai-prompts" data-prompts>
-            <button class="ai-prompt" type="button">Объясни разницу 了 и 过</button>
-            <button class="ai-prompt" type="button">Когда говорят 二, а когда 两?</button>
-            <button class="ai-prompt" type="button">Чем отличаются 的, 地 и 得?</button>
-            <button class="ai-prompt" type="button">Как сравнивать с помощью 比?</button>
-            <button class="ai-prompt" type="button">Как задать вопрос без 吗?</button>
-            <button class="ai-prompt" type="button">Из каких частей состоит иероглиф 好?</button>
-            <button class="ai-prompt" type="button">Как запомнить четыре тона?</button>
-            <button class="ai-prompt" type="button">Как в Китае празднуют Новый год?</button>
+        <!-- Первый экран (макеты design/mockups/assistant.html и
+             phone-assistant.html): слева описание, справа «о чём спросить».
+             Нажатие на вопрос отправляет его (текст — в data-ask); на
+             телефоне вопросы — короткими кнопками. -->
+        <section class="panel panel--hero ai-hero" aria-labelledby="ai-title">
+          <div class="panel__main">
+            <div class="title-row">
+              <h1 class="page-title" id="ai-title">ИИ-помощник</h1>
+              <p class="title-pinyin"><b lang="zh-Latn">zhùshǒu</b><span lang="zh-CN">助手</span></p>
+            </div>
+            <p class="lead"><span class="wide-only">Объясняет грамматику, слова, иероглифы и культуру Китая — по-русски и с примерами: иероглифы, пиньинь и перевод.</span><span class="phone-only">Объясняет грамматику, слова и иероглифы — по-русски и с примерами. Пока работает с VPN.</span></p>
+            <span class="tag ai-vpn wide-only">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
+              пока работает только с VPN
+            </span>
+            <span class="sun" aria-hidden="true"></span>
+          </div>
+          <div class="panel__side ai-ask" data-prompts>
+            <div class="ai-ask__head">
+              <h2>о чём спросить</h2>
+              <small class="wide-only">нажмите на вопрос</small>
+            </div>
+            <button class="ai-prompt" type="button" data-ask="Объясни разницу 了 и 过"><span class="wide-only">Объясни разницу 了 и 过</span><span class="phone-only">разница 了 и 过</span><svg class="ai-prompt__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+            <button class="ai-prompt" type="button" data-ask="Когда говорят 二, а когда 两?"><span class="wide-only">Когда говорят 二, а когда 两?</span><span class="phone-only">二 или 两?</span><svg class="ai-prompt__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+            <button class="ai-prompt" type="button" data-ask="Чем отличаются 的, 地 и 得?"><span class="wide-only">Чем отличаются 的, 地 и 得?</span><span class="phone-only">的, 地 и 得</span><svg class="ai-prompt__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+            <button class="ai-prompt wide-only" type="button" data-ask="Как сравнивать с помощью 比?"><span class="wide-only">Как сравнивать с помощью 比?</span><svg class="ai-prompt__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+            <button class="ai-prompt" type="button" data-ask="Как задать вопрос без 吗?"><span class="wide-only">Как задать вопрос без 吗?</span><span class="phone-only">вопрос без 吗</span><svg class="ai-prompt__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+            <button class="ai-prompt" type="button" data-ask="Из каких частей состоит иероглиф 好?"><span class="wide-only">Из каких частей состоит иероглиф 好?</span><span class="phone-only">из чего состоит 好?</span><svg class="ai-prompt__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+            <button class="ai-prompt wide-only" type="button" data-ask="Как запомнить четыре тона?"><span class="wide-only">Как запомнить четыре тона?</span><svg class="ai-prompt__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+            <button class="ai-prompt wide-only" type="button" data-ask="Как в Китае празднуют Новый год?"><span class="wide-only">Как в Китае празднуют Новый год?</span><svg class="ai-prompt__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
           </div>
         </section>
 
-        <div class="ai-log" data-log aria-live="polite"></div>
-
-        <form class="ai-form" data-form>
-          <label class="ai-label" for="ai-input">Ваш вопрос</label>
-          <div class="ai-form-row">
-            <textarea class="ai-input" id="ai-input" data-input rows="1" maxlength="1500"
-                      placeholder="Спросите о китайском…" enterkeyhint="send"></textarea>
-            <button class="btn btn-primary ai-send" type="submit" data-send aria-label="Отправить" title="Отправить">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+        <!-- Диалог: вопрос — тёмный блок справа, ответ — светлый блок слева.
+             Сообщения строит js/assistant.js; пока диалог пуст, вместо них
+             подсказка (data-intro). -->
+        <section class="section ai-chat" aria-labelledby="ai-chat-title">
+          <div class="section-label ai-chat__label">
+            <h2 id="ai-chat-title">диалог</h2>
+            <span class="ai-chat__line" aria-hidden="true"></span>
+            <span class="ai-chat__note">хранится только в этой вкладке</span>
+            <button class="btn btn--sm btn--outline ai-new" type="button" data-new-chat hidden>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              новый диалог
             </button>
           </div>
-        </form>
-        <p class="ai-note">Нейросеть может ошибаться — сверяйтесь с учебником и <a href="../dictionary/index.html">словарём</a>. Диалог хранится только в этой вкладке.</p>
+          <div class="ai-box">
+            <p class="ai-empty" data-intro>
+              Задайте вопрос своими словами: как работает грамматика, чем похожие
+              слова отличаются друг от друга, из чего состоит иероглиф, что
+              празднуют в Китае. Помощник ответит с примерами — иероглифы, пиньинь
+              и перевод.
+            </p>
+            <div class="ai-log" data-log aria-live="polite"></div>
+
+            <form class="ai-form" data-form>
+              <label class="sr-only" for="ai-input">Вопрос помощнику</label>
+              <textarea class="ai-input" id="ai-input" data-input rows="1" maxlength="1500"
+                        placeholder="Спросите о китайском…" enterkeyhint="send"></textarea>
+              <button class="ai-send" type="submit" data-send aria-label="Отправить" title="Отправить">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></svg>
+              </button>
+            </form>
+          </div>
+          <p class="ai-note">Нейросеть может ошибаться — сверяйтесь с учебником и <a href="../dictionary/index.html">словарём</a>.</p>
+        </section>
       </div>
     </main>
     <aside class="rail rail--right" aria-hidden="true">

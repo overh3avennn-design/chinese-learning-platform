@@ -91,7 +91,7 @@
     var node = el("div", "ai-msg is-error");
     node.setAttribute("role", "alert");
     node.appendChild(el("p", null, message));
-    var retry = el("button", "btn btn-secondary ai-retry", "Повторить");
+    var retry = el("button", "btn btn--sm btn--outline ai-retry", "повторить");
     retry.type = "button";
     retry.setAttribute("data-retry", "");
     node.appendChild(retry);
@@ -218,7 +218,8 @@
   root.addEventListener("click", function (e) {
     var prompt = e.target.closest(".ai-prompt");
     if (prompt) {
-      send(prompt.textContent);
+      // Полный текст вопроса — в data-ask: на кнопке он бывает короче.
+      send(prompt.getAttribute("data-ask") || prompt.textContent);
       return;
     }
     if (e.target.closest("[data-new-chat]")) {
