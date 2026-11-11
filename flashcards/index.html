@@ -42,61 +42,91 @@
     <main class="page" data-flashcards>
       <div class="container">
         <div class="fc-view" data-view="list">
-          <nav class="breadcrumb" aria-label="Навигация">
-            <a href="../index.html">Главная</a> / Карточки
+          <nav class="crumbs crumbs--top" aria-label="Навигация">
+            <a href="../index.html">главная</a><span aria-hidden="true">/</span><span aria-current="page">карточки</span>
           </nav>
-          <h1 class="page-title">Карточки</h1>
-          <p class="page-subtitle">Учим слова по колодам: иероглиф — пиньинь — перевод. Для карточек по фото включите VPN</p>
 
-          <p>
-            Выберите колоду или папку. Перевернуть карточку — нажатием, дальше свайп вправо,
-            если слово знаете, и влево — если нет. Незнакомые слова вернутся в
-            конце, а в следующий раз попадутся раньше остальных.
-          </p>
-
-          <!-- Карточки по фото тетради: «Сфотографировать» открывает камеру
-               (на компьютере, где камеры в выборе файла нет, кнопка спрятана),
-               «Выбрать фото» — галерею или файл. Дальше — экран #photo. -->
-          <section class="fc-photo-cta" aria-labelledby="fc-photo-cta-title">
-            <span class="fc-photo-icon" aria-hidden="true">📷</span>
-            <div class="fc-photo-body">
-              <h2 class="fc-photo-cta-title" id="fc-photo-cta-title">Карточки по фото тетради</h2>
-              <p>Сфотографируйте страницу, где записаны иероглифы, пиньинь и перевод, — нейросеть прочитает слова, проверит их и допишет пропущенное (без VPN слова распознаются прямо на устройстве), а вы проверите всё перед сохранением.</p>
+          <!-- Первый экран (макеты design/mockups/cards.html и
+               phone-cards.html): слева описание и демо-карточка, справа
+               «карточки по фото тетради» и «как работает прогресс». -->
+          <section class="panel panel--hero fc-hero" aria-labelledby="fc-title">
+            <div class="panel__main">
+              <div class="title-row">
+                <h1 class="page-title" id="fc-title">карточки</h1>
+                <p class="title-pinyin"><b lang="zh-Latn">kǎpiàn</b><span lang="zh-CN">卡片</span></p>
+              </div>
+              <p class="lead"><span class="wide-only">Учим слова по колодам: иероглиф — пиньинь — перевод. Незнакомые слова вернутся в конце, а в следующий раз попадутся раньше остальных.</span><span class="phone-only">Нажмите, чтобы перевернуть. Свайп вправо — знаю, влево — ещё раз.</span></p>
+              <div class="fc-demo wide-only" aria-hidden="true">
+                <span>← ещё раз</span>
+                <div class="fc-demo__card"><b lang="zh-CN">学习</b><small>нажмите, чтобы перевернуть</small></div>
+                <span>знаю →</span>
+              </div>
+              <span class="sun" aria-hidden="true"></span>
             </div>
-            <div class="fc-photo-actions">
-              <button class="btn btn-primary" type="button" data-photo-camera hidden>Сфотографировать</button>
-              <button class="btn btn-secondary" type="button" data-photo-pick>Выбрать фото</button>
+            <div class="panel__side">
+              <!-- Карточки по фото тетради: «сфотографировать» открывает камеру
+                   (на компьютере, где камеры в выборе файла нет, кнопка спрятана),
+                   «выбрать фото» — галерею или файл. Дальше — экран #photo. -->
+              <section class="fc-photo-cta" aria-labelledby="fc-photo-cta-title">
+                <div class="fc-photo-cta__head">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                  <h2 class="fc-photo-cta-title" id="fc-photo-cta-title">карточки по фото тетради</h2>
+                </div>
+                <p><span class="wide-only">Сфотографируйте страницу, где записаны иероглифы, пиньинь и перевод. Нейросеть прочитает слова, проверит их и допишет пропущенное, а вы проверите всё перед сохранением.</span><span class="phone-only">Сфотографируйте страницу — нейросеть сделает карточки, а вы проверите их перед сохранением.</span></p>
+                <div class="fc-photo-actions">
+                  <button class="btn" type="button" data-photo-camera hidden>сфотографировать</button>
+                  <button class="btn" type="button" data-photo-pick>выбрать фото</button>
+                  <span class="fc-photo-note wide-only">без VPN слова распознаются прямо на устройстве</span>
+                </div>
+                <input class="fc-file" type="file" accept="image/*" capture="environment" data-photo-input="camera" tabindex="-1" aria-hidden="true">
+                <input class="fc-file" type="file" accept="image/*" data-photo-input="pick" tabindex="-1" aria-hidden="true">
+              </section>
+
+              <section class="fc-info wide-only" aria-labelledby="fc-info-title">
+                <h2 class="fc-info-title" id="fc-info-title">как работает прогресс</h2>
+                <dl class="fc-info-list">
+                  <div><dt>свайп вправо</dt><dd>слово выучено</dd></div>
+                  <div><dt>свайп влево</dt><dd>повторите ещё раз</dd></div>
+                  <div><dt>ошиблись со свайпом</dt><dd>«предыдущая карточка» отменит ответ</dd></div>
+                </dl>
+              </section>
             </div>
-            <input class="fc-file" type="file" accept="image/*" capture="environment" data-photo-input="camera" tabindex="-1" aria-hidden="true">
-            <input class="fc-file" type="file" accept="image/*" data-photo-input="pick" tabindex="-1" aria-hidden="true">
           </section>
 
-          <section class="fc-info" aria-labelledby="fc-info-title">
-            <h2 class="fc-info-title" id="fc-info-title">Как работает прогресс</h2>
-            <ul class="fc-info-list">
-              <li>Свайп вправо — слово выучено, влево — повторишь ещё раз.</li>
-              <li>Ошибся со свайпом — «Предыдущая карточка» вернёт слово и отменит ответ.</li>
-            </ul>
+          <!-- Папки: свои и папки сайта, последней — строка «новая папка».
+               Колоды из папок остаются и в общем списке ниже. Строки строит
+               js/flashcards.js. -->
+          <section class="section" aria-labelledby="fc-folders-title">
+            <h2 class="section-label" id="fc-folders-title">папки</h2>
+            <p class="section-intro" data-folder-hint>Соберите несколько колод в одну папку — учить их можно будет все вместе.</p>
+            <div class="list fc-folder-list" data-folder-list></div>
           </section>
 
-          <!-- Папки: свои и папки сайта, последней — плашка «+ Новая папка».
-               Колоды из папок остаются и в общем списке ниже. -->
-          <section class="section">
-            <h2>Папки</h2>
-            <p class="fc-own-hint" data-folder-hint>Соберите несколько колод в одну папку — учить их можно будет все вместе.</p>
-            <div class="card-grid fc-folder-grid" data-folder-list></div>
+          <section class="section" data-own-decks hidden aria-labelledby="fc-own-title">
+            <h2 class="section-label" id="fc-own-title">мои колоды</h2>
+            <p class="section-intro">Собраны вами — вручную или по фото — и хранятся в этом браузере.</p>
+            <div class="table-wrap fc-decks">
+              <div class="fc-decks__head" aria-hidden="true"><span>колода</span><span>слов</span><span>прогресс</span><span></span></div>
+              <div class="fc-decks__rows" data-own-grid></div>
+            </div>
           </section>
 
-          <section class="section" data-own-decks hidden>
-            <h2>Мои колоды</h2>
-            <p class="fc-own-hint">Собраны вами — вручную или по фото — и хранятся в этом браузере.</p>
-            <div class="card-grid" data-own-grid></div>
-          </section>
-
-          <section class="section">
-            <h2>Колоды</h2>
+          <!-- Колоды — таблица: колода | слов | прогресс. Кнопка «новая
+               колода» — справа от подписи секции. -->
+          <section class="section" aria-labelledby="fc-decks-title">
+            <div class="section-label fc-decks-label">
+              <h2 id="fc-decks-title">колоды</h2>
+              <span class="fc-decks-label__line" aria-hidden="true"></span>
+              <a class="btn btn--sm btn--outline fc-new-deck" href="#new-deck">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                <span>новая<span class="wide-only"> колода</span></span>
+              </a>
+            </div>
             <p class="fc-status" data-deck-status>Загружаю колоды…</p>
-            <div class="card-grid" data-deck-grid></div>
+            <div class="table-wrap fc-decks">
+              <div class="fc-decks__head" aria-hidden="true"><span>колода</span><span>слов</span><span>прогресс</span><span></span></div>
+              <div class="fc-decks__rows" data-deck-grid></div>
+            </div>
             <div class="placeholder-note fc-errors" data-deck-errors hidden></div>
             <p class="placeholder-note" data-storage-note hidden>
               Браузер не даёт сохранить прогресс (например, в режиме инкогнито) —
@@ -106,8 +136,8 @@
         </div>
 
         <div class="fc-view fc-deck-page" data-view="deck" hidden>
-          <a class="fc-back" href="#" data-back="">← Назад</a>
-          <h1 class="page-title" data-deck-name></h1>
+          <a class="fc-back" href="#" data-back="">← назад</a>
+          <h1 class="page-title page-title--long" data-deck-name></h1>
           <p class="page-subtitle" data-deck-size></p>
           <p class="fc-saved" data-saved-note role="status" hidden></p>
 
@@ -118,16 +148,16 @@
               <span class="fc-chip is-know"><span class="fc-dot is-learned" aria-hidden="true"></span>Выучено <b data-count="learned">0</b></span>
             </div>
             <div class="fc-progress" data-deck-progress><span></span></div>
-            <p class="card-meta" data-deck-learned></p>
+            <p class="fc-deck-learned" data-deck-learned></p>
           </div>
 
           <div class="fc-deck-actions">
-            <button class="btn btn-primary fc-learn" type="button" data-learn="due">Учить карточки</button>
-            <button class="btn btn-secondary" type="button" data-learn="missed" disabled>Повторить незнакомые</button>
+            <button class="btn fc-learn" type="button" data-learn="due">Учить карточки</button>
+            <button class="btn btn--outline" type="button" data-learn="missed" disabled>Повторить незнакомые</button>
           </div>
 
           <section class="section">
-            <h2>Слова в колоде</h2>
+            <h2 class="section-label">слова в колоде</h2>
             <div class="fc-words-bar">
               <label class="fc-toggle">
                 <input type="checkbox" data-hide-translation>
@@ -142,8 +172,8 @@
           <section class="fc-own" data-own hidden>
             <p class="fc-own-text" data-own-text></p>
             <div class="fc-own-actions">
-              <a class="btn btn-secondary" href="#" data-own-edit hidden>Изменить колоду</a>
-              <button class="btn btn-secondary" type="button" data-own-download>Скачать файл колоды</button>
+              <a class="btn btn--outline" href="#" data-own-edit hidden>Изменить колоду</a>
+              <button class="btn btn--outline" type="button" data-own-download>Скачать файл колоды</button>
               <button class="fc-reset" type="button" data-own-delete>Удалить колоду</button>
             </div>
           </section>
@@ -152,9 +182,9 @@
         <!-- Страница папки: сводка по всем её колодам, «Учить всю папку» —
              слова всех колод вперемешку, ниже — сами колоды. -->
         <div class="fc-view fc-deck-page" data-view="folder" hidden>
-          <a class="fc-back" href="#" data-back="">← Назад</a>
-          <h1 class="page-title fc-folder-heading">
-            <svg class="fc-folder-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4.2l2 2.2H19a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+          <a class="fc-back" href="#" data-back="">← назад</a>
+          <h1 class="page-title page-title--long fc-folder-heading">
+            <svg class="fc-folder-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2.5h8.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/></svg>
             <span data-folder-name></span>
           </h1>
           <p class="page-subtitle" data-folder-size></p>
@@ -167,24 +197,27 @@
               <span class="fc-chip is-know"><span class="fc-dot is-learned" aria-hidden="true"></span>Выучено <b data-count="learned">0</b></span>
             </div>
             <div class="fc-progress" data-deck-progress><span></span></div>
-            <p class="card-meta" data-deck-learned></p>
+            <p class="fc-deck-learned" data-deck-learned></p>
           </div>
 
           <div class="fc-deck-actions">
-            <button class="btn btn-primary fc-learn" type="button" data-learn="due">Учить всю папку</button>
-            <button class="btn btn-secondary" type="button" data-learn="missed" disabled>Повторить незнакомые</button>
+            <button class="btn fc-learn" type="button" data-learn="due">Учить всю папку</button>
+            <button class="btn btn--outline" type="button" data-learn="missed" disabled>Повторить незнакомые</button>
           </div>
 
           <section class="section">
-            <h2>Колоды в папке</h2>
+            <h2 class="section-label">колоды в папке</h2>
             <p class="fc-status" data-folder-empty hidden>В папке пока нет колод.</p>
-            <div class="card-grid" data-folder-grid></div>
+            <div class="table-wrap fc-decks">
+              <div class="fc-decks__head" aria-hidden="true"><span>колода</span><span>слов</span><span>прогресс</span><span></span></div>
+              <div class="fc-decks__rows" data-folder-grid></div>
+            </div>
           </section>
 
           <section class="fc-own" data-folder-own hidden>
             <p class="fc-own-text">Папка собрана вами и хранится в этом браузере. Если её удалить, колоды останутся.</p>
             <div class="fc-own-actions">
-              <a class="btn btn-secondary" href="#" data-folder-edit>Изменить папку</a>
+              <a class="btn btn--outline" href="#" data-folder-edit>Изменить папку</a>
               <button class="fc-reset" type="button" data-folder-delete>Удалить папку</button>
             </div>
           </section>
@@ -193,8 +226,8 @@
         <!-- Редактор папки (#new-folder, #folder=<id>&edit): название и колоды
              галочками. Строки списка строит js/flashcards.js. -->
         <div class="fc-view fc-deck-page fc-folder-edit" data-view="folder-edit" hidden>
-          <a class="fc-back" href="#" data-back="">← Назад</a>
-          <h1 class="page-title" data-edit-title>Новая папка</h1>
+          <a class="fc-back" href="#" data-back="">← назад</a>
+          <h1 class="page-title page-title--long" data-edit-title>Новая папка</h1>
           <p class="page-subtitle">Отметьте колоды, которые хотите держать вместе. Папку можно учить целиком — слова всех её колод вперемешку.</p>
 
           <form class="fc-folder-form" data-folder-form novalidate>
@@ -211,8 +244,8 @@
 
             <p class="fc-save-error" data-folder-error role="alert" hidden></p>
             <div class="fc-photo-buttons">
-              <button class="btn btn-primary" type="submit" data-folder-save>Создать папку</button>
-              <a class="btn btn-secondary" href="#" data-back="">Отмена</a>
+              <button class="btn" type="submit" data-folder-save>Создать папку</button>
+              <a class="btn btn--outline" href="#" data-back="">Отмена</a>
             </div>
           </form>
 
@@ -226,8 +259,8 @@
              js/deck-editor.js; по иероглифам он подставляет пиньинь и перевод
              из словаря БКРС и меняет цифры тонов на значки (ni3 → nǐ). -->
         <div class="fc-view fc-deck-page fc-deck-edit" data-view="deck-edit" hidden>
-          <a class="fc-back" href="#" data-back="">← Назад</a>
-          <h1 class="page-title" data-deck-edit-title>Новая колода</h1>
+          <a class="fc-back" href="#" data-back="">← назад</a>
+          <h1 class="page-title page-title--long" data-deck-edit-title>Новая колода</h1>
           <p class="page-subtitle">Впишите слова — иероглифы, пиньинь и перевод. Колода сохранится в этом браузере, учить её можно так же, как готовые.</p>
 
           <form class="fc-folder-form" data-deck-form novalidate>
@@ -245,13 +278,13 @@
                 <span>Иероглифы</span><span>Пиньинь</span><span>Перевод</span>
               </div>
               <ol class="fc-edit-list" data-deck-rows></ol>
-              <button class="btn btn-secondary fc-edit-add" type="button" data-deck-add-row>+ Добавить слово</button>
+              <button class="btn btn--outline fc-edit-add" type="button" data-deck-add-row>+ Добавить слово</button>
             </section>
 
             <p class="fc-save-error" data-deck-error role="alert" hidden></p>
             <div class="fc-photo-buttons">
-              <button class="btn btn-primary" type="submit" data-deck-save>Создать колоду</button>
-              <a class="btn btn-secondary" href="#" data-back="">Отмена</a>
+              <button class="btn" type="submit" data-deck-save>Создать колоду</button>
+              <a class="btn btn--outline" href="#" data-back="">Отмена</a>
             </div>
           </form>
 
@@ -262,14 +295,14 @@
 
         <div class="fc-view fc-study" data-view="study" hidden>
           <div class="fc-study-head">
-            <a class="fc-back" href="#" data-back-deck>← Назад</a>
+            <a class="fc-back" href="#" data-back-deck>← назад</a>
             <h1 class="fc-study-title" data-deck-title></h1>
           </div>
 
           <div class="fc-counter" aria-live="polite">
-            <span class="fc-chip">Осталось <b data-left>0</b></span>
-            <span class="fc-chip is-miss">Не знаю <b data-miss>0</b></span>
-            <span class="fc-chip is-know">Знаю <b data-know>0</b></span>
+            <span class="fc-chip">осталось <b data-left>0</b></span>
+            <span class="fc-chip is-miss">ещё раз <b data-miss>0</b></span>
+            <span class="fc-chip is-know">знаю <b data-know>0</b></span>
           </div>
 
           <div class="fc-stage" data-stage>
@@ -277,7 +310,7 @@
               <div class="fc-card-inner">
                 <div class="fc-face fc-front">
                   <span class="fc-hanzi" lang="zh-CN" data-front-hanzi></span>
-                  <span class="fc-hint">Нажмите, чтобы перевернуть</span>
+                  <span class="fc-hint">нажмите, чтобы перевернуть</span>
                 </div>
                 <div class="fc-face fc-back-side">
                   <span class="fc-hanzi-small" lang="zh-CN" data-back-hanzi></span>
@@ -285,34 +318,34 @@
                   <span class="fc-translation" data-translation></span>
                 </div>
               </div>
-              <span class="fc-tint is-know" aria-hidden="true"><span class="fc-tint-label">Знаю</span></span>
-              <span class="fc-tint is-miss" aria-hidden="true"><span class="fc-tint-label">Не знаю</span></span>
+              <span class="fc-tint is-know" aria-hidden="true"><span class="fc-tint-label">знаю</span></span>
+              <span class="fc-tint is-miss" aria-hidden="true"><span class="fc-tint-label">ещё раз</span></span>
             </div>
           </div>
 
           <div class="fc-controls">
             <button class="fc-btn is-miss" type="button" data-answer="miss">
-              <span aria-hidden="true">←</span> Не знаю
+              <span aria-hidden="true">←</span> ещё раз
             </button>
             <button class="fc-speak" type="button" data-speak aria-label="Озвучить иероглиф" title="Озвучить" hidden>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
             </button>
             <button class="fc-btn is-know" type="button" data-answer="know">
-              Знаю <span aria-hidden="true">→</span>
+              знаю <span aria-hidden="true">→</span>
             </button>
           </div>
           <button class="fc-undo" type="button" data-undo disabled>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
             Предыдущая карточка
           </button>
-          <p class="fc-keys">Клавиши: ← не знаю · пробел — перевернуть · → знаю · Backspace — предыдущая</p>
+          <p class="fc-keys">клавиши: ← ещё раз · пробел — перевернуть · → знаю · Backspace — предыдущая</p>
         </div>
 
         <div class="fc-view fc-result" data-view="result" hidden>
-          <nav class="breadcrumb" aria-label="Навигация">
-            <a href="#">Карточки</a> / <a href="#" data-result-deck data-back-deck></a>
+          <nav class="crumbs" aria-label="Навигация">
+            <a href="#">карточки</a><span aria-hidden="true">/</span><a href="#" data-result-deck data-back-deck></a>
           </nav>
-          <h1 class="page-title">Сессия завершена</h1>
+          <h1 class="page-title page-title--long">сессия завершена</h1>
           <p class="page-subtitle" data-result-summary></p>
 
           <div class="fc-result-stats">
@@ -335,15 +368,15 @@
           </div>
 
           <section class="section fc-missed" data-missed-block hidden>
-            <h2>Стоит повторить</h2>
+            <h2 class="section-label">стоит повторить</h2>
             <ul class="fc-missed-list" data-missed-list></ul>
           </section>
 
           <div class="fc-result-actions">
-            <button class="btn btn-primary" type="button" data-again="missed">Повторить только незнакомые</button>
-            <button class="btn btn-secondary" type="button" data-again="all">Пройти <span data-folder-word="папку">колоду</span> заново</button>
-            <button class="btn btn-secondary" type="button" data-undo data-undo-result hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg> Вернуться к последней карточке</button>
-            <a class="btn btn-secondary" href="#" data-back-deck>← Назад к <span data-folder-word="папке">колоде</span></a>
+            <button class="btn" type="button" data-again="missed">Повторить только незнакомые</button>
+            <button class="btn btn--outline" type="button" data-again="all"><span>Пройти <span data-folder-word="папку">колоду</span> заново</span></button>
+            <button class="btn btn--outline" type="button" data-undo data-undo-result hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg> Вернуться к последней карточке</button>
+            <a class="btn btn--outline" href="#" data-back-deck><span>← назад к <span data-folder-word="папке">колоде</span></span></a>
           </div>
           <p class="fc-reset-line">
             <button class="fc-reset" type="button" data-reset>Сбросить прогресс</button>
@@ -354,11 +387,11 @@
         <!-- «Учить карточки», когда невыученных слов не осталось. Слова
              «колода» в data-folder-word у папки меняются на «папка». -->
         <div class="fc-view fc-deck-page" data-view="done" hidden>
-          <a class="fc-back" href="#" data-back-deck>← Назад</a>
-          <h1 class="page-title"><span data-folder-word="Папка">Колода</span> выучена 🎉</h1>
+          <a class="fc-back" href="#" data-back-deck>← назад</a>
+          <h1 class="page-title page-title--long"><span data-folder-word="папка">колода</span> выучена</h1>
           <p class="page-subtitle" data-done-deck></p>
           <div class="fc-result-actions">
-            <button class="btn btn-primary" type="button" data-learn="all">Пройти всю <span data-folder-word="папку">колоду</span> заново</button>
+            <button class="btn" type="button" data-learn="all"><span>Пройти всю <span data-folder-word="папку">колоду</span> заново</span></button>
           </div>
         </div>
 
@@ -367,8 +400,8 @@
              исправить, удалить и дописать — и выбор колоды. Строки таблицы
              строит js/photo-cards.js. -->
         <div class="fc-view fc-photo" data-view="photo" hidden>
-          <a class="fc-back" href="#" data-back="">← Назад</a>
-          <h1 class="page-title">Карточки по фото</h1>
+          <a class="fc-back" href="#" data-back="">← назад</a>
+          <h1 class="page-title page-title--long">карточки по фото</h1>
 
           <div class="fc-photo-head">
             <button class="fc-photo-thumb" type="button" data-photo-zoom aria-label="Показать фото крупнее" aria-pressed="false">
@@ -379,16 +412,16 @@
               <p class="fc-photo-msg"><span class="fc-spinner" aria-hidden="true"></span><span data-loading-text>Распознаю слова…</span></p>
               <p class="fc-photo-hint" data-loading-hint>Обычно это занимает от 10 секунд до минуты — зависит от телефона и числа строк.</p>
               <div class="fc-photo-buttons">
-                <button class="btn btn-secondary" type="button" data-photo-cancel>Отменить</button>
+                <button class="btn btn--outline" type="button" data-photo-cancel>Отменить</button>
               </div>
             </div>
 
             <div class="fc-photo-state" data-state="error" role="alert" hidden>
               <p class="fc-photo-msg is-error" data-error-text></p>
               <div class="fc-photo-buttons">
-                <button class="btn btn-primary" type="button" data-photo-retry>Попробовать ещё раз</button>
-                <button class="btn btn-primary" type="button" data-photo-manual data-error-manual hidden>Ввести слова вручную</button>
-                <button class="btn btn-secondary" type="button" data-photo-pick>Выбрать другое фото</button>
+                <button class="btn" type="button" data-photo-retry>Попробовать ещё раз</button>
+                <button class="btn" type="button" data-photo-manual data-error-manual hidden>Ввести слова вручную</button>
+                <button class="btn btn--outline" type="button" data-photo-pick>Выбрать другое фото</button>
               </div>
             </div>
 
@@ -399,8 +432,8 @@
                 <li>Иероглифы должны быть чёткими — без бликов и тени от телефона.</li>
               </ul>
               <div class="fc-photo-buttons">
-                <button class="btn btn-primary" type="button" data-photo-pick>Выбрать другое фото</button>
-                <button class="btn btn-secondary" type="button" data-photo-manual>Ввести слова вручную</button>
+                <button class="btn" type="button" data-photo-pick>Выбрать другое фото</button>
+                <button class="btn btn--outline" type="button" data-photo-manual>Ввести слова вручную</button>
               </div>
             </div>
 
@@ -426,7 +459,7 @@
               <span>Иероглифы</span><span>Пиньинь</span><span>Перевод</span>
             </div>
             <ol class="fc-edit-list" data-edit-list></ol>
-            <button class="btn btn-secondary fc-edit-add" type="button" data-add-row>+ Добавить слово</button>
+            <button class="btn btn--outline fc-edit-add" type="button" data-add-row>+ Добавить слово</button>
 
             <fieldset class="fc-save">
               <legend>Куда сохранить</legend>
@@ -441,8 +474,8 @@
             </fieldset>
             <p class="fc-save-error" data-save-error role="alert" hidden></p>
             <div class="fc-photo-buttons">
-              <button class="btn btn-primary fc-save-btn" type="button" data-save>Сохранить</button>
-              <button class="btn btn-secondary" type="button" data-photo-pick>Другое фото</button>
+              <button class="btn fc-save-btn" type="button" data-save>Сохранить</button>
+              <button class="btn btn--outline" type="button" data-photo-pick>Другое фото</button>
             </div>
           </section>
         </div>

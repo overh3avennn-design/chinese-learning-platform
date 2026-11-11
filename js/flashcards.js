@@ -651,79 +651,94 @@
     return (set.kind === "folder" ? "Папка выучена" : "Колода выучена") + " ✓";
   }
 
-  // Плашка колоды или папки: название-ссылка, размер, полоса прогресса.
-  function setCard(set, href, size) {
-    var byDeck = loadSetProgress(set);
-    var learned = learnedCount(set, byDeck);
-    var card = el("article", "card fc-deck");
-    var h3 = el("h3");
-    var link = el("a", null, set.title);
-    link.href = href;
-    h3.appendChild(link);
-    card.appendChild(h3);
-    card.appendChild(el("p", null, size));
-
-    var bar = el("div", "fc-progress");
-    bar.appendChild(el("span"));
-    progressBar(bar, learned, set.words.length);
-    card.appendChild(bar);
-    card.appendChild(el("p", "card-meta", learnedText(set, learned)));
-    return card;
-  }
-
-  function deckCard(deck) {
-    return setCard(deckSet(deck), deckHash(deck.id), words(deck.words.length));
-  }
-
+  var ICON_ARROW = '<svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>';
+  var ICON_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+  var ICON_PLUS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+    'stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>';
   var FOLDER_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
-    'stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4.2l2 2.2H19a2 2 0 0 1 ' +
-    '2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>';
+    'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 ' +
+    '2.5h8.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/></svg>';
 
-  // У папки — значок, число колод и их названия; плашка «стопкой».
+  // Прогресс набора в строке списка: тёмная полоса и подпись — «5 из 18», у
+  // папки «выучено 5 из 18», у выученного набора — галочка и «выучена».
+  function setProgress(set, learned) {
+    var total = set.words.length;
+    var box = el("span", "fc-set__progress");
+    var bar = el("span", "fc-progress");
+    bar.appendChild(el("span"));
+    progressBar(bar, learned, total);
+    box.appendChild(bar);
+    var label = el("span", "fc-set__learned");
+    if (!total) label.textContent = "слов пока нет";
+    else if (learned < total) label.textContent = (set.kind === "folder" ? "выучено " : "") + learned + " из " + total;
+    else label.innerHTML = ICON_CHECK + "выучена";
+    box.appendChild(label);
+    return box;
+  }
+
+  // Строка колоды в таблице: название | слов | прогресс | стрелка.
+  function deckCard(deck) {
+    var set = deckSet(deck);
+    var learned = learnedCount(set, loadSetProgress(set));
+    var row = el("a", "fc-set");
+    row.href = deckHash(deck.id);
+    row.appendChild(el("span", "fc-set__name", set.title));
+    var size = el("span", "fc-set__size", String(deck.words.length));
+    size.setAttribute("aria-label", words(deck.words.length));
+    row.appendChild(size);
+    row.appendChild(setProgress(set, learned));
+    row.insertAdjacentHTML("beforeend", ICON_ARROW);
+    return row;
+  }
+
+  // Строка папки: значок | название, число колод и их названия | прогресс |
+  // стрелка.
   function folderCard(folder) {
     var set = folderSet(folder);
-    var size = set.decks.length
-      ? deckCount(set.decks.length) + " · " + words(set.words.length)
-      : "Пока без колод";
-    var card = setCard(set, folderHash(folder.id), size);
-    card.classList.add("fc-folder");
-    var icon = el("span", "fc-folder-icon");
+    var learned = learnedCount(set, loadSetProgress(set));
+    var row = el("a", "fc-folder-row");
+    row.href = folderHash(folder.id);
+    var icon = el("span", "fc-folder-row__icon");
     icon.innerHTML = FOLDER_ICON;
-    card.querySelector("h3").insertBefore(icon, card.querySelector("h3 a"));
+    row.appendChild(icon);
+    var body = el("span", "fc-folder-row__body");
+    body.appendChild(el("span", "fc-folder-row__title", set.title));
+    var meta = el("span", "fc-folder-row__meta");
+    meta.appendChild(el("span", null, set.decks.length
+      ? deckCount(set.decks.length) + " · " + words(set.words.length)
+      : "пока без колод"));
     if (set.decks.length) {
-      var names = el("p", "fc-folder-decks", set.decks.map(function (d) { return d.title; }).join(" · "));
-      card.insertBefore(names, card.querySelector(".fc-progress"));
+      meta.appendChild(el("span", "fc-folder-row__names",
+        " · " + set.decks.map(function (d) { return d.title; }).join(", ")));
     }
-    return card;
+    body.appendChild(meta);
+    row.appendChild(body);
+    row.appendChild(setProgress(set, learned));
+    row.insertAdjacentHTML("beforeend", ICON_ARROW);
+    return row;
   }
 
-  // Последняя плашка в «Папках» — создать новую.
+  // Последняя строка в «папках» — создать новую: значок в пунктирной рамке.
   function newFolderCard() {
-    var card = el("article", "card is-empty fc-folder-new");
-    var h3 = el("h3");
-    var link = el("a", null, "+ Новая папка");
-    link.href = "#new-folder";
-    h3.appendChild(link);
-    card.appendChild(h3);
-    card.appendChild(el("p", null, "Соберите несколько колод вместе"));
-    return card;
-  }
-
-  // Первая плашка в «Колодах» — создать свою колоду; вид как у «+ Новая папка».
-  function newDeckCard() {
-    var card = el("article", "card is-empty fc-deck-new");
-    var h3 = el("h3");
-    var link = el("a", null, "+ Новая колода");
-    link.href = "#new-deck";
-    h3.appendChild(link);
-    card.appendChild(h3);
-    card.appendChild(el("p", null, "Впишите свои слова"));
-    return card;
+    var row = el("a", "fc-folder-row fc-folder-row--new");
+    row.href = "#new-folder";
+    var icon = el("span", "fc-folder-row__icon");
+    icon.innerHTML = ICON_PLUS;
+    row.appendChild(icon);
+    var body = el("span", "fc-folder-row__body");
+    body.appendChild(el("span", "fc-folder-row__title", "новая папка"));
+    body.appendChild(el("span", "fc-folder-row__meta", "соберите несколько колод вместе"));
+    row.appendChild(body);
+    row.insertAdjacentHTML("beforeend", ICON_ARROW);
+    return row;
   }
 
   // Папки: свои (новые первыми), потом папки сайта. Колоды из папок
-  // остаются и в сетках ниже; свои колоды — отдельной сеткой «Мои колоды»,
-  // новые первыми. В «Колодах» первой стоит плашка «+ Новая колода».
+  // остаются и в таблицах ниже; свои колоды — отдельной таблицей «мои
+  // колоды», новые первыми. Кнопка «новая колода» стоит в разметке, рядом
+  // с подписью «колоды».
   function renderList() {
     var grid = $("[data-deck-grid]");
     var ownGrid = $("[data-own-grid]");
@@ -742,7 +757,6 @@
     folderGrid.appendChild(newFolderCard());
     $("[data-folder-hint]").hidden = folders.length > 0;
 
-    grid.appendChild(newDeckCard());
     decks.forEach(function (deck) {
       var card = deckCard(deck);
       if (deck.own) {
@@ -1022,7 +1036,7 @@
     view.querySelector("[data-pick-empty]").hidden = decks.length > 0;
     setEditError("");
     updatePicked();
-    document.title = (folder ? "Изменить папку" : "Новая папка") + " — Карточки — Китайский язык";
+    document.title = (folder ? "Изменить папку" : "Новая папка") + " — карточки — chineasy";
     show("edit");
   }
 
@@ -1076,7 +1090,7 @@
       node.setAttribute("href", back || "#");
     });
     window.DeckEditor.open(deck ? { id: deck.id, title: deck.title, words: plainWords(deck.words) } : null);
-    document.title = (deck ? "Изменить колоду" : "Новая колода") + " — Карточки — Китайский язык";
+    document.title = (deck ? "Изменить колоду" : "Новая колода") + " — карточки — chineasy";
     show("deckEdit");
   }
 
@@ -1135,7 +1149,7 @@
     };
 
     $("[data-deck-title]").textContent = set.title;
-    document.title = set.title + " — Карточки — Китайский язык";
+    document.title = set.title + " — карточки — chineasy";
     setKindWords(set.kind);
     show("study");
     showCard();
@@ -1631,7 +1645,7 @@
     // (например, страницу перезагрузили) показывать нечего — к списку.
     if (routedHash === "#photo") {
       if (window.PhotoCards && window.PhotoCards.active()) {
-        document.title = "Карточки по фото — Карточки — Китайский язык";
+        document.title = "Карточки по фото — карточки — chineasy";
         show("photo");
       } else {
         navigate("", true);
@@ -1651,7 +1665,7 @@
     if (set) {
       deckOnPage = deck;
       folderOnPage = folder;
-      document.title = set.title + " — Карточки — Китайский язык";
+      document.title = set.title + " — карточки — chineasy";
       if (allLearned) {
         setBackLinks(set);
         setKindWords(set.kind);
