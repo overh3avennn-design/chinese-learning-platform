@@ -1167,246 +1167,523 @@ a.side-row:hover {
   }
 }
 
-/* Contacts */
-.contact-info p {
-  margin: 0 0 1.25rem;
-  color: var(--color-text-muted);
+/* Страница «Контакты» (support/contacts.html). Первый экран — панель: слева
+   кто я и кнопки, справа «коротко». Ниже плитки «могу помочь, если ты»,
+   три сворачиваемых блока о занятиях (.fold на <details>) и обещание с
+   кнопкой записи. */
+.ct-hero .panel__main {
+  flex-basis: 560px;
+  gap: 18px;
+  min-height: 480px;
 }
 
-/* Ник в Telegram — обычная ссылка на личку, чуть крупнее текста. */
-.contact-info .contact-tg {
-  font-size: 1.15rem;
-  font-weight: 600;
-}
-
-/* «Как начать» под Telegram: полупрозрачная подложка с красной
-   чертой слева. */
-.contact-steps {
-  margin-top: 2rem;
-  padding: 1.15rem 1.25rem;
-  border-left: 3px solid var(--color-accent);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  background: var(--color-surface);
-}
-
-.contact-steps h2 {
-  margin: 0 0 1rem;
-}
-
-.contact-steps ol {
-  list-style: none;
-  counter-reset: step;
+.ct-lead {
   margin: 0;
-  padding: 0;
+  max-width: 470px;
+  font-size: 18px;
+  line-height: 1.5;
 }
 
-.contact-steps li {
-  counter-increment: step;
-  position: relative;
-  min-height: 1.9rem;
-  margin-bottom: 0.9rem;
-  padding-left: 2.75rem;
-  color: var(--color-text-muted);
+.ct-about {
+  margin: 0;
+  max-width: 470px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-2);
 }
 
-.contact-steps li:last-child {
-  margin-bottom: 0;
-}
-
-/* Номер шага — красный кружок слева от текста. */
-.contact-steps li::before {
-  content: counter(step);
-  position: absolute;
-  left: 0;
-  top: 0;
+.ct-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  border: 1px solid var(--color-accent);
-  border-radius: 50%;
-  color: var(--color-accent);
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.ct-actions .btn--outline {
+  gap: 8px;
+  padding: 6px 20px;
+}
+
+.ct-actions__arrow {
+  display: inline-flex;
+}
+
+/* «коротко»: крупная цифра с подписью и пояснение. */
+.ct-stat {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 22px 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ct-stat__num {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.ct-stat__num b {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.ct-stat__num small {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.ct-stat__text {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.ct-tg {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding: 22px 28px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.ct-tg:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.ct-tg:hover .row__arrow {
+  color: var(--accent-text);
+}
+
+.ct-tg__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ct-tg__body small {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.ct-tg__body b {
+  font-size: 18px;
   font-weight: 600;
-  font-size: 0.95rem;
 }
 
-.contact-steps strong {
-  color: var(--color-text);
+/* «могу помочь, если ты»: четыре плитки с бледным иероглифом. */
+.ct-tiles {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.ct-tile {
+  gap: 48px;
+  min-height: 200px;
+  padding: 24px;
+}
+
+.ct-tile .tile__hanzi {
+  top: 16px;
+  right: 20px;
+  font-size: 72px;
+}
+
+.ct-tile__text {
+  font-size: 18px;
+  line-height: 1.35;
   font-weight: 600;
 }
 
-.contact-steps .note-small {
-  margin: 1rem 0 0;
+/* ------------------------------------------- сворачиваемые блоки */
+
+/* Блок раскрывается по нажатию на заголовок: номер | название |
+   пояснение | плюс (у открытого блока он повёрнут в крестик). */
+.fold + .fold {
+  border-top: 1px solid var(--line);
 }
 
-/* Частые вопросы под «Как начать». Каждый вопрос — <details> на той же
-   подложке, ответ раскрывается по клику без скриптов. */
-.contact-faq {
-  margin-top: 3rem;
-}
-
-.contact-faq h2 {
-  margin: 0 0 1rem;
-}
-
-.contact-faq details {
-  margin-bottom: 0.6rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface);
-}
-
-/* У раскрытого вопроса появляется та же красная черта слева. */
-.contact-faq details[open] {
-  box-shadow: inset 3px 0 0 var(--color-accent);
-}
-
-.contact-faq summary {
-  position: relative;
-  padding: 0.9rem 3rem 0.9rem 1.25rem;
-  font-weight: 600;
+.fold__head {
+  display: grid;
+  grid-template-columns: 48px minmax(0, auto) minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 16px;
+  padding: 26px 28px;
   list-style: none;
   cursor: pointer;
 }
 
-.contact-faq summary::-webkit-details-marker {
+.fold__head::-webkit-details-marker {
   display: none;
 }
 
-.contact-faq summary:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-  border-radius: var(--radius);
+.fold__head:hover {
+  background: var(--surface-2);
 }
 
-/* Плюс справа; у раскрытого вопроса он поворачивается в крестик. */
-.contact-faq summary::after {
-  content: "+";
-  position: absolute;
-  right: 1.25rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.4rem;
-  font-weight: 400;
-  line-height: 1;
-  color: var(--color-accent);
+.fold__head:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -3px;
+}
+
+.fold__num {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.fold__title {
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.fold__text {
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: right;
+  color: var(--text-2);
+}
+
+.fold__icon {
+  justify-self: end;
+  color: var(--text-2);
   transition: transform 0.2s ease;
 }
 
-.contact-faq details[open] summary::after {
-  transform: translateY(-50%) rotate(45deg);
+.fold[open] .fold__icon {
+  transform: rotate(45deg);
 }
 
-.contact-faq details p {
+.fold[open] > .fold__head {
+  border-bottom: 1px solid var(--line);
+}
+
+.fold__body {
+  position: relative;
+  overflow: hidden;
+}
+
+.fold__foot {
   margin: 0;
-  padding: 0 1.25rem 1rem;
-  color: var(--color-text-muted);
+  padding: 0 28px 28px 92px;
 }
 
-/* Мелкая сноска под блоком: примечание к контактам. Раньше эти
-   сноски были набраны inline-стилями в самой разметке. */
-.note-small {
-  margin: 1rem 0 0;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-}
-
-/* Steps list */
-.steps-list {
-  list-style: none;
-  padding: 0;
-  counter-reset: step;
-}
-
-/* Только прямые пункты: вложенный список внутри шага (примеры задач на
-   support/contacts.html) не должен получать номер и линию. */
-.steps-list > li {
-  counter-increment: step;
-  padding: 0.75rem 0 0.75rem 2.5rem;
+/* Шаги: крупный номер и название с описанием. */
+.ct-steps {
   position: relative;
-  border-left: 2px solid var(--color-border);
-  margin-left: 0.75rem;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.steps-list > li::before {
-  content: counter(step);
-  position: absolute;
-  left: -0.85rem;
-  top: 0.65rem;
-  width: 1.5rem;
-  height: 1.5rem;
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: 50%;
-  font-size: 0.75rem;
+.ct-step {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 620px);
+  gap: 16px;
+  padding: 24px 28px;
+}
+
+.ct-step + .ct-step {
+  border-top: 1px solid var(--line);
+}
+
+.ct-step__num {
+  font-size: 28px;
   font-weight: 700;
+  line-height: 1;
+}
+
+.ct-step__body {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
 }
 
-/* Шаги с описанием: заголовок шага отдельной строкой, текст под ним. */
-.steps-list--detailed > li {
-  padding-bottom: 1.25rem;
+.ct-step__body h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.steps-list--detailed > li > strong {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-size: 1.05rem;
-}
-
-/* Список через тире вместо точек; тире — акцентным красным. */
-.dash-list {
-  list-style: none;
-  padding: 0;
-  margin: 0.5rem 0 0;
-}
-
-.dash-list li {
-  position: relative;
-  padding-left: 1.5rem;
-}
-
-.dash-list li + li {
-  margin-top: 0.35rem;
-}
-
-.dash-list li::before {
-  content: "—";
-  position: absolute;
-  left: 0;
-  color: var(--color-accent);
-}
-
-/* Вступление о преподавателе на странице «Контакты»: крупный первый абзац,
-   список через тире и обещание в рамке с красной полосой. Строки
-   ограничены ~68 знаками, чтобы текст не тянулся на всю ширину main. */
-.teacher-intro p,
-.teacher-intro .dash-list {
-  max-width: 68ch;
-}
-
-.teacher-intro p {
-  margin: 0 0 1rem;
-}
-
-.teacher-intro .dash-list {
-  margin: -0.5rem 0 1.5rem;
-}
-
-.teacher-lead {
-  font-size: 1.15rem;
+.ct-step__body p {
+  margin: 0;
+  font-size: 15px;
   line-height: 1.55;
+  color: var(--text-2);
 }
 
-.teacher-intro .teacher-promise {
-  margin: 1.5rem 0 0;
-  padding: 0.9rem 1.15rem;
-  border-left: 3px solid var(--color-accent);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  background: var(--color-surface);
+/* Список через тире. */
+.ct-dash {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.ct-dash li {
+  display: flex;
+  gap: 10px;
+}
+
+.ct-dash li::before {
+  content: "—";
+  color: var(--text-2);
+}
+
+/* Бледные иероглифы 上课 в правом нижнем углу раскрытого блока. */
+.ct-steps__hanzi {
+  left: auto;
+  right: 28px;
+  bottom: -34px;
+}
+
+.ct-faq {
+  margin: 0;
+}
+
+.ct-qa {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 620px);
+  gap: 6px 16px;
+  padding: 20px 28px;
+}
+
+.ct-qa + .ct-qa {
+  border-top: 1px solid var(--line);
+}
+
+.ct-qa dt {
+  grid-column: 2;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ct-qa dd {
+  grid-column: 2;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+/* Обещание: красная точка, крупная фраза и кнопка записи. */
+.ct-promise {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  margin-top: 112px;
+  text-align: center;
+}
+
+.ct-promise__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.ct-promise p {
+  margin: 0;
+  max-width: 760px;
+  font-size: 30px;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.ct-promise__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+.ct-promise__actions .btn {
+  padding-left: 26px;
+  padding-right: 26px;
+}
+
+@media (max-width: 960px) {
+  /* Первый экран: заголовок, абзац, три цифры, кнопки — друг под другом.
+     Ячейка с текстом не рисуется (display: contents), порядок задаёт order. */
+  .ct-hero {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ct-hero .panel__main {
+    display: contents;
+  }
+
+  .ct-hero .title-row {
+    order: 1;
+  }
+
+  .ct-lead {
+    order: 2;
+    max-width: none;
+    margin-top: 10px;
+    font-size: 15px;
+  }
+
+  .ct-hero .panel__side {
+    order: 3;
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .ct-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 12px;
+    border: 0;
+    background: var(--surface);
+  }
+
+  .ct-stat__num b {
+    font-size: 18px;
+  }
+
+  .ct-stat__text {
+    font-size: 12px;
+    line-height: 1.3;
+    color: var(--text-2);
+  }
+
+  .ct-actions {
+    order: 4;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .ct-actions .btn {
+    min-height: 48px;
+  }
+
+  .ct-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ct-tile {
+    gap: 20px;
+    min-height: 124px;
+    padding: 14px;
+  }
+
+  .ct-tile .tile__hanzi {
+    top: 8px;
+    right: 10px;
+    font-size: 44px;
+  }
+
+  .ct-tile__text {
+    font-size: 14px;
+  }
+
+  .fold__head {
+    grid-template-columns: 24px minmax(0, 1fr) 22px;
+    gap: 4px 10px;
+    padding: 16px;
+  }
+
+  .fold__num {
+    font-size: 13px;
+  }
+
+  .fold__title {
+    font-size: 20px;
+  }
+
+  .fold__text {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .fold__icon {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .fold__foot {
+    padding: 0 16px 16px;
+  }
+
+  .fold__foot .btn {
+    display: flex;
+  }
+
+  .ct-step,
+  .ct-qa {
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 4px 10px;
+    padding: 14px 16px;
+  }
+
+  .ct-step__num {
+    font-size: 20px;
+    line-height: 1.1;
+  }
+
+  .ct-step__body {
+    gap: 4px;
+  }
+
+  .ct-step__body h3,
+  .ct-qa dt {
+    font-size: 15px;
+  }
+
+  .ct-step__body p,
+  .ct-qa dd {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .ct-promise {
+    gap: 20px;
+    margin-top: 48px;
+  }
+
+  .ct-promise p {
+    font-size: 20px;
+  }
+
+  .ct-promise__actions {
+    flex-direction: column;
+    align-self: stretch;
+    gap: 16px;
+  }
+
+  .ct-promise__actions .btn {
+    align-self: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fold__icon {
+    transition: none;
+  }
 }
 
 /* Раздел «Карточки» (flashcards/index.html, js/flashcards.js). Девять

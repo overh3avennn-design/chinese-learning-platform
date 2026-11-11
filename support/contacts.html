@@ -26,115 +26,208 @@
     </aside>
     <main class="page">
       <div class="container">
-        <nav class="breadcrumb" aria-label="Навигация">
-          <a href="../index.html">Главная</a> / Контакты
+        <nav class="crumbs crumbs--top" aria-label="Навигация">
+          <a href="../index.html">главная</a><span aria-hidden="true">/</span><span aria-current="page">контакты</span>
         </nav>
-        <h1 class="page-title">Контакты</h1>
-        <p class="page-subtitle">Кто я, как проходят занятия и как со мной связаться</p>
 
-        <section class="section teacher-intro">
-          <p class="teacher-lead">
-            Я преподаватель китайского языка. Готов помочь с изучением языка
-            или просто подсказать по любой теме — пиши.
-          </p>
-
-          <p>
-            Я учу китайский с самого детства. Сейчас у меня HSK 4, 11 лет обучения
-            в китайской школе и опыт жизни в Китае по программе обмена.
-          </p>
-
-          <p>Могу помочь, если ты:</p>
-          <ul class="dash-list">
-            <li>только начинаешь учить китайский;</li>
-            <li>учишь его в школе, университете или самостоятельно;</li>
-            <li>хочешь лучше понимать язык и начать говорить;</li>
-            <li>просто давно хотел попробовать, но не решался.</li>
-          </ul>
-
-          <p class="teacher-promise">
-            Я не обещаю китайский за месяц. Зато помогу разобраться в языке простым
-            и понятным способом, без лишней зубрёжки.
-          </p>
-        </section>
-
-        <section class="section">
-          <h2>Как проходят занятия</h2>
-          <ol class="steps-list steps-list--detailed">
-            <li>
-              <strong>Пробное занятие</strong>
-              Знакомимся, определяем твой уровень и проверяем базовые знания: тоны,
-              пиньинь, иероглифы, простые фразы. Заодно обсуждаем, зачем тебе китайский.
-            </li>
-            <li>
-              <strong>Программа под твою задачу</strong>
-              Подбираю программу и материалы под конкретную цель. Например:
-              <ul class="dash-list">
-                <li>начать с нуля и уверенно читать пиньинь, не путаясь в тонах;</li>
-                <li>подтянуть школьный или университетский курс, подготовиться к контрольной или сессии;</li>
-                <li>сдать HSK нужного уровня;</li>
-                <li>заговорить на бытовые темы перед поездкой или учёбой в Китае;</li>
-                <li>смотреть дорамы и читать на китайском без постоянного переводчика.</li>
-              </ul>
-            </li>
-            <li>
-              <strong>Уроки без зубрёжки и ненужных мучений</strong>
-              Грамматику, слова, иероглифы и разговор разбираем через понятные объяснения
-              и живые примеры, а не через заучивание длинных списков.
-            </li>
-            <li>
-              <strong>Домашние задания</strong>
-              Небольшие задания после урока, чтобы материал закрепился, а не забылся
-              к следующему занятию.
-            </li>
-            <li>
-              <strong>Обратная связь и корректировка</strong>
-              Регулярно обсуждаем, что получается, а что пока нет, и я подстраиваю
-              траекторию обучения лично под тебя: темп, темы и упор на нужные навыки.
-            </li>
-          </ol>
-        </section>
-
-        <div class="contact-info">
-          <h2>Telegram</h2>
-          <p class="contact-tg"><a href="https://t.me/easily_chinesly" target="_blank" rel="noopener">@easily_chinesly</a></p>
-          <p>
-            Есть пожелания к платформе — что-то неудобно, не работает или чего-то
-            не хватает? Напиши в Telegram, постараюсь исправить.
-          </p>
-
-          <div class="contact-steps">
-            <h2>Как начать</h2>
-            <ol>
-              <li><strong>Напиши мне</strong> в Telegram.</li>
-              <li><strong>Договоримся о пробном занятии</strong> — оно бесплатное, 30–40 минут, онлайн.</li>
-              <li><strong>Посмотрим твой уровень</strong> — и решим, как заниматься дальше.</li>
-            </ol>
-            <p class="note-small">Обычно отвечаю в течение дня.</p>
+        <!-- Первый экран (макеты design/mockups/contacts.html и
+             phone-contacts.html): слева кто я и кнопки, справа «коротко». На
+             телефоне порядок другой: заголовок, абзац, три цифры, кнопки. -->
+        <section class="panel panel--hero ct-hero" aria-labelledby="ct-title">
+          <div class="panel__main">
+            <div class="title-row">
+              <h1 class="page-title" id="ct-title">контакты</h1>
+              <p class="title-pinyin"><b lang="zh-Latn">liánxì</b><span lang="zh-CN">联系</span></p>
+            </div>
+            <p class="ct-lead">Я преподаватель китайского языка. Готов помочь с изучением языка или просто подсказать по любой теме — пиши.</p>
+            <p class="ct-about wide-only">Я учу китайский с самого детства. Сейчас у меня HSK 4, 11 лет обучения в китайской школе и опыт жизни в Китае по программе обмена.</p>
+            <div class="ct-actions">
+              <a class="btn" href="https://t.me/easily_chinesly" target="_blank" rel="noopener">записаться на пробное занятие <span class="wide-only ct-actions__arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span></a>
+              <a class="btn btn--outline" href="https://t.me/easily_chinesly" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9z"/></svg>@easily_chinesly</a>
+            </div>
+            <span class="sun" aria-hidden="true"></span>
           </div>
-        </div>
+          <div class="panel__side ct-short">
+            <h2 class="panel__head wide-only">коротко</h2>
+            <div class="ct-stat">
+              <span class="ct-stat__num"><b><span class="phone-only">HSK </span>4</b><small class="wide-only">HSK</small></span>
+              <span class="ct-stat__text"><span class="wide-only">сертификат HSK 4-го уровня</span><span class="phone-only">сертификат</span></span>
+            </div>
+            <div class="ct-stat">
+              <span class="ct-stat__num"><b>11<span class="phone-only"> лет</span></b><small class="wide-only">лет</small></span>
+              <span class="ct-stat__text"><span class="wide-only">обучения в китайской школе</span><span class="phone-only">китайская школа</span></span>
+            </div>
+            <div class="ct-stat">
+              <span class="ct-stat__num"><b>10+</b><small class="wide-only">отзывов</small></span>
+              <span class="ct-stat__text">довольных учеников</span>
+            </div>
+            <a class="ct-tg wide-only" href="https://t.me/easily_chinesly" target="_blank" rel="noopener">
+              <span class="ct-tg__body"><small>написать в Telegram</small><b>@easily_chinesly</b></span>
+              <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            </a>
+          </div>
+        </section>
 
-        <section class="contact-faq" aria-labelledby="faq-title">
-          <h2 id="faq-title">Частые вопросы</h2>
-          <details>
-            <summary>Можно начать с нуля?</summary>
-            <p>Да, большинство так и начинает.</p>
-          </details>
-          <details>
-            <summary>Сколько стоит занятие?</summary>
-            <p>От 1000 руб. Напиши — расскажу.</p>
-          </details>
-          <details>
-            <summary>Как проходят уроки?</summary>
-            <p>Онлайн, через Zoom или Я.Телемост, 60 минут.</p>
-          </details>
-          <details>
-            <summary>Помогаешь готовиться к HSK?</summary>
-            <p>Да. У меня HSK 4 и HSKK, формат экзамена знаю изнутри.</p>
-          </details>
-          <details>
-            <summary>Нужно что-то покупать?</summary>
-            <p>Нет, все материалы есть в <a href="../library/index.html">библиотеке</a> на сайте.</p>
-          </details>
+        <section class="section" aria-labelledby="ct-help-title">
+          <h2 class="section-label" id="ct-help-title">могу помочь, если ты</h2>
+          <div class="hairline-grid ct-tiles">
+            <div class="tile ct-tile">
+              <span class="tile__num">01</span>
+              <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">始</span>
+              <span class="ct-tile__text">только начинаешь учить китайский</span>
+            </div>
+            <div class="tile ct-tile">
+              <span class="tile__num">02</span>
+              <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">学</span>
+              <span class="ct-tile__text">учишь его в школе, университете или самостоятельно</span>
+            </div>
+            <div class="tile ct-tile">
+              <span class="tile__num">03</span>
+              <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">说</span>
+              <span class="ct-tile__text">хочешь лучше понимать язык и начать говорить</span>
+            </div>
+            <div class="tile ct-tile">
+              <span class="tile__num">04</span>
+              <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">试</span>
+              <span class="ct-tile__text">просто давно хотел попробовать, но не решался</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Занятия: три блока раскрываются по нажатию на заголовок
+             (<details>), при открытии страницы все свёрнуты. -->
+        <section class="section" aria-labelledby="ct-lessons-title">
+          <h2 class="section-label" id="ct-lessons-title">занятия</h2>
+          <div class="list ct-folds">
+            <details class="fold">
+              <summary class="fold__head">
+                <span class="fold__num">01</span>
+                <span class="fold__title">как проходят занятия</span>
+                <span class="fold__text">от пробного урока до программы, которая подстраивается под тебя</span>
+                <svg class="fold__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </summary>
+              <div class="fold__body">
+                <ol class="ct-steps">
+                <li class="ct-step">
+                  <span class="ct-step__num">1</span>
+                  <div class="ct-step__body">
+                    <h3>Пробное занятие</h3>
+                    <p><span class="wide-only">Знакомимся, определяем твой уровень и проверяем базовые знания: тоны, пиньинь, иероглифы, простые фразы. Заодно обсуждаем, зачем тебе китайский.</span><span class="phone-only">Знакомимся, определяем уровень и проверяем тоны, пиньинь, иероглифы и простые фразы.</span></p>
+                  </div>
+                </li>
+                <li class="ct-step">
+                  <span class="ct-step__num">2</span>
+                  <div class="ct-step__body">
+                    <h3>Программа под твою задачу</h3>
+                    <p><span class="wide-only">Подбираю программу и материалы под конкретную цель. Например:</span><span class="phone-only">С нуля, школьный курс, HSK, поездка в Китай или дорамы без переводчика.</span></p>
+                    <ul class="ct-dash wide-only">
+                      <li>начать с нуля и уверенно читать пиньинь, не путаясь в тонах</li>
+                      <li>подтянуть школьный или университетский курс, подготовиться к контрольной или сессии</li>
+                      <li>сдать HSK нужного уровня</li>
+                      <li>заговорить на бытовые темы перед поездкой или учёбой в Китае</li>
+                      <li>смотреть дорамы и читать на китайском без постоянного переводчика</li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="ct-step">
+                  <span class="ct-step__num">3</span>
+                  <div class="ct-step__body">
+                    <h3><span class="wide-only">Уроки без зубрёжки и ненужных мучений</span><span class="phone-only">Уроки без зубрёжки</span></h3>
+                    <p><span class="wide-only">Грамматику, слова, иероглифы и разговор разбираем через понятные объяснения и живые примеры, а не через заучивание длинных списков.</span><span class="phone-only">Понятные объяснения и живые примеры вместо длинных списков.</span></p>
+                  </div>
+                </li>
+                <li class="ct-step">
+                  <span class="ct-step__num">4</span>
+                  <div class="ct-step__body">
+                    <h3>Домашние задания</h3>
+                    <p><span class="wide-only">Небольшие задания после урока, чтобы материал закрепился, а не забылся к следующему занятию.</span><span class="phone-only">Небольшие задания, чтобы материал закрепился.</span></p>
+                  </div>
+                </li>
+                <li class="ct-step">
+                  <span class="ct-step__num">5</span>
+                  <div class="ct-step__body">
+                    <h3>Обратная связь и корректировка</h3>
+                    <p><span class="wide-only">Регулярно обсуждаем, что получается, а что пока нет, и я подстраиваю траекторию обучения лично под тебя: темп, темы и упор на нужные навыки.</span><span class="phone-only">Регулярно обсуждаем, что получается, и я подстраиваю темп, темы и упор на нужные навыки.</span></p>
+                  </div>
+                </li>
+                </ol>
+                <span class="big-hanzi ct-steps__hanzi wide-only" lang="zh-CN" aria-hidden="true">上课</span>
+              </div>
+            </details>
+            <details class="fold">
+              <summary class="fold__head">
+                <span class="fold__num">02</span>
+                <span class="fold__title">как начать</span>
+                <span class="fold__text">три шага до первого занятия</span>
+                <svg class="fold__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </summary>
+              <div class="fold__body">
+                <ol class="ct-steps">
+                <li class="ct-step">
+                  <span class="ct-step__num">1</span>
+                  <div class="ct-step__body">
+                    <h3>Напиши мне</h3>
+                    <p>В <a href="https://t.me/easily_chinesly" target="_blank" rel="noopener">Telegram</a> — обычно отвечаю в течение дня.</p>
+                  </div>
+                </li>
+                <li class="ct-step">
+                  <span class="ct-step__num">2</span>
+                  <div class="ct-step__body">
+                    <h3>Договоримся о пробном занятии</h3>
+                    <p>Оно бесплатное, 30–40 минут, онлайн.</p>
+                  </div>
+                </li>
+                <li class="ct-step">
+                  <span class="ct-step__num">3</span>
+                  <div class="ct-step__body">
+                    <h3>Посмотрим твой уровень</h3>
+                    <p>И решим, как заниматься дальше.</p>
+                  </div>
+                </li>
+                </ol>
+                <p class="fold__foot">
+                  <a class="btn" href="https://t.me/easily_chinesly" target="_blank" rel="noopener">написать в Telegram <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
+                </p>
+              </div>
+            </details>
+            <details class="fold">
+              <summary class="fold__head">
+                <span class="fold__num">03</span>
+                <span class="fold__title">частые вопросы</span>
+                <span class="fold__text">с нуля, формат уроков, HSK, материалы</span>
+                <svg class="fold__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </summary>
+              <div class="fold__body">
+                <dl class="ct-faq">
+                <div class="ct-qa">
+                  <dt>Можно начать с нуля?</dt>
+                  <dd>Да, большинство так и начинает.</dd>
+                </div>
+                <div class="ct-qa">
+                  <dt>Как проходят уроки?</dt>
+                  <dd>Онлайн, через Zoom или Я.Телемост, 60 минут.</dd>
+                </div>
+                <div class="ct-qa">
+                  <dt>Помогаешь готовиться к HSK?</dt>
+                  <dd>Да. У меня HSK 4 и HSKK, формат экзамена знаю изнутри.</dd>
+                </div>
+                <div class="ct-qa">
+                  <dt>Нужно что-то покупать?</dt>
+                  <dd>Нет, все материалы есть в <a href="../library/index.html">библиотеке</a> на сайте.</dd>
+                </div>
+                </dl>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <section class="ct-promise" aria-label="Обещание">
+          <span class="ct-promise__dot" aria-hidden="true"></span>
+          <p>Я не обещаю китайский за месяц. Зато помогу разобраться в языке простым и понятным способом, без лишней зубрёжки.</p>
+          <div class="ct-promise__actions">
+            <a class="btn" href="https://t.me/easily_chinesly" target="_blank" rel="noopener">записаться на пробное занятие <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
+            <a class="link-arrow" href="https://t.me/easily_chinesly" target="_blank" rel="noopener">написать в Telegram</a>
+          </div>
         </section>
       </div>
     </main>
