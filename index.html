@@ -7,222 +7,296 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>chineasy</title>
   <meta name="description" content="Персональная образовательная платформа по изучению китайского языка. Материалы по уровням HSK, практика и поддержка.">
+  <meta name="theme-color" content="#D6DBE6">
   <link rel="icon" href="favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Golos+Text:wght@400;500;600&family=Lora:wght@400;600&family=Imperial+Script&family=Great+Vibes&family=Manrope:wght@400;500;600;700&family=Marck+Script&display=swap" rel="stylesheet">
-  <!-- Китайские шрифты грузим только под нужные знаки: 中文 в заголовке и
-       логотипе, 你好 в «Контактах», 学习 в подсказке поиска, 书词卡问 на
-       плитках телефонной версии, 欢迎 на заставке. -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&text=%E4%B8%AD%E6%96%87%E4%BD%A0%E5%A5%BD%E5%AD%A6%E4%B9%A0%E4%B9%A6%E8%AF%8D%E5%8D%A1%E9%97%AE&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400&text=%E6%AC%A2%E8%BF%8E&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/home.css">
   <link rel="stylesheet" href="components/site-header/header.css">
-  <script>document.documentElement.classList.add("is-loading");</script>
 </head>
 <body class="page-home">
   <script src="components/site-header/header.js"></script>
-  <div class="preloader" aria-hidden="true">
-    <span class="preloader-mark">欢迎</span>
-  </div>
-  <!-- Фон всей главной: видео стоит на месте, страница едет поверх него.
-       Класс hero-video-media нужен прелоадеру из js/main.js. Источник у
-       видео только для компьютера: на телефоне (до 900px) оно не
-       скачивается, фон там — его постер, картинка с горами (css/home.css). -->
-  <video class="hero-video-media bg" autoplay muted loop playsinline preload="auto" poster="images/hero-poster.jpg">
-    <source src="images/hero-video.mp4" type="video/mp4" media="(min-width: 900px)">
-  </video>
-  <div class="hm-bg-shade" aria-hidden="true"></div>
 
-  <!-- Первый экран главной. Стили — css/home.css; классы hm-* не
-       пересекаются с общими стилями остальных страниц. На телефоне тот же
-       блок во весь первый экран: заставка, абзац и внизу поиск, без
-       кнопок и нижней полосы. -->
-  <section class="hm-hero">
-    <div class="hm-body">
-      <h1 class="hm-title">
-        <span class="hm-welcome">Добро пожаловать в</span>
-        <span class="hm-hanzi" lang="zh-CN">中文</span>
-      </h1>
+  <!-- Главная (тема v2). Стили — css/home.css, классы hm-*; общие компоненты
+       (панель, строки, плитки, кнопки, поле) — css/theme.css. Блоки с классом
+       wide-only видны только на компьютере, phone-only — только на телефоне
+       (до 960px): тексты и порядок блоков у версий разные, см. макеты
+       design/mockups/home.html, phone-home.html и phone-home-sections.html. -->
+  <div class="layout">
+    <aside class="rail rail--left" aria-hidden="true">
+      <div class="rail__hanzi" lang="zh-CN"><span>中</span><span>文</span></div>
+      <div class="rail__text">учим китайский — с нуля до HSK 6</div>
+    </aside>
+    <main class="page">
+      <div class="container">
 
-      <div class="hm-aside">
-        <p class="hm-lead">
-          За китайским языком стоят тысячелетия истории, мудрости и опыта.
-          Я хочу, чтобы этот путь был открыт каждому: материалы по уровням HSK,
-          культура Китая и учебники — в одном месте.
-          <br>Для изучения нужно только ваше желание, а сайт постарается обеспечить удобство.
-        </p>
+        <!-- Первый экран. На компьютере — одна широкая ячейка: заголовок,
+             абзац, поиск и красное «солнце». На телефоне ячейка во всю ширину
+             окна — только заголовок с коротким абзацем, поиск стоит под ней. -->
+        <section class="panel hm-hero" aria-labelledby="hm-title">
+          <div class="panel__main hm-hero__main">
+            <div class="hm-hero__top">
+              <div class="title-row">
+                <h1 class="page-title" id="hm-title">китайский<br>язык</h1>
+                <p class="title-pinyin"><b lang="zh-Latn">zhōngwén</b><span lang="zh-CN">中文</span></p>
+              </div>
+              <p class="hm-hero__short phone-only">Библиотека по уровням HSK, словарь, карточки и ИИ-помощник — в одном месте.</p>
+              <span class="sun hm-sun" aria-hidden="true"></span>
+            </div>
 
-        <!-- Поиск по словарю — одна форма на обе версии: на компьютере под
-             абзацем перед кнопками, на телефоне внизу первого экрана. Запрос
-             уходит в словарь как ?q=…, и там поиск запускается сразу
-             (js/dictionary.js). Кисточка открывает клетку, где иероглиф
-             рисуют пальцем или мышкой (js/handwriting.js, как в словаре):
-             выбранные иероглифы встают в поле (data-hw-compose), искать —
-             кнопкой «Найти». Клетка встаёт между формой и подсказкой. -->
-        <div class="hm-finder">
-          <form class="hm-search" action="dictionary/index.html" method="get" role="search" data-dict-form data-hw-compose>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input type="search" name="q" placeholder="Слово или пиньинь" aria-label="Поиск по словарю" data-dict-input
-                   autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
-            <button class="hm-hw-btn" type="button" data-hw-toggle aria-expanded="false"
-                    aria-label="Нарисовать иероглиф" title="Нарисовать иероглиф от руки">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.2 10.8 7.3-7.3"/><path d="M11.4 9.2l3.4 3.4"/><path d="M11.4 9.2C8.9 8.7 6.6 10.4 6.4 13c-.2 2.4-1.2 4.4-3.4 6.1 3.7 1.4 8.1.6 10.4-1.9 1.5-1.6 1.8-3.4 1.4-4.6"/></svg>
-            </button>
-            <button class="hm-search-go" type="submit">Найти</button>
-          </form>
-          <p class="hm-search-hint">Например: <b lang="zh-CN">学习</b> · <span lang="zh-Latn">xuéxí</span> · учиться</p>
+            <!-- Поиск по словарю. Запрос уходит в словарь как ?q=…, и там
+                 поиск запускается сразу (js/dictionary.js). Кисточка открывает
+                 клетку, где иероглиф рисуют пальцем или мышкой
+                 (js/handwriting.js, как в словаре): выбранные иероглифы встают
+                 в поле (data-hw-compose), искать — кнопкой «найти». Клетка
+                 встаёт сразу под строкой поиска (.dict-search-row). -->
+            <form class="hm-search" action="dictionary/index.html" method="get" role="search" data-dict-form data-hw-compose>
+              <p class="hm-search__lead wide-only">За китайским языком стоят тысячелетия истории, мудрости и опыта. Я хочу, чтобы этот путь был открыт каждому — для изучения нужно только ваше желание.</p>
+              <label class="sr-only" for="hm-q">Поиск по словарю</label>
+              <div class="field dict-search-row">
+                <svg class="field__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+                <input id="hm-q" type="search" name="q" placeholder="Слово, иероглиф или пиньинь" data-placeholder-phone="Слово или пиньинь" data-dict-input
+                       autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+                <button class="icon-btn" type="button" data-hw-toggle aria-expanded="false"
+                        aria-label="Нарисовать иероглиф" title="Нарисовать иероглиф от руки">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>
+                </button>
+                <button class="field__go" type="submit">найти</button>
+              </div>
+              <p class="hm-search__hint">Например: <b lang="zh-CN">学习</b> · <span lang="zh-Latn">xuéxí</span> · учиться</p>
+            </form>
+          </div>
+        </section>
+
+        <div class="hm-intro wide-only">
+          <p class="lead hm-intro__text">Библиотека по уровням HSK, словарь, карточки и ИИ-помощник — всё для изучения китайского в одном месте.</p>
+          <div class="hm-intro__actions">
+            <a class="btn hm-intro__btn" href="library/index.html">открыть библиотеку</a>
+            <a class="link-arrow" href="support/contacts.html">пробное занятие
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            </a>
+          </div>
         </div>
 
-        <div class="hm-actions-row">
-          <a href="library/index.html" class="hm-btn">Открыть библиотеку</a>
-          <a href="support/contacts.html" class="hm-trial">
-            <span>Пробное занятие</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <!-- «разделы»: слева уровни HSK, справа плитки 2×2. На телефоне блоки
+             идут друг под другом и в другом порядке (css/home.css): сначала
+             уровни, затем подпись «разделы» и плитки — библиотека с кнопками
+             уровней, словарь, карточки, ИИ-помощник. Номера плиток берутся из
+             data-n (компьютер) и data-n-phone (телефон). -->
+        <section class="section hm-sections" aria-labelledby="hm-sections-title">
+          <h2 class="section-label" id="hm-sections-title">разделы</h2>
+          <div class="hm-sections__grid">
+            <div class="hm-levels">
+              <div class="panel__head hm-levels__head">
+                <h3>уровни HSK</h3>
+                <small class="wide-only">2.0 и 3.0</small>
+                <a class="hm-levels__all phone-only" href="library/index.html">все
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+                </a>
+              </div>
+              <a class="hm-level" href="library/hsk-1/index.html">
+                <span class="hm-level__num"><b>1</b><small>A1</small></span>
+                <span class="hm-level__body"><span class="hm-level__title">HSK 1</span><span class="hm-level__text"><span class="wide-only">Базовый уровень: первые</span><span class="phone-only">Первые</span> слова, тоны и простые фразы</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="hm-level" href="library/hsk-2/index.html">
+                <span class="hm-level__num"><b>2</b><small>A2</small></span>
+                <span class="hm-level__body"><span class="hm-level__title">HSK 2</span><span class="hm-level__text">Расширение базовой лексики и грамматики</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="hm-level" href="library/hsk-3/index.html">
+                <span class="hm-level__num"><b>3</b><small>B1</small></span>
+                <span class="hm-level__body"><span class="hm-level__title">HSK 3</span><span class="hm-level__text">Самостоятельное общение в быту</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="hm-level" href="library/hsk-4/index.html">
+                <span class="hm-level__num"><b>4</b><small>B2</small></span>
+                <span class="hm-level__body"><span class="hm-level__title">HSK 4</span><span class="hm-level__text">Обсуждение абстрактных тем</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="hm-level" href="library/hsk-5/index.html">
+                <span class="hm-level__num"><b>5</b><small>C1</small></span>
+                <span class="hm-level__body"><span class="hm-level__title">HSK 5</span><span class="hm-level__text">Чтение газет, просмотр фильмов</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="hm-level" href="library/hsk-6/index.html">
+                <span class="hm-level__num"><b>6</b><small>C2</small></span>
+                <span class="hm-level__body"><span class="hm-level__title">HSK 6</span><span class="hm-level__text">Свободное владение языком</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="hm-level" href="library/hsk-7-9/index.html">
+                <span class="hm-level__num"><b>7–9</b><small>3.0</small></span>
+                <span class="hm-level__body"><span class="hm-level__title">HSK 7–9</span><span class="hm-level__text">Академическая и профессиональная речь</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+            </div>
+
+            <!-- Плитка нажимается целиком: ссылка названия растянута на неё,
+                 кнопки уровней у библиотеки лежат поверх. -->
+            <div class="hm-tiles">
+              <div class="tile hm-tile hm-tile--cards">
+                <span class="tile__num" data-n="01" data-n-phone="03" aria-hidden="true"></span>
+                <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">卡</span>
+                <span class="tile__body">
+                  <a class="tile__title hm-tile__link" href="flashcards/index.html">карточки</a>
+                  <span class="tile__text wide-only">Слова свайпами, колоды от преподавателя и карточки по фото страницы тетради</span>
+                  <span class="tile__text phone-only">Слова свайпами и по фото тетради</span>
+                  <span class="tile__more wide-only" aria-hidden="true">открыть <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+                </span>
+              </div>
+
+              <div class="tile hm-tile hm-tile--dict">
+                <span class="tile__num" data-n="02" data-n-phone="02" aria-hidden="true"></span>
+                <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">词</span>
+                <span class="tile__body">
+                  <a class="tile__title hm-tile__link" href="dictionary/index.html">словарь</a>
+                  <span class="tile__text wide-only">Весь БКРС прямо на сайте: поиск по слову или пиньиню и рукописный ввод</span>
+                  <span class="tile__text phone-only">БКРС прямо на сайте</span>
+                  <span class="tile__more wide-only" aria-hidden="true">открыть <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+                </span>
+              </div>
+
+              <div class="tile hm-tile hm-tile--lib">
+                <span class="tile__num" data-n="03" data-n-phone="01" aria-hidden="true"></span>
+                <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">书</span>
+                <span class="tile__body">
+                  <a class="tile__title hm-tile__link" href="library/index.html">библиотека
+                    <svg class="phone-only" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+                  </a>
+                  <span class="tile__text wide-only">Материалы по уровням HSK: фонетика, грамматика, иероглифика и разговорные фразы</span>
+                  <span class="tile__text phone-only">Учебные материалы, грамматика, фонетика и иероглифика по уровням</span>
+                  <span class="tile__more wide-only" aria-hidden="true">открыть <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+                </span>
+                <nav class="hm-chips phone-only" aria-label="Уровни HSK">
+                  <a href="library/hsk-1/index.html">HSK 1</a>
+                  <a href="library/hsk-2/index.html">HSK 2</a>
+                  <a href="library/hsk-3/index.html">HSK 3</a>
+                  <a href="library/hsk-4/index.html">HSK 4</a>
+                  <a href="library/hsk-5/index.html">HSK 5</a>
+                  <a href="library/hsk-6/index.html">HSK 6</a>
+                  <a href="library/hsk-7-9/index.html">HSK 7–9</a>
+                </nav>
+              </div>
+
+              <div class="tile hm-tile hm-tile--ai">
+                <span class="tile__num" data-n="04" data-n-phone="" aria-hidden="true"></span>
+                <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">问</span>
+                <span class="tile__body">
+                  <a class="tile__title hm-tile__link" href="assistant/index.html">ИИ-помощник</a>
+                  <span class="tile__text wide-only">Объяснит слово, грамматику и разницу между синонимами</span>
+                  <span class="tile__text phone-only">Объяснит слово, грамматику и разницу синонимов</span>
+                  <span class="tile__more wide-only" aria-hidden="true">спросить <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+                </span>
+                <svg class="hm-tile__arrow phone-only" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- «культура» — только на компьютере. Отдельных страниц истории,
+             философии и традиций нет: строки ведут на «Культуру Китая»,
+             фильмы — на свою страницу. -->
+        <section class="section wide-only" aria-labelledby="hm-culture-title">
+          <p class="section-label">культура</p>
+          <div class="panel">
+            <div class="hm-feature">
+              <h2 class="section-title" id="hm-culture-title">культура Китая</h2>
+              <p class="hm-feature__text">История, философия, традиции и фильмы о Китае — читать и смотреть прямо на сайте.</p>
+              <span class="big-hanzi" lang="zh-CN" aria-hidden="true">文化</span>
+            </div>
+            <div class="panel__side">
+              <a class="row row--plain hm-row" href="library/culture/index.html">
+                <span class="row__num">01</span>
+                <span class="row__body"><span class="row__title">история</span><span class="row__text"><span lang="zh-CN">历史</span> · <span lang="zh-Latn">lìshǐ</span></span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="row row--plain hm-row" href="library/culture/index.html">
+                <span class="row__num">02</span>
+                <span class="row__body"><span class="row__title">философия</span><span class="row__text"><span lang="zh-CN">哲学</span> · <span lang="zh-Latn">zhéxué</span></span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="row row--plain hm-row" href="library/culture/index.html">
+                <span class="row__num">03</span>
+                <span class="row__body"><span class="row__title">традиции</span><span class="row__text"><span lang="zh-CN">传统</span> · <span lang="zh-Latn">chuántǒng</span></span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="row row--plain hm-row" href="library/culture/films.html">
+                <span class="row__num">04</span>
+                <span class="row__body"><span class="row__title">фильмы о Китае</span><span class="row__text"><span lang="zh-CN">电影</span> · <span lang="zh-Latn">diànyǐng</span></span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- «занятия» на компьютере: слева о преподавателе, справа пробное
+             занятие и запись в Telegram. -->
+        <section class="section wide-only" aria-labelledby="hm-lessons-title">
+          <p class="section-label">занятия</p>
+          <div class="panel">
+            <div class="hm-lessons">
+              <h2 class="section-title" id="hm-lessons-title">занятия<br>с преподавателем</h2>
+              <p class="hm-lessons__text">Преподаватель китайского языка с опытом работы с учениками разных уровней — от полных новичков до подготовки к HSK 4–6. Индивидуальный подход, акцент на практику и понимание логики языка, а не только заучивание.</p>
+              <a class="link-arrow hm-lessons__more" href="support/contacts.html">подробнее о преподавателе и о том, как проходят занятия
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+            </div>
+            <div class="panel__side">
+              <div class="hm-trial__head">
+                <h3>пробное занятие</h3>
+                <small>запись в Telegram</small>
+              </div>
+              <ul class="hm-plus-list">
+                <li>от нуля до подготовки к HSK 4–6</li>
+                <li>индивидуальный подход</li>
+                <li>практика и логика языка, а не зубрёжка</li>
+                <li>материалы учебников разбираем на уроке</li>
+              </ul>
+              <a class="btn hm-trial__btn" href="https://t.me/easily_chinesly" target="_blank" rel="noopener">записаться на урок
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- «занятия» на телефоне: короткий блок, кнопка ведёт на «Контакты»
+             (в нижней панели их нет). -->
+        <section class="hm-lessons-phone phone-only" aria-labelledby="hm-lessons-phone-title">
+          <h2 id="hm-lessons-phone-title">занятия с преподавателем</h2>
+          <p>От полных новичков до подготовки к HSK 4–6. Индивидуальный подход и упор на практику.</p>
+          <a class="btn" href="support/contacts.html">пробное занятие
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
           </a>
-        </div>
+        </section>
+
       </div>
-    </div>
-
-    <div class="hm-strip">
-      <a class="hm-strip-item" href="library/index.html">
-        <h2>Библиотека по HSK</h2>
-        <p>Материалы, разложенные по уровням — от новичка до HSK 6.</p>
-      </a>
-      <a class="hm-strip-item" href="library/culture/index.html">
-        <h2>Культура Китая</h2>
-        <p>История, философия, традиции и фильмы о Китае прямо на сайте.</p>
-      </a>
-      <a class="hm-strip-item" href="library/textbooks/index.html">
-        <h2>Учебники и материалы</h2>
-        <p>Рукодельникова, практический курс и билеты к экзамену.</p>
-      </a>
-    </div>
-  </section>
-
-  <!-- Только телефон (класс hm-phone): плитки разделов и «Контакты» — ниже
-       первого экрана, при прокрутке они проявляются (data-reveal,
-       js/main.js). На компьютере их нет, а разделов «О платформе» и
-       подвала нет на телефоне. Нижняя панель — общая, из шапки. -->
-  <section class="hm-phone hm-block" aria-labelledby="hm-sections-title">
-    <h2 class="hm-block-title" id="hm-sections-title" data-reveal>Разделы</h2>
-    <div class="hm-tiles">
-      <!-- Нажимается вся плитка (ссылка заголовка растянута на неё), кнопки
-           уровней лежат поверх и ведут прямо на страницу уровня. -->
-      <div class="hm-tile hm-tile--main" data-reveal>
-        <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">书</span>
-        <a class="hm-tile-name" href="library/index.html">Библиотека&nbsp;→</a>
-        <p class="hm-tile-desc">Учебники, грамматика, фонетика и&nbsp;иероглифика по&nbsp;уровням</p>
-        <nav class="hm-hsk" aria-label="Уровни HSK">
-          <a href="library/hsk-1/index.html"><span>HSK 1<span class="hm-hsk-note">начальный</span></span></a>
-          <a href="library/hsk-2/index.html">HSK 2</a>
-          <a href="library/hsk-3/index.html">HSK 3</a>
-          <a href="library/hsk-4/index.html">HSK 4</a>
-          <a href="library/hsk-5/index.html">HSK 5</a>
-          <a href="library/hsk-6/index.html">HSK 6</a>
-        </nav>
-      </div>
-
-      <a class="hm-tile" href="dictionary/index.html" data-reveal>
-        <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">词</span>
-        <span class="hm-tile-name">Словарь</span>
-        <span class="hm-tile-desc">БКРС прямо на&nbsp;сайте</span>
-      </a>
-
-      <a class="hm-tile" href="flashcards/index.html" data-reveal>
-        <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">卡</span>
-        <span class="hm-tile-name">Карточки</span>
-        <span class="hm-tile-desc">Слова свайпами</span>
-      </a>
-
-      <a class="hm-tile hm-tile--wide" href="assistant/index.html" data-reveal>
-        <span class="hm-tile-han" lang="zh-CN" aria-hidden="true">问</span>
-        <span class="hm-tile-body">
-          <span class="hm-tile-name">ИИ-помощник</span>
-          <span class="hm-tile-desc">Объяснит слово, грамматику и&nbsp;разницу синонимов</span>
-        </span>
-        <svg class="hm-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </a>
-    </div>
-  </section>
-
-  <!-- «Контакты» — в нижней панели их нет, поэтому они здесь, в конце
-       главной: вся плитка — кнопка на страницу «Контакты». -->
-  <div class="hm-phone hm-block">
-    <a class="hm-contact" href="support/contacts.html" data-reveal>
-      <span class="hm-contact-body">
-        <span class="hm-contact-title">Контакты</span>
-        <span class="hm-contact-text">Готов предоставить занятия с&nbsp;преподавателем. А&nbsp;если есть пожелания к&nbsp;платформе — пишите, постараюсь исправить.</span>
-      </span>
-      <svg class="hm-contact-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    </a>
+    </main>
+    <aside class="rail rail--right hm-rail-right" aria-hidden="true">
+      <div class="rail__text">HSK 2.0 · HSK 3.0 · <span lang="zh-CN">汉语水平考试</span></div>
+      <span class="rail__dot"></span>
+    </aside>
   </div>
 
-  <main class="hm-main">
-    <div class="container">
-      <section class="hm-section">
-        <h2>О платформе</h2>
-        <p>
-          Это персональный инструмент для изучения и преподавания китайского языка.
-          Здесь собраны учебные материалы, конспекты, упражнения и ресурсы — от фонетики
-          до подготовки к экзамену HSK. Платформа помогает ученикам быстро находить
-          нужные материалы, а преподавателю — готовиться к урокам без лишней суеты.
-        </p>
-      </section>
-
-      <section class="hm-section">
-        <h2>О преподавателе</h2>
-        <p>
-          Преподаватель китайского языка с опытом работы с учениками разных уровней —
-          от полных новичков до подготовки к HSK 4–6. Индивидуальный подход,
-          акцент на практику и понимание логики языка, а не только заучивание.
-        </p>
-        <a class="hm-more" href="support/contacts.html">
-          <span>Подробнее о преподавателе и о том, как проходят занятия</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
-      </section>
-
-      <section class="hm-section hm-contacts">
-        <span class="hm-deco" lang="zh-CN" aria-hidden="true">你好</span>
-        <h2>Контакты</h2>
-        <p class="hm-tg-line">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 3.5 2.8 10.7c-.8.3-.8 1.4 0 1.7l4.7 1.6 1.8 5.6c.2.7 1.1.9 1.6.4l2.7-2.6 4.9 3.6c.6.4 1.4.1 1.6-.6L22.9 5c.2-1-.6-1.8-1.4-1.5Z"/><path d="m7.5 14 11-7.5-8.3 9.2"/></svg>
-          <span>Telegram:</span>
-          <a href="https://t.me/easily_chinesly" target="_blank" rel="noopener">@easily_chinesly</a>
-        </p>
-      </section>
+  <footer class="site-footer">
+    <div class="site-footer__brand">
+      <a class="site-footer__logo" href="index.html"><span class="seal seal--sm" lang="zh-CN" aria-hidden="true">中</span>chineasy.</a>
+      <small>образовательная платформа · V2</small>
     </div>
-  </main>
-
-  <footer class="hm-footer">
-    <div class="container">
-      <div class="hm-footer-top">
-        <div class="hm-footer-brand">
-          <a href="index.html" class="hm-footer-logo">
-            <span class="hm-logo-char" lang="zh-CN" aria-hidden="true">中</span>
-            <span>Китайский язык</span>
-          </a>
-          <p class="hm-footer-tagline">Образовательная платформа · V1</p>
-        </div>
-        <nav class="hm-footer-nav" aria-label="Навигация в подвале">
-          <ul>
-            <li><a href="library/index.html">Библиотека</a></li>
-            <li><a href="flashcards/index.html">Карточки</a></li>
-            <li><a href="support/contacts.html">Контакты</a></li>
-          </ul>
-        </nav>
-      </div>
-      <div class="hm-footer-bottom">
-        <p>&copy; 2026 · Персональная образовательная платформа</p>
-      </div>
+    <div>
+      <small><a href="support/contacts.html">контакты</a></small>
+      <span>Telegram: <a href="https://t.me/easily_chinesly" target="_blank" rel="noopener">@easily_chinesly</a></span>
+    </div>
+    <div>
+      <small>платформа</small>
+      <span>Есть пожелания к платформе — пишите в Telegram.</span>
     </div>
   </footer>
-
   <script src="js/main.js"></script>
   <script src="js/handwriting.js"></script>
 </body>

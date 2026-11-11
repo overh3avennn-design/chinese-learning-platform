@@ -3,45 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Аудирование — Китайский язык</title>
+  <title>Аудирование — chineasy</title>
+  <meta name="theme-color" content="#D6DBE6">
   <link rel="icon" href="../../favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="../../favicon-192.png">
   <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/theme.css">
   <link rel="stylesheet" href="../../css/style.css">
   <link rel="stylesheet" href="../../components/site-header/header.css">
 </head>
 <body>
   <script src="../../components/site-header/header.js"></script>
-  <div class="bg-fixed" aria-hidden="true"></div>
+  <div class="layout">
+    <aside class="rail rail--left" aria-hidden="true">
+      <div class="rail__hanzi rail__hanzi--3" lang="zh-CN"><span>材</span><span>料</span><span>库</span></div>
+      <div class="rail__text">все материалы — по уровням и разделам</div>
+    </aside>
+    <main class="page">
+      <div class="container">
+        <nav class="crumbs" aria-label="Навигация">
+          <a href="../../index.html">главная</a><span aria-hidden="true">/</span><a href="../index.html">библиотека</a><span aria-hidden="true">/</span><a href="index.html">практика</a><span aria-hidden="true">/</span><span aria-current="page">аудирование</span>
+        </nav>
 
-  <main>
-    <nav class="breadcrumb"><a href="../../index.html">Главная</a> / <a href="../index.html">Библиотека</a> / <a href="index.html">Практика</a> / Аудирование</nav>
-    <h1 class="page-title">Аудирование</h1>
-    <p class="page-subtitle">Практика и контекст</p>
-    <p>Подкасты, интервью, песни и видео с субтитрами.</p>
-    <div class="placeholder-note">Добавьте тексты, диалоги, ссылки на аудио и видео.</div>
+        <section class="panel panel--hero">
+          <div class="panel__main">
+            <div class="title-row">
+              <h1 class="page-title">аудирование</h1>
+            </div>
+            <p class="hero-meta">практика и контекст</p>
+            <p class="lead">Подкасты, интервью, песни и видео с субтитрами.</p>
+            <span class="sun" aria-hidden="true"></span>
+          </div>
+          <div class="panel__side">
+            <h2 class="panel__head">практика и контекст</h2>
+            <a class="side-row" href="reading.html"><span class="side-row__num">01</span><span class="side-row__title">тексты для чтения</span><span class="side-row__note"></span></a>
+            <a class="side-row" href="dialogues.html"><span class="side-row__num">02</span><span class="side-row__title">диалоги и разговоры</span><span class="side-row__note">пока пусто</span></a>
+            <a class="side-row" href="speaking.html"><span class="side-row__num">03</span><span class="side-row__title">упражнения на говорение</span><span class="side-row__note"></span></a>
+            <div class="side-row" aria-current="page"><span class="side-row__num">04</span><span class="side-row__title">аудирование</span><span class="side-row__note">пока пусто</span></div>
+            <a class="side-row" href="writing.html"><span class="side-row__num">05</span><span class="side-row__title">письменные упражнения</span><span class="side-row__note">пока пусто</span></a>
+          </div>
+        </section>
+        <!-- /hero -->
 
-    <nav class="nav-next">
-      <a href="index.html" class="btn btn-secondary">← Практика и контекст</a>
-    </nav>
-  </main>
+        <p class="note note--empty">Добавьте тексты, диалоги, ссылки на аудио и видео.</p>
+
+        <nav class="nav-next">
+          <a href="index.html" class="btn btn--outline">← практика и контекст</a>
+        </nav>
+      </div>
+    </main>
+    <aside class="rail rail--right" aria-hidden="true">
+      <div class="rail__text">учебники · материалы · культура</div>
+      <span class="rail__dot"></span>
+    </aside>
+  </div>
 
   <footer class="site-footer">
-    <div class="footer-inner">
-      <div>
-        <strong class="footer-brand">Китайский язык</strong>
-        <p class="footer-tagline">Образовательная платформа · V1</p>
-      </div>
-      <div class="footer-links">
-        <a href="../../library/index.html">Библиотека</a>
-        <a href="../../flashcards/index.html">Карточки</a>
-        <a href="../../support/contacts.html">Контакты</a>
-      </div>
-      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    <div class="site-footer__brand">
+      <a class="site-footer__logo" href="../../index.html"><span class="seal seal--sm" lang="zh-CN" aria-hidden="true">中</span>chineasy.</a>
+      <small>образовательная платформа · V2</small>
+    </div>
+    <div>
+      <small><a href="../../support/contacts.html">контакты</a></small>
+      <span>Telegram: <a href="https://t.me/easily_chinesly" target="_blank" rel="noopener">@easily_chinesly</a></span>
+    </div>
+    <div>
+      <small>платформа</small>
+      <span>Есть пожелания к платформе — пишите в Telegram.</span>
     </div>
   </footer>
   <script src="../../js/main.js"></script>

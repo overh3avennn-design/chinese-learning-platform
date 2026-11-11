@@ -23,7 +23,7 @@
   }
   var FIRST_PAGE = 10;      // столько результатов показывается сразу…
   var FIRST_BATCH = 4;      // …из них столько — первой порцией
-  var MORE_PAGE = 20;       // столько добавляет «Показать ещё»
+  var MORE_PAGE = 20;       // столько добавляет «показать ещё»
   var TYPE_DELAY = 400;     // пауза в наборе, после которой начинается поиск
   var LINES_SHOWN = 6;      // строк длинной статьи видно до «Показать всю статью»
   var FORMS_MAX = 300;      // сколько форм русского слова (дом → дома, домашний…) брать
@@ -513,12 +513,21 @@
   // словам» у статей без русского перевода.
   var AUTO_PINYIN = "Пиньинь подобран автоматически и может быть неточным";
 
-  function renderEntry(e) {
-    var li = document.createElement("li");
-    li.className = "dict-entry";
+  var ICON_ARROW = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>';
+  var ICON_DOWN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+  var ICON_AI = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>';
+
+  // Статья словаря в одном из двух видов. main — крупная карточка точного
+  // совпадения: иероглифы, пиньинь, текст статьи, кнопки «разобрать
+  // иероглиф» и «ИИ: объяснить», рядом блок «написание» (его наполняет
+  // fillWriting). Иначе — строка списка: иероглифы | пиньинь | короткое
+  // значение | «статья» (раскрывает полный текст) | стрелка.
+  function renderEntry(e, main) {
+    var node = document.createElement(main ? "article" : "li");
+    node.className = "dict-entry " + (main ? "dict-main" : "dict-row");
     var extra = e[3] || {};
     var lines = e[2] ? e[2].split("\n") : [];
-    var collapsed = lines.length > LINES_SHOWN + 1;
+    var collapsed = main && lines.length > LINES_SHOWN + 1;
     // Перевод БКРС не на русском (китайское толкование, английский): сверху
     // машинный перевод или «по словам», сам текст статьи — бледнее.
     var foreign = !CYRILLIC.test(e[2] || "");
@@ -533,29 +542,77 @@
     // иероглифов, порядок черт, письмо (js/hanzi-window.js).
     var card = window.HanziWindow && CJK.test(e[0]);
     if (card) {
-      li.className += " has-card";
-      li.dictEntry = e;
+      node.className += " has-card";
+      node.dictEntry = e;
     }
-    // «ИИ Объяснить» — то же окно, но сразу с объяснением слова от нейросети
-    // (js/ai.js; если он не подключён, кнопки нет).
-    var html = '<div class="dict-head"><span class="dict-hanzi" lang="zh-CN">' + esc(e[0]) + "</span>" +
-      (e[1] ? '<span class="dict-pinyin' + (extra.a ? ' is-auto" title="' + AUTO_PINYIN : "") + '">' + markup(e[1]) +
-        (extra.a ? '<span class="dict-auto">авто</span>' : "") + "</span>" : "") +
-      (card && window.AI ? '<button class="dict-card-btn dict-explain-btn" type="button" aria-label="Объяснить слово: ' + esc(e[0]) +
-        '"><span class="ai" aria-hidden="true">ИИ</span><span class="txt">Объяснить</span></button>' : "") +
-      (card ? '<button class="dict-card-btn" type="button" aria-label="Разбор иероглифов: ' + esc(e[0]) +
-        '"><span class="zh" lang="zh-CN">字</span><span class="txt">Разбор</span></button>' : "") + "</div>" +
-      '<div class="dict-text' + (foreign ? " is-foreign" : "") + '">' + lead +
-        lines.map(function (t, i) { return line(t, collapsed && i >= LINES_SHOWN); }).join("") + "</div>";
-    if (collapsed) {
-      var rest = lines.length - LINES_SHOWN;
-      html += '<button class="dict-toggle" type="button" aria-expanded="false" data-more="Показать всю статью · ещё ' +
-        rest + " " + plural(rest, ["строка", "строки", "строк"]) + '">Показать всю статью · ещё ' + rest + " " +
-        plural(rest, ["строка", "строки", "строк"]) + "</button>";
+    // Длина слова в знаках — от неё зависит размер иероглифов.
+    var len = Math.min(Array.from(e[0]).length, 9);
+    var hanzi = '<span class="dict-hanzi is-len-' + len + '" lang="zh-CN">' + esc(e[0]) + "</span>";
+    var pinyin = '<span class="dict-pinyin' + (extra.a ? ' is-auto" title="' + AUTO_PINYIN : "") + '">' +
+      (e[1] ? markup(e[1]) + (extra.a ? '<span class="dict-auto">авто</span>' : "") : "") + "</span>";
+    var article = lines.map(function (t, i) { return line(t, collapsed && i >= LINES_SHOWN); }).join("");
+    var html;
+
+    if (main) {
+      var toggle = "";
+      if (collapsed) {
+        var rest = lines.length - LINES_SHOWN;
+        var more = "показать всю статью · ещё " + rest + " " + plural(rest, ["строка", "строки", "строк"]);
+        toggle = '<button class="dict-toggle" type="button" aria-expanded="false" data-more="' + more + '">' + more + "</button>";
+      }
+      // «ИИ: объяснить» — то же окно слова, но сразу с объяснением от
+      // нейросети (js/ai.js; если он не подключён, кнопки нет).
+      var actions = !card ? "" : '<div class="dict-main__actions">' +
+        '<button class="btn btn--sm btn--outline dict-card-btn" type="button" aria-label="Разбор иероглифов: ' + esc(e[0]) +
+          '"><span>разобрать<span class="wide-only"> иероглиф</span></span></button>' +
+        (window.AI ? '<button class="btn btn--sm btn--outline dict-card-btn dict-explain-btn" type="button" aria-label="Объяснить слово: ' +
+          esc(e[0]) + '">' + ICON_AI + "ИИ: объяснить</button>" +
+          '<span class="dict-main__vpn wide-only">ИИ пока работает с VPN</span>' : "") + "</div>";
+      html = '<div class="dict-main__word">' + hanzi +
+        '<div class="dict-main__body">' +
+          '<div class="dict-main__top">' + pinyin + '<span class="tag">точное совпадение</span></div>' +
+          '<div class="dict-text' + (foreign ? " is-foreign" : "") + '">' + lead + article + "</div>" +
+          toggle +
+          '<p class="dict-main__meta" hidden></p>' +
+          actions +
+        "</div></div>" +
+        (card ? '<div class="dict-main__writing wide-only" hidden>' +
+          '<div class="dict-main__writing-head"><h3>написание</h3><span>порядок черт</span></div>' +
+          '<div class="dict-writing"></div></div>' : "");
+    } else {
+      // Короткое значение — как в окне слова; у статей без русского
+      // перевода вместо него машинный перевод или «по словам».
+      var gloss = window.HanziWindow ? window.HanziWindow.gloss(e, 2) : "";
+      var summary = lead || '<p class="dict-line dict-gloss">' + esc(gloss || lines[0] || "") + "</p>";
+      // «статья» — полный текст под строкой; у статьи в одну строку он
+      // совпадает с коротким значением, и кнопки нет.
+      var full = lines.length > 1 || !!lead;
+      html = '<div class="dict-head">' + hanzi + pinyin + "</div>" +
+        '<div class="dict-text' + (foreign ? " is-foreign" : "") + '">' + summary + "</div>" +
+        (full ? '<button class="dict-toggle dict-row__more" type="button" aria-expanded="false" aria-label="Показать всю статью: ' +
+          esc(e[0]) + '"><span>статья</span>' + ICON_DOWN + "</button>" : '<span class="dict-row__more"></span>') +
+        (card ? '<button class="dict-card-btn dict-row__open" type="button" aria-label="Разбор иероглифов: ' + esc(e[0]) + '">' +
+          ICON_ARROW + "</button>" : '<span class="dict-row__open"></span>') +
+        (full ? '<div class="dict-article' + (foreign ? " is-foreign" : "") + '">' + article + "</div>" : "");
     }
-    li.innerHTML = html;
-    if (extra.w && !extra.m) fillWords(li.querySelector(".dict-words"), extra.w);
-    return li;
+    node.innerHTML = html;
+    if (extra.w && !extra.m) fillWords(node.querySelector(".dict-words"), extra.w);
+    return node;
+  }
+
+  // Блок «написание» у точного совпадения: порядок черт в клетках 田字格 и
+  // строки о ключе и составе — их рисует js/hanzi-window.js по тем же
+  // данным, что в окне слова. Он же отдаёт строку «4 черты · ключ 水».
+  function fillWriting(node, e) {
+    var host = node.querySelector(".dict-writing");
+    if (!host || !window.HanziWindow || !window.HanziWindow.writing) return;
+    window.HanziWindow.writing(host, e[0]).then(function (info) {
+      if (!info) return;
+      node.querySelector(".dict-main__writing").hidden = false;
+      var meta = node.querySelector(".dict-main__meta");
+      meta.innerHTML = info.meta;
+      meta.hidden = !info.meta;
+    }).catch(function () {});
   }
 
   // «По словам: 工业 — промышленность · 管 — труба» — значения слов, из
@@ -574,18 +631,36 @@
     });
   }
 
+  // Группа выдачи: 0 — точные совпадения, 1 — частичные. У точных первое
+  // идёт крупной карточкой (main), остальные — строками в рамке «ещё
+  // точные совпадения»; частичные — строками в рамке «частичные
+  // совпадения». Над выдачей — подпись «результаты · запрос».
   function group(n) {
     if (!groups[n]) {
+      if (!resultsEl.querySelector(".dict-results-label")) {
+        var label = document.createElement("div");
+        label.className = "section-label dict-results-label";
+        label.innerHTML = '<h2>результаты · <span class="dict-results-label__q">' + esc(shownQuery || "") + "</span></h2>" +
+          '<span class="dict-results-label__line" aria-hidden="true"></span>' +
+          '<span class="dict-results-label__note">сначала точные совпадения, потом частичные</span>';
+        resultsEl.insertBefore(label, resultsEl.firstChild);
+      }
       var section = document.createElement("section");
-      section.className = "dict-group";
-      section.innerHTML = '<h2 class="dict-group-title">' + (n ? "Частичные совпадения" : "Точные совпадения") +
-        '</h2><ol class="dict-list"></ol>';
+      section.className = "dict-group " + (n ? "is-partial" : "is-exact");
+      section.innerHTML = (n ? "" : '<div class="dict-main-slot"></div>') +
+        '<div class="dict-box"' + (n ? "" : " hidden") + '><h3 class="dict-box__title">' +
+        (n ? "частичные совпадения" : "ещё точные совпадения") + '</h3><ol class="dict-list"></ol></div>';
       // «Точные» всегда выше «Частичных», даже если появились позже.
       if (n === 0 && groups[1]) resultsEl.insertBefore(section, groups[1].section);
       else resultsEl.appendChild(section);
-      groups[n] = { section: section, list: section.querySelector("ol") };
+      groups[n] = {
+        section: section,
+        list: section.querySelector("ol"),
+        box: section.querySelector(".dict-box"),
+        main: section.querySelector(".dict-main-slot")
+      };
     }
-    return groups[n].list;
+    return groups[n];
   }
 
   // Показывает следующие count кандидатов. Кандидаты, у которых группа
@@ -610,7 +685,16 @@
         var g = batch[k].group;
         if (typeof g === "function") g = g(e);
         if (g < 0) return;
-        group(g).appendChild(renderEntry(e));
+        var target = group(g);
+        if (target.main && !target.main.firstChild) {
+          // Первое точное совпадение — крупно, с блоком «написание».
+          var card = renderEntry(e, true);
+          target.main.appendChild(card);
+          fillWriting(card, e);
+        } else {
+          target.list.appendChild(renderEntry(e, false));
+          target.box.hidden = false;
+        }
         shown++;
       });
       if (shown < count && queue.length) return showNext(count - shown, token);
@@ -660,10 +744,10 @@
         // Словарь обновился, а в кэше старый meta.json: файлы прежней
         // версии уже удалены. Берём свежий и пробуем ещё раз.
         if (err && err.status === 404 && !fresh) return start(q, true);
-        // Тот же запрос можно отправить ещё раз кнопкой «Найти».
+        // Тот же запрос можно отправить ещё раз кнопкой «найти».
         shownQuery = null;
         if (groups[0] || groups[1]) {
-          setStatus("Часть результатов не загрузилась — нажмите «Показать ещё», чтобы попробовать снова.", true);
+          setStatus("Часть результатов не загрузилась — нажмите «показать ещё», чтобы попробовать снова.", true);
         } else {
           setStatus("Не получилось загрузить словарь. Проверьте интернет и попробуйте ещё раз.", true);
         }
@@ -701,7 +785,8 @@
       var entryEl = toggle.closest(".dict-entry");
       var open = entryEl.classList.toggle("is-open");
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      toggle.textContent = open ? "Свернуть" : toggle.getAttribute("data-more");
+      // У строки списка кнопка «статья» со стрелкой — подпись не меняется.
+      if (toggle.hasAttribute("data-more")) toggle.textContent = open ? "свернуть" : toggle.getAttribute("data-more");
       if (!open) entryEl.scrollIntoView({ block: "nearest" });
       return;
     }

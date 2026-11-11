@@ -3,176 +3,288 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Библиотека материалов — Китайский язык</title>
+  <title>Библиотека — chineasy</title>
+  <meta name="theme-color" content="#D6DBE6">
   <link rel="icon" href="../favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="../favicon-192.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../components/site-header/header.css">
 </head>
 <body>
   <script src="../components/site-header/header.js"></script>
-  <div class="bg-fixed" aria-hidden="true"></div>
 
-  <main>
-    <nav class="breadcrumb" aria-label="Навигация">
-      <a href="../index.html">Главная</a> / Библиотека материалов
-    </nav>
-    <h1 class="page-title">Библиотека материалов</h1>
-    <p class="page-subtitle">Структурированные материалы по уровням HSK и дополнительные ресурсы</p>
+  <div class="layout">
+    <aside class="rail rail--left" aria-hidden="true">
+      <div class="rail__hanzi rail__hanzi--3" lang="zh-CN"><span>材</span><span>料</span><span>库</span></div>
+      <div class="rail__text">все материалы — по уровням и разделам</div>
+    </aside>
+    <main class="page">
+      <div class="container">
+        <nav class="crumbs crumbs--top" aria-label="Навигация">
+          <a href="../index.html">главная</a><span aria-hidden="true">/</span><span aria-current="page">библиотека</span>
+        </nav>
 
-    <p>
-      Выберите уровень или раздел. На странице уровня сразу лежат все его
-      материалы — сначала по старому стандарту HSK 2.0, ниже по новому HSK 3.0
-      (ступень 7–9 есть только в новом). Внутри стандарта они разложены по
-      разделам: фонетика, грамматика, иероглифика, словарь, разговорные фразы,
-      культура и учебные материалы.
-    </p>
+        <!-- Главная библиотеки (макеты design/mockups/library.html и
+             phone-library.html). Блоки wide-only видны только на компьютере,
+             phone-only — только на телефоне. -->
+        <section class="panel panel--hero lib-hero" aria-labelledby="lib-title">
+          <div class="panel__main">
+            <div class="title-row">
+              <h1 class="page-title" id="lib-title">библиотека</h1>
+              <p class="title-pinyin"><b lang="zh-Latn">cáiliàokù</b><span lang="zh-CN">材料库</span></p>
+            </div>
+            <p class="lead"><span class="wide-only">Все материалы разложены по уровням HSK. На странице уровня сначала идут материалы по HSK 2.0, ниже — по HSK 3.0. Ступень 7–9 есть только в новом стандарте.</span><span class="phone-only">Материалы по уровням HSK: сначала HSK 2.0, ниже — HSK 3.0.</span></p>
+            <div class="lib-path">
+              <a class="btn lib-path__btn" href="roadmap.html"><span>путь обучения<span class="lib-path__in phone-only"> · от нуля до HSK 6</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
+              <span class="lib-path__note wide-only">рекомендуемый порядок от нуля до HSK 6</span>
+            </div>
+            <span class="sun" aria-hidden="true"></span>
+          </div>
+          <div class="panel__side wide-only">
+            <h2 class="panel__head">внутри каждого уровня</h2>
+            <div class="side-row"><span class="side-row__num">01</span><span class="side-row__title">фонетика</span><span class="side-row__note"><span lang="zh-CN">语音</span> · <span lang="zh-Latn">yǔyīn</span></span></div>
+            <div class="side-row"><span class="side-row__num">02</span><span class="side-row__title">грамматика</span><span class="side-row__note"><span lang="zh-CN">语法</span> · <span lang="zh-Latn">yǔfǎ</span></span></div>
+            <div class="side-row"><span class="side-row__num">03</span><span class="side-row__title">иероглифика</span><span class="side-row__note"><span lang="zh-CN">汉字</span> · <span lang="zh-Latn">hànzì</span></span></div>
+            <div class="side-row"><span class="side-row__num">04</span><span class="side-row__title">словарь</span><span class="side-row__note"><span lang="zh-CN">词汇</span> · <span lang="zh-Latn">cíhuì</span></span></div>
+            <div class="side-row"><span class="side-row__num">05</span><span class="side-row__title">разговорные фразы</span><span class="side-row__note"><span lang="zh-CN">口语</span> · <span lang="zh-Latn">kǒuyǔ</span></span></div>
+            <div class="side-row"><span class="side-row__num">06</span><span class="side-row__title">культура</span><span class="side-row__note"><span lang="zh-CN">文化</span> · <span lang="zh-Latn">wénhuà</span></span></div>
+            <div class="side-row"><span class="side-row__num">07</span><span class="side-row__title">учебные материалы</span><span class="side-row__note"><span lang="zh-CN">教材</span> · <span lang="zh-Latn">jiàocái</span></span></div>
+          </div>
+        </section>
+        <!-- /hero -->
 
-    <section class="section">
-      <h2>Уровни HSK</h2>
-      <div class="card-grid is-levels">
-        <article class="card">
-          <h3><a href="hsk-1/index.html">HSK 1</a></h3>
-          <p>Базовый уровень для начинающих: первые слова, тоны и простые фразы.</p>
-          <p class="card-meta">A1 по HSK 2.0</p>
-        </article>
-        <article class="card">
-          <h3><a href="hsk-2/index.html">HSK 2</a></h3>
-          <p>Расширение базовой лексики и грамматики.</p>
-          <p class="card-meta">A2 по HSK 2.0</p>
-        </article>
-        <article class="card">
-          <h3><a href="hsk-3/index.html">HSK 3</a></h3>
-          <p>Самостоятельное общение в быту.</p>
-          <p class="card-meta">B1 по HSK 2.0</p>
-        </article>
-        <article class="card">
-          <h3><a href="hsk-4/index.html">HSK 4</a></h3>
-          <p>Обсуждение абстрактных тем.</p>
-          <p class="card-meta">B2 по HSK 2.0</p>
-        </article>
-        <article class="card">
-          <h3><a href="hsk-5/index.html">HSK 5</a></h3>
-          <p>Чтение газет, просмотр фильмов.</p>
-          <p class="card-meta">C1 по HSK 2.0</p>
-        </article>
-        <article class="card">
-          <h3><a href="hsk-6/index.html">HSK 6</a></h3>
-          <p>Свободное владение языком.</p>
-          <p class="card-meta">C2 по HSK 2.0</p>
-        </article>
-        <article class="card">
-          <h3><a href="hsk-7-9/index.html">HSK 7–9</a></h3>
-          <p>Высшая ступень: академическая и профессиональная речь.</p>
-          <p class="card-meta">Только HSK 3.0</p>
-        </article>
+        <!-- Уровни HSK: на компьютере — таблица, на телефоне — компактные
+             строки в рамке со своим заголовком. Строка нажимается целиком. -->
+        <section class="section lib-levels" aria-labelledby="lib-levels-title">
+          <h2 class="section-label wide-only" id="lib-levels-title">уровни HSK</h2>
+          <div class="table-wrap levels">
+            <div class="levels__inner">
+              <div class="levels__phone-head phone-only"><h2>уровни HSK</h2><small>2.0 и 3.0</small></div>
+              <div class="levels__head wide-only" aria-hidden="true">
+                <span>уровень</span><span>по HSK 2.0</span><span>что умеете</span><span>стандарты</span><span></span>
+              </div>
+              <a class="levels__row" href="hsk-1/index.html">
+                <span class="levels__name"><b>HSK 1</b><em class="wide-only">начните здесь</em></span>
+                <span class="levels__cefr">A1</span>
+                <span class="levels__text"><span class="wide-only">Базовый уровень: первые</span><span class="phone-only">Первые</span> слова, тоны и простые фразы</span>
+                <span class="levels__std wide-only">2.0 · 3.0</span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="levels__row" href="hsk-2/index.html">
+                <span class="levels__name"><b>HSK 2</b></span>
+                <span class="levels__cefr">A2</span>
+                <span class="levels__text"><span class="wide-only">Расширение базовой лексики и грамматики</span><span class="phone-only">Базовая лексика и грамматика</span></span>
+                <span class="levels__std wide-only">2.0 · 3.0</span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="levels__row" href="hsk-3/index.html">
+                <span class="levels__name"><b>HSK 3</b></span>
+                <span class="levels__cefr">B1</span>
+                <span class="levels__text">Самостоятельное общение в быту</span>
+                <span class="levels__std wide-only">2.0 · 3.0</span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="levels__row" href="hsk-4/index.html">
+                <span class="levels__name"><b>HSK 4</b></span>
+                <span class="levels__cefr">B2</span>
+                <span class="levels__text">Обсуждение абстрактных тем</span>
+                <span class="levels__std wide-only">2.0 · 3.0</span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="levels__row" href="hsk-5/index.html">
+                <span class="levels__name"><b>HSK 5</b></span>
+                <span class="levels__cefr">C1</span>
+                <span class="levels__text">Чтение газет, просмотр фильмов</span>
+                <span class="levels__std wide-only">2.0 · 3.0</span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="levels__row" href="hsk-6/index.html">
+                <span class="levels__name"><b>HSK 6</b></span>
+                <span class="levels__cefr">C2</span>
+                <span class="levels__text">Свободное владение языком</span>
+                <span class="levels__std wide-only">2.0 · 3.0</span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="levels__row" href="hsk-7-9/index.html">
+                <span class="levels__name"><b>HSK 7–9</b></span>
+                <span class="levels__cefr"><span class="wide-only">—</span><span class="phone-only">3.0</span></span>
+                <span class="levels__text"><span class="wide-only">Высшая ступень: академическая</span><span class="phone-only">Академическая</span> и профессиональная речь</span>
+                <span class="levels__std wide-only">только 3.0</span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Учебники. Подпись секции ведёт на общую страницу «Учебники»:
+             на неё ссылаются хлебные крошки страниц серий. Скачивание и
+             просмотр файлов на страницах серий сохранены. -->
+        <section class="section" aria-labelledby="lib-books-title">
+          <h2 class="section-label" id="lib-books-title"><a href="textbooks/index.html">учебники</a></h2>
+          <div class="hairline-grid books">
+            <a class="book" href="textbooks/rukodelnikova.html?from=library">
+              <span class="book__top"><span class="book__num">01</span><span class="tag">на уроках</span></span>
+              <span class="book__body">
+                <span class="book__title">«Китайский язык»</span>
+                <span class="book__text"><span class="wide-only">Рукодельникова М. Б. · школьный курс, с 5 по 9 класс</span><span class="phone-only">Рукодельникова М. Б. · 5–9 класс</span></span>
+                <span class="book__meta"><span>5 учебников · PDF</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              </span>
+            </a>
+            <a class="book" href="textbooks/practical-course.html?from=library">
+              <span class="book__top"><span class="book__num">02</span><span class="tag">на уроках</span></span>
+              <span class="book__body">
+                <span class="book__title"><span class="wide-only">Практический курс китайского языка</span><span class="phone-only">Практический курс</span></span>
+                <span class="book__text"><span class="wide-only">Старый курс Кондрашевского и Новый практический курс (НПККЯ)</span><span class="phone-only">Кондрашевский · НПККЯ</span></span>
+                <span class="book__meta"><span>учебник + сборник упражнений</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              </span>
+            </a>
+            <a class="book" href="textbooks/hanyu-jiaocheng.html?from=library">
+              <span class="book__top"><span class="book__num">03</span><span class="tag">на уроках</span></span>
+              <span class="book__body">
+                <span class="book__zh" lang="zh-CN">汉语教程</span>
+                <span class="book__title">Курс китайского языка</span>
+                <span class="book__text"><span class="wide-only">Ян Цзичжоу · Пекинский университет языка и культуры, русская версия</span><span class="phone-only"><span lang="zh-CN">汉语教程</span> · Ян Цзичжоу</span></span>
+                <span class="book__meta"><span>первый том, часть 1 · PDF</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              </span>
+            </a>
+            <a class="book" href="textbooks/spoken-chinese.html?from=library">
+              <span class="book__top"><span class="book__num">04</span><span class="tag">на уроках</span></span>
+              <span class="book__body">
+                <span class="book__zh" lang="zh-CN">汉语口语速成</span>
+                <span class="book__title">Short-term Spoken Chinese</span>
+                <span class="book__text"><span class="wide-only">Ма Цзяньфэй · Пекинский университет языка и культуры</span><span class="phone-only"><span lang="zh-CN">汉语口语速成</span> · Ма Цзяньфэй</span></span>
+                <span class="book__meta"><span><span lang="zh-CN">提高篇</span> и <span lang="zh-CN">中级篇（上）</span> · PDF</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              </span>
+            </a>
+          </div>
+          <p class="lib-ask">
+            <span>Хотите заниматься по одному из этих учебников?</span>
+            <a class="link-arrow" href="../support/contacts.html">записаться на урок <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
+          </p>
+        </section>
+
+        <!-- Материалы к занятиям. Подпись секции ведёт на общую страницу
+             «Материалы». -->
+        <section class="section" aria-labelledby="lib-mat-title">
+          <p class="section-label"><a href="materials/index.html">материалы</a></p>
+          <div class="panel">
+            <div class="lib-feature">
+              <h2 class="section-title" id="lib-mat-title">материалы<br>к занятиям</h2>
+              <p class="lib-feature__text">Лексика уроков, грамматика, практика и подготовка к устному экзамену.</p>
+              <span class="big-hanzi" lang="zh-CN" aria-hidden="true">练习</span>
+            </div>
+            <div class="panel__side lib-feature__rows">
+              <a class="row lib-row" href="textbooks/materials.html?from=library">
+                <span class="row__num">01</span>
+                <span class="row__body"><span class="row__title">материалы к занятиям</span><span class="row__text">Лексика урока, презентации, тест на определение уровня</span></span>
+                <span class="row__tags"><span class="tag">PDF</span><span class="tag">презентации</span><span class="tag">изображения</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="row lib-row row--plain" href="grammar/index.html?from=library">
+                <span class="row__num">02</span>
+                <span class="row__body"><span class="row__title">грамматика</span><span class="row__text">Разборы грамматических тем с примерами и упражнениями</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="row lib-row row--plain" href="practice/index.html">
+                <span class="row__num">03</span>
+                <span class="row__body"><span class="row__title">практика и контекст</span><span class="row__text">Чтение, диалоги, аудирование и письменные упражнения</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+              <a class="row lib-row" href="textbooks/exam-tickets.html?from=library">
+                <span class="row__num">04</span>
+                <span class="row__body"><span class="row__title">билеты к экзамену</span><span class="row__text">Тексты с пиньинь для пересказа и подготовки к устному экзамену</span></span>
+                <span class="row__tags"><span class="tag">DOCX</span></span>
+                <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="lib-more-title">
+          <h2 class="section-label" id="lib-more-title">чтение, культура и справочное</h2>
+          <div class="hairline-grid lib-tiles">
+            <a class="tile" href="journals/index.html">
+              <span class="tile__num">01</span>
+              <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">读</span>
+              <span class="tile__body">
+                <span class="tile__title">журналы</span>
+                <span class="tile__text">Диснеевские журналы для чтения «<span lang="zh-CN">我会自己读</span>», уровни 1–6</span>
+                <span class="tile__more">читать <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              </span>
+            </a>
+            <a class="tile" href="culture/index.html">
+              <span class="tile__num">02</span>
+              <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">文</span>
+              <span class="tile__body">
+                <span class="tile__title">культура Китая</span>
+                <span class="tile__text">История, философия, традиции и современный Китай. Фильмы — прямо на сайте</span>
+                <span class="tile__more">открыть <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              </span>
+            </a>
+            <a class="tile" href="roadmap.html">
+              <span class="tile__num">03</span>
+              <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">路</span>
+              <span class="tile__body">
+                <span class="tile__title">путь обучения</span>
+                <span class="tile__text">Рекомендуемая последовательность от нуля до HSK 6</span>
+                <span class="tile__more">открыть <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              </span>
+            </a>
+            <a class="tile" href="additional/index.html">
+              <span class="tile__num">04</span>
+              <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">典</span>
+              <span class="tile__body">
+                <span class="tile__title">дополнительные материалы</span>
+                <span class="tile__text">Справочники, пиньинь, каллиграфия, ресурсы и книги</span>
+                <span class="tile__more">открыть <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              </span>
+            </a>
+            <a class="tile" href="additional/resources.html?from=library">
+              <span class="tile__num">05</span>
+              <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">网</span>
+              <span class="tile__body">
+                <span class="tile__title">полезные ресурсы</span>
+                <span class="tile__text">Сайты, приложения, YouTube и подкасты</span>
+                <span class="tile__more">открыть <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              </span>
+            </a>
+            <a class="tile" href="https://t.me/easily_chinesly" target="_blank" rel="noopener">
+              <span class="tile__num">Telegram</span>
+              <span class="tile__hanzi" lang="zh-CN" aria-hidden="true">信</span>
+              <span class="tile__body">
+                <span class="tile__title">нет нужного материала?</span>
+                <span class="tile__text">Напишите в Telegram — постараюсь добавить</span>
+                <span class="tile__more">написать <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              </span>
+            </a>
+          </div>
+        </section>
       </div>
-    </section>
-
-    <section class="section">
-      <h2>Дополнительно</h2>
-      <div class="card-grid is-pairs">
-        <article class="card">
-          <h3><a href="textbooks/index.html">Учебники</a></h3>
-          <p>Рукодельникова, практический курс, «汉语教程» и «汉语口语速成».</p>
-          <p class="card-meta">4 курса · PDF</p>
-        </article>
-        <article class="card">
-          <h3><a href="materials/index.html">Материалы</a></h3>
-          <p>Материалы к занятиям, грамматика, тест на определение уровня и билеты к экзамену.</p>
-          <p class="card-meta">PDF · DOCX · презентации</p>
-        </article>
-        <article class="card">
-          <h3><a href="culture/index.html">Культура Китая</a></h3>
-          <p>История, философия, традиции и современный Китай. Фильмы — прямо на сайте.</p>
-        </article>
-        <article class="card">
-          <h3><a href="roadmap.html">Путь обучения</a></h3>
-          <p>Рекомендуемая последовательность от нуля до HSK 6.</p>
-        </article>
-        <article class="card">
-          <h3><a href="additional/resources.html?from=library">Полезные ресурсы</a></h3>
-          <p>Сайты, приложения, YouTube и подкасты.</p>
-        </article>
-      </div>
-
-      <div class="level-section">
-        <h3>Все разделы</h3>
-        <p class="level-section-desc">Учебники, материалы к занятиям, журналы, культура и справочники — каждая подборка отдельной карточкой.</p>
-        <div class="card-grid is-pairs">
-          <article class="card">
-            <h3><a href="additional/index.html">Допол&shy;нительные материалы</a></h3>
-            <p>Справочники, пиньинь, каллиграфия, ресурсы и книги.</p>
-          </article>
-          <article class="card">
-            <h3><a href="practice/index.html">Практика и контекст</a></h3>
-            <p>Чтение, диалоги, аудирование и письменные упражнения.</p>
-          </article>
-          <article class="card">
-            <h3><a href="journals/index.html">Журналы</a></h3>
-            <p>Диснеевские журналы для чтения «我会自己读», уровни 1–6.</p>
-          </article>
-          <article class="card">
-            <h3><a href="grammar/index.html?from=library">Грамматика</a></h3>
-            <p>Разборы грамматических тем с примерами и упражнениями.</p>
-          </article>
-          <article class="card">
-            <h3><a href="textbooks/rukodelnikova.html?from=library">Рукодель&shy;никова М.Б. «Китайский язык»</a></h3>
-            <p>Школьный учебник — с 5 по 9 класс.</p>
-            <p class="card-meta">5 учебников · PDF</p>
-          </article>
-          <article class="card">
-            <h3><a href="textbooks/practical-course.html?from=library">Практи&shy;ческий курс китайского языка</a></h3>
-            <p>Старый практический курс (Кондрашевский) и Новый практический курс (НПККЯ).</p>
-            <p class="card-meta">Учебник + сборник упражнений</p>
-          </article>
-          <article class="card">
-            <h3><a href="textbooks/hanyu-jiaocheng.html?from=library">Курс китайского языка «汉语教程»</a></h3>
-            <p>Учебник Ян Цзичжоу (Пекинский университет языка и культуры), русская версия.</p>
-            <p class="card-meta">Первый том, часть 1 · PDF</p>
-          </article>
-          <article class="card">
-            <h3><a href="textbooks/spoken-chinese.html?from=library">Short-term Spoken Chinese «汉语口语速成»</a></h3>
-            <p>Серия учебников разговорной речи Ма Цзяньфэя (Пекинский университет языка и культуры).</p>
-            <p class="card-meta">提高篇 и 中级篇（上） · PDF</p>
-          </article>
-          <article class="card">
-            <h3><a href="textbooks/materials.html?from=library">Материалы к занятиям</a></h3>
-            <p>Лексика урока, презентации, тест на определение уровня.</p>
-            <p class="card-meta">PDF · презентации · изображения</p>
-          </article>
-          <article class="card">
-            <h3><a href="textbooks/exam-tickets.html?from=library">Билеты к экзамену</a></h3>
-            <p>Тексты с пиньинь для пересказа и подготовки к устному экзамену.</p>
-            <p class="card-meta">DOCX</p>
-          </article>
-          <article class="card">
-            <h3><a href="culture/index.html">Культура Китая</a></h3>
-            <p>История, философия, традиции и современный Китай. Фильмы — прямо на сайте.</p>
-          </article>
-        </div>
-      </div>
-
-    </section>
-  </main>
+    </main>
+    <aside class="rail rail--right" aria-hidden="true">
+      <div class="rail__text">учебники · материалы · культура</div>
+      <span class="rail__dot"></span>
+    </aside>
+  </div>
 
   <footer class="site-footer">
-    <div class="footer-inner">
-      <div>
-        <strong class="footer-brand">Китайский язык</strong>
-        <p class="footer-tagline">Образовательная платформа · V1</p>
-      </div>
-      <div class="footer-links">
-        <a href="index.html">Библиотека</a>
-        <a href="../flashcards/index.html">Карточки</a>
-        <a href="../support/contacts.html">Контакты</a>
-      </div>
-      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    <div class="site-footer__brand">
+      <a class="site-footer__logo" href="../index.html"><span class="seal seal--sm" lang="zh-CN" aria-hidden="true">中</span>chineasy.</a>
+      <small>образовательная платформа · V2</small>
+    </div>
+    <div>
+      <small><a href="../support/contacts.html">контакты</a></small>
+      <span>Telegram: <a href="https://t.me/easily_chinesly" target="_blank" rel="noopener">@easily_chinesly</a></span>
+    </div>
+    <div>
+      <small>платформа</small>
+      <span>Есть пожелания к платформе — пишите в Telegram.</span>
     </div>
   </footer>
   <script src="../js/main.js"></script>

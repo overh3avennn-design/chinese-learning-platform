@@ -7,9 +7,9 @@
     трогает — этот скрипт меняет в них ссылки на файлы, которые уже загружены на
     Диск (scripts/yadisk_upload.py):
         href файла            → публичная ссылка Диска
-        «Скачать» с download  → новая вкладка (чужой адрес браузер не скачивает)
-        обложка .material-cover → data-ext="PDF" для плашки без картинки (js/main.js)
-    и ставит под подзаголовок страницы ту же плашку про VPN, что генератор.
+        «скачать» с download  → новая вкладка (чужой адрес браузер не скачивает)
+    и ставит под первый экран страницы ту же плашку про VPN, что генератор
+    (после метки <!-- /hero -->).
     Остальная разметка не меняется. Повторный запуск ничего не меняет, так что
     после каждой новой загрузки на Диск его можно просто запустить ещё раз.
 
@@ -23,7 +23,7 @@ import sys
 from urllib.parse import unquote
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from generate_pages import (DISK_NOTE, MANUAL_PAGES, BASE, attr,  # noqa: E402
+from generate_pages import (DISK_NOTE, HERO_END, MANUAL_PAGES, BASE, attr,  # noqa: E402
                             disk_links, read, write_if_changed)
 
 NOTE_MARK = "Если файл не открывается — выключите VPN."
@@ -46,11 +46,7 @@ def rewrite(rel_path, text):
         if not url:
             return tag
         replaced += 1
-        new_href = f' href="{attr(url)}"'
-        if 'class="material-cover"' in tag and "data-ext=" not in tag:
-            ext = os.path.splitext(target)[1].lstrip(".").upper()
-            new_href += f' data-ext="{ext}"'
-        tag = tag.replace(href.group(0), new_href, 1)
+        tag = tag.replace(href.group(0), f' href="{attr(url)}"', 1)
         tag = re.sub(r"\sdownload(?=[\s>])", "", tag)
         if "target=" not in tag:
             tag = tag[:-1] + ' target="_blank" rel="noopener">'
@@ -58,9 +54,10 @@ def rewrite(rel_path, text):
 
     text = re.sub(r"<a\b[^>]*>", fix, text)
     if replaced or any(url in text for url in links.values()):
-        if NOTE_MARK not in text:
-            text = re.sub(r'<p class="page-subtitle">.*?</p>', lambda m: m.group(0) + DISK_NOTE,
-                          text, count=1, flags=re.S)
+        if NOTE_MARK not in text and HERO_END in text:
+            # В странице каркас сдвинут на 4 пробела глубже, чем в шаблоне.
+            note = DISK_NOTE.replace("\n", "\n    ")
+            text = text.replace(HERO_END, HERO_END + note, 1)
     return text, replaced
 
 

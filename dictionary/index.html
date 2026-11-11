@@ -3,79 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Словарь — Китайский язык</title>
+  <title>Словарь — chineasy</title>
+  <meta name="theme-color" content="#D6DBE6">
   <link rel="icon" href="../favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="../favicon-192.png">
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../components/site-header/header.css">
 </head>
 <body>
   <script src="../components/site-header/header.js"></script>
-  <div class="bg-fixed" aria-hidden="true"></div>
 
   <!-- Раздел «Словарь»: поиск по 大БКРС. Словарь лежит в отдельном
        репозитории chinese-dictionary-data (свой GitHub Pages), js/dictionary.js
        грузит оттуда только файлы, нужные для запроса. Запрос пишется в адрес
        (?q=…), так что поиск можно отправить ссылкой. Нажатие на статью
        открывает окно слова: разбор иероглифов на части, порядок черт и
-       «Написать самому» (js/hanzi-window.js), кнопка «ИИ» — то же окно с
-       объяснением слова от нейросети (js/ai.js). Кнопка с кисточкой —
+       «Написать самому» (js/hanzi-window.js), кнопка «ИИ: объяснить» — то же
+       окно с объяснением слова от нейросети (js/ai.js). Кнопка с кисточкой —
        рукописный ввод: иероглиф рисуют, распознаёт Google (js/handwriting.js). -->
-  <main data-dictionary>
-    <nav class="breadcrumb" aria-label="Навигация">
-      <a href="../index.html">Главная</a> / Словарь
-    </nav>
-    <h1 class="page-title">Словарь</h1>
-    <p class="page-subtitle">Китайско-русский словарь 大БКРС — 3,4 миллиона слов и выражений</p>
+  <div class="layout">
+    <aside class="rail rail--left" aria-hidden="true">
+      <div class="rail__hanzi" lang="zh-CN"><span>词</span><span>典</span></div>
+      <div class="rail__text"><span lang="zh-CN">大</span>БКРС — 3,4 миллиона слов и выражений</div>
+    </aside>
+    <main class="page" data-dictionary>
+      <div class="container">
+        <nav class="crumbs crumbs--top" aria-label="Навигация">
+          <a href="../index.html">главная</a><span aria-hidden="true">/</span><span aria-current="page">словарь</span>
+        </nav>
 
-    <form class="dict-search" role="search" data-dict-form>
-      <label class="dict-search-label" for="dict-q">Слово для поиска</label>
-      <div class="dict-search-row">
-        <input class="dict-input" id="dict-q" type="search" name="q" data-dict-input
-               placeholder="水, shuǐ или вода" autocomplete="off" autocapitalize="off"
-               autocorrect="off" spellcheck="false" enterkeyhint="search">
-        <button class="btn btn-secondary dict-hw-btn" type="button" data-hw-toggle aria-expanded="false"
-                aria-label="Нарисовать иероглиф" title="Нарисовать иероглиф от руки">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.2 10.8 7.3-7.3"/><path d="M11.4 9.2l3.4 3.4"/><path d="M11.4 9.2C8.9 8.7 6.6 10.4 6.4 13c-.2 2.4-1.2 4.4-3.4 6.1 3.7 1.4 8.1.6 10.4-1.9 1.5-1.6 1.8-3.4 1.4-4.6"/></svg>
-        </button>
-        <button class="btn btn-primary dict-submit" type="submit">Найти</button>
+        <!-- Первый экран (макеты design/mockups/dictionary.html и
+             phone-dictionary.html): слева заголовок и поиск, справа «как
+             искать». На телефоне остаются заголовок и поиск. -->
+        <section class="panel panel--hero dict-hero" aria-labelledby="dict-title">
+          <div class="panel__main">
+            <div class="title-row">
+              <h1 class="page-title" id="dict-title">словарь</h1>
+              <p class="title-pinyin"><b lang="zh-Latn">cídiǎn</b><span lang="zh-CN">词典</span></p>
+            </div>
+            <p class="lead"><span class="wide-only">Китайско-русский словарь </span><span lang="zh-CN">大</span>БКРС — 3,4 миллиона слов и выражений<span class="wide-only">.</span></p>
+
+            <form class="dict-search" role="search" data-dict-form>
+              <label class="sr-only" for="dict-q">Поиск по словарю</label>
+              <div class="field dict-search-row">
+                <svg class="field__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+                <input class="dict-input" id="dict-q" type="search" name="q" data-dict-input
+                       placeholder="水, shuǐ или вода" autocomplete="off" autocapitalize="off"
+                       autocorrect="off" spellcheck="false" enterkeyhint="search">
+                <button class="icon-btn" type="button" data-hw-toggle aria-expanded="false"
+                        aria-label="Нарисовать иероглиф" title="Нарисовать иероглиф от руки">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>
+                </button>
+                <button class="field__go" type="submit">найти</button>
+              </div>
+              <p class="dict-hint wide-only">Нажмите на слово, чтобы разобрать его иероглифы: состав, порядок черт, написание.</p>
+            </form>
+            <span class="sun" aria-hidden="true"></span>
+          </div>
+          <div class="panel__side wide-only">
+            <h2 class="panel__head">как искать</h2>
+            <div class="side-row"><span class="side-row__num">01</span><span class="side-row__title">иероглифом</span><span class="side-row__note"><span lang="zh-CN">水</span></span></div>
+            <div class="side-row"><span class="side-row__num">02</span><span class="side-row__title">пиньинем с тонами</span><span class="side-row__note"><span lang="zh-Latn">shuǐ</span> или shui3</span></div>
+            <div class="side-row"><span class="side-row__num">03</span><span class="side-row__title">пиньинем без тонов</span><span class="side-row__note">shui · ü пишется как v</span></div>
+            <div class="side-row"><span class="side-row__num">04</span><span class="side-row__title">русским словом</span><span class="side-row__note">вода</span></div>
+            <div class="side-row"><span class="side-row__num">05</span><span class="side-row__title">нарисовать</span><span class="side-row__note">кнопка с кистью</span></div>
+          </div>
+        </section>
+
+        <!-- Выдачу строит js/dictionary.js: точное совпадение — крупной
+             карточкой с блоком «написание», остальные — строками. -->
+        <p class="dict-status" data-dict-status aria-live="polite"></p>
+        <div class="dict-results" data-dict-results></div>
+        <button class="btn btn--outline dict-more" type="button" data-dict-more hidden>показать ещё</button>
       </div>
-      <p class="dict-hint">
-        Иероглифами, пиньинем — с тонами или без (<span lang="zh-Latn">shuǐ</span>,
-        shui3, shui; ü набирается как v) — или русским словом. Не знаете, как
-        набрать иероглиф, — нарисуйте его: кнопка с кисточкой.
-        Сначала точные совпадения, потом частичные. Нажмите на слово, чтобы
-        разобрать его иероглифы: из чего они состоят, порядок черт, написание.
-        Кнопка «ИИ» — объяснение от нейросети: значение, примеры и чем слово
-        отличается от похожих (пока работает только с VPN).
-      </p>
-    </form>
-
-    <p class="dict-status" data-dict-status aria-live="polite"></p>
-    <div class="dict-results" data-dict-results></div>
-    <button class="btn btn-secondary dict-more" type="button" data-dict-more hidden>Показать ещё</button>
-  </main>
+    </main>
+    <aside class="rail rail--right" aria-hidden="true">
+      <div class="rail__text">иероглиф · пиньинь · перевод</div>
+      <span class="rail__dot"></span>
+    </aside>
+  </div>
 
   <footer class="site-footer">
-    <div class="footer-inner">
-      <div>
-        <strong class="footer-brand">Китайский язык</strong>
-        <p class="footer-tagline">Образовательная платформа · V1</p>
-      </div>
-      <div class="footer-links">
-        <a href="../library/index.html">Библиотека</a>
-        <a href="../flashcards/index.html">Карточки</a>
-        <a href="../support/contacts.html">Контакты</a>
-      </div>
-      <p class="footer-source">Словарь: <a href="https://bkrs.info" target="_blank" rel="noopener">大БКРС (bkrs.info)</a> ·
-        состав и порядок черт: <a href="https://github.com/skishore/makemeahanzi" target="_blank" rel="noopener">Make Me a Hanzi</a> ·
-        рукописный ввод: Google</p>
-      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    <div class="site-footer__brand">
+      <a class="site-footer__logo" href="../index.html"><span class="seal seal--sm" lang="zh-CN" aria-hidden="true">中</span>chineasy.</a>
+      <small>образовательная платформа · V2</small>
+    </div>
+    <div>
+      <small><a href="../support/contacts.html">контакты</a></small>
+      <span>Telegram: <a href="https://t.me/easily_chinesly" target="_blank" rel="noopener">@easily_chinesly</a></span>
+    </div>
+    <div class="site-footer__source">
+      <small>источники</small>
+      <span>Словарь: <a href="https://bkrs.info" target="_blank" rel="noopener"><span lang="zh-CN">大</span>БКРС (bkrs.info)</a> · состав и порядок черт: <a href="https://github.com/skishore/makemeahanzi" target="_blank" rel="noopener">Make Me a Hanzi</a> · рукописный ввод: Google</span>
     </div>
   </footer>
   <script src="../js/main.js"></script>

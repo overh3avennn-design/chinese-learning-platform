@@ -21,7 +21,9 @@
     level_standards(), а не по всему списку standards.
     Шапка — общий компонент components/site-header: страница подключает его
     стили в <head> и скрипт первой строкой <body>, разметку и меню вставляет
-    скрипт. Футер одинаковый на всех страницах; относительные ссылки
+    скрипт. Каркас страницы (боковые поля темы v2 и <main class="page">) ставит
+    shell(), стили темы — css/theme.css. Футер одинаковый на всех страницах
+    (у словаря и ИИ-помощника своя третья ячейка); относительные ссылки
     считаются от глубины страницы (depth_prefix). Файл перезаписывается,
     только если его содержимое изменилось, поэтому повторный запуск
     ничего не меняет.
@@ -42,22 +44,22 @@
     Правки вручную в сгенерированных страницах будут затёрты: меняйте content.json.
 
 Пункты (items) в content.json
-    {"label": "...", "file": "library/hsk-1/x.pdf"}  карточка файла: обложка и название
-                                                     открывают файл, кнопки «Открыть» и «Скачать».
+    {"label": "...", "file": "library/hsk-1/x.pdf"}  строка файла: название открывает файл,
+                                                     рядом кнопки «открыть» и «скачать».
                                                      Если файл загружен на Яндекс Диск (ссылка
                                                      есть в data/links.json), всё это ведёт на Диск
-    {"label": "...", "url": "https://..."}          внешняя ссылка, открывается в новой вкладке
+    {"label": "...", "url": "https://..."}          внешняя ссылка: строка нажимается целиком,
+                                                     открывается в новой вкладке
     {"label": "...", "type": "Статья"}              заготовка: на сайт не выводится
-    "type" — метка типа (у url по умолчанию «Внешняя ссылка»), "desc" — короткое
-    описание под названием карточки, "link_text" — текст ссылки у url (по
-    умолчанию «Перейти на сайт»). Пустой список items — заглушка.
+    "type" — метка в строке (у url по умолчанию «внешняя ссылка», у файла — его
+    расширение), "desc" — короткое описание под названием. Пустой список
+    items — заглушка. Поля "link_text" и "preview" остались от прежнего
+    оформления: их можно не убирать, на страницу они не влияют.
 
-    Свои файлы и внешние ссылки выводятся разными блоками: файлы — карточками
-    с обложкой под заголовком «Содержание раздела», ссылки — списком под
-    заголовком «Полезные ссылки по теме» ниже. Обложку карточка берёт сама из
-    images/previews/<имя файла>.jpg (собирает scripts/make_previews.py); если
-    картинки нет, на её месте плашка с расширением файла. Поле "preview"
-    задаёт другой путь к картинке.
+    Свои файлы и внешние ссылки выводятся разными блоками: файлы — строками
+    под меткой «содержание раздела», ссылки — списком под меткой «полезные
+    ссылки по теме» ниже. Обложек у материалов в теме v2 нет
+    (scripts/make_previews.py страницам больше не нужен).
     Пункт без url и file — заготовка на будущее (см. has_link): в «Содержание
     раздела» он не попадает, а сам раздел на обзоре уровня уходит в строку
     «Пока пусто» одной ссылкой. Если открыть в разделе нечего, на его странице
@@ -98,25 +100,30 @@ RESOURCES = os.path.join(BASE, "data", "resources.json")
 VOCAB_NOTE = ("Перевод на русский в списках слов подготовлен автоматически и может содержать "
               "неточности. Иероглифы и пиньинь — из официальных списков HSK.")
 
-# Обложки материалов: images/previews/<имя файла>.jpg, собирает
-# scripts/make_previews.py из первой страницы PDF. Если обложки нет,
-# карточка рисует заглушку с расширением файла.
-PREVIEW_DIR = "images/previews"
-
 # Публичные ссылки на материалы на Яндекс Диске: «library/…» → «https://disk.yandex.ru/i/…».
 # Собирает scripts/yadisk_upload.py. Файл со ссылкой открывается с Диска, без
 # неё — с сайта, как раньше.
 LINKS = os.path.join(BASE, "data", "links.json")
-# Плашка под подзаголовком страницы, где есть файлы с Диска, — та же, что на
-# странице фильмов. Её же ставит в ручные страницы scripts/apply_disk_links.py.
-DISK_NOTE = '''
-    <div class="film-vpn" role="note">
-      <span class="film-vpn-icon" aria-hidden="true">⚠</span>
-      <p>
-        <strong>Если файл не открывается — выключите VPN.</strong>
-        Материалы хранятся на Яндекс Диске, а Яндекс часто не пускает подключения через VPN.
-      </p>
-    </div>'''
+# Плашка про VPN на страницах, где есть файлы с Диска, — встаёт под первым
+# экраном (метка HERO_END). Её же ставит в ручные страницы
+# scripts/apply_disk_links.py; сама разметка — DISK_NOTE ниже, рядом с note().
+DISK_NOTE_TEXT = ("<b>Если файл не открывается — выключите VPN.</b> Материалы хранятся "
+                  "на Яндекс Диске, а Яндекс часто не пускает подключения через VPN.")
+HERO_END = "<!-- /hero -->"
+
+# Иероглифы и пиньинь названий — справа от заголовка страницы и в списках.
+LEVEL_ZH = {
+    "hsk-1": ("一级", "yī jí"), "hsk-2": ("二级", "èr jí"), "hsk-3": ("三级", "sān jí"),
+    "hsk-4": ("四级", "sì jí"), "hsk-5": ("五级", "wǔ jí"), "hsk-6": ("六级", "liù jí"),
+    "hsk-7-9": ("七至九级", "qī zhì jiǔ jí"),
+}
+SECTION_ZH = {
+    "phonetics": ("语音", "yǔyīn"), "grammar": ("语法", "yǔfǎ"), "characters": ("汉字", "hànzì"),
+    "vocabulary": ("词汇", "cíhuì"), "speaking": ("口语", "kǒuyǔ"), "culture": ("文化", "wénhuà"),
+    "materials": ("教材", "jiàocái"),
+}
+# Первые слова заголовков, которые не пишутся со строчной (lower_first).
+KEEP_CAPS = {"Хань"}
 
 # Страницы, собранные вручную. Генератор никогда в них не пишет.
 MANUAL_PAGES = [
@@ -141,6 +148,7 @@ MANUAL_PAGES = [
     "support/contacts.html",
     "flashcards/index.html",
     "assistant/index.html",
+    "dictionary/index.html",
 ]
 
 HOME_PAGE = "index.html"
@@ -149,6 +157,20 @@ HEADER_CSS = "components/site-header/header.css"
 HEADER_JS = "components/site-header/header.js"
 # Весь скрипт сайта — один файл js/main.js, одинаковый на всех страницах.
 PAGE_SCRIPTS = ["js/main.js"]
+# Шрифты темы: Onest — интерфейс, Noto Sans SC — иероглифы.
+FONTS_URL = ("https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700"
+             "&family=Noto+Sans+SC:wght@300;400&display=swap")
+# Подвал: страница «Контакты» и Telegram.
+CONTACTS_PAGE = "support/contacts.html"
+TELEGRAM_URL = "https://t.me/easily_chinesly"
+TELEGRAM_NAME = "@easily_chinesly"
+# Боковые поля страниц библиотеки (видны на широком окне): слева столбик
+# бледных иероглифов раздела и подпись, справа — вторая подпись.
+RAIL = {
+    "hanzi": "材料库",
+    "left": "все материалы — по уровням и разделам",
+    "right": "учебники · материалы · культура",
+}
 
 # Оформление страниц additional/ и practice/: крошка, кнопка «назад»,
 # подзаголовок, заглушка.
@@ -164,6 +186,8 @@ COLLECTIONS = {
         "back": "Практика и контекст",
         "subtitle": "Практика и контекст",
         "placeholder": "Добавьте тексты, диалоги, ссылки на аудио и видео.",
+        # Ручные страницы подборки: (место в списке, адрес, название).
+        "manual": [(2, "speaking", "Упражнения на говорение")],
     },
 }
 
@@ -222,43 +246,69 @@ def head(title, depth):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>{esc(title)} — Китайский язык</title>
+  <title>{esc(title)} — chineasy</title>
+  <meta name="theme-color" content="#D6DBE6">
   <link rel="icon" href="{p}favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="{p}favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="{p}favicon-192.png">
   <link rel="apple-touch-icon" href="{p}apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link href="{FONTS_URL}" rel="stylesheet">
+  <link rel="stylesheet" href="{p}css/theme.css">
   <link rel="stylesheet" href="{p}css/style.css">
   <link rel="stylesheet" href="{p}{HEADER_CSS}">
 </head>
 <body>
   <script src="{p}{HEADER_JS}"></script>
-  <div class="bg-fixed" aria-hidden="true"></div>
+'''
+
+
+def shell(main):
+    """Каркас страницы: боковые поля (видны на широком окне) и контент между ними.
+
+    main — содержимое страницы без тега <main>; здесь оно получает отступ и
+    встаёт в <main class="page"><div class="container">.
+    """
+    hanzi = "".join(f"<span>{ch}</span>" for ch in RAIL["hanzi"])
+    size = " rail__hanzi--3" if len(RAIL["hanzi"]) > 2 else ""
+    body = "\n".join("    " + line if line.strip() else line
+                     for line in main.strip("\n").split("\n"))
+    return f'''  <div class="layout">
+    <aside class="rail rail--left" aria-hidden="true">
+      <div class="rail__hanzi{size}" lang="zh-CN">{hanzi}</div>
+      <div class="rail__text">{RAIL["left"]}</div>
+    </aside>
+    <main class="page">
+      <div class="container">
+{body}
+      </div>
+    </main>
+    <aside class="rail rail--right" aria-hidden="true">
+      <div class="rail__text">{RAIL["right"]}</div>
+      <span class="rail__dot"></span>
+    </aside>
+  </div>
 '''
 
 
 def footer(content, depth):
     p = depth_prefix(depth)
-    nav = {item["id"]: item for item in content["nav"]}
-    links = ""
-    for nav_id in content["footer_links"]:
-        item = nav[nav_id]
-        links += f'''
-        <a href="{p}{attr(item["href"])}">{esc(item["label"])}</a>'''
     script_tags = "".join(f'''
   <script src="{p}{src}"></script>''' for src in PAGE_SCRIPTS)
     return f'''
   <footer class="site-footer">
-    <div class="footer-inner">
-      <div>
-        <strong class="footer-brand">Китайский язык</strong>
-        <p class="footer-tagline">Образовательная платформа · V1</p>
-      </div>
-      <div class="footer-links">{links}
-      </div>
-      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    <div class="site-footer__brand">
+      <a class="site-footer__logo" href="{p}index.html"><span class="seal seal--sm" lang="zh-CN" aria-hidden="true">中</span>chineasy.</a>
+      <small>образовательная платформа · V2</small>
+    </div>
+    <div>
+      <small><a href="{p}{CONTACTS_PAGE}">контакты</a></small>
+      <span>Telegram: <a href="{TELEGRAM_URL}" target="_blank" rel="noopener">{TELEGRAM_NAME}</a></span>
+    </div>
+    <div>
+      <small>платформа</small>
+      <span>Есть пожелания к платформе — пишите в Telegram.</span>
     </div>
   </footer>{script_tags}
 </body>
@@ -268,15 +318,14 @@ def footer(content, depth):
 
 def page(content, rel_path, title, main):
     depth = rel_path.count("/")
-    return head(title, depth) + with_disk_note(main) + footer(content, depth)
+    return head(title, depth) + shell(with_disk_note(main)) + footer(content, depth)
 
 
 def with_disk_note(main):
-    """Плашка про VPN под подзаголовком, если хоть один файл страницы открывается с Диска."""
+    """Плашка про VPN под первым экраном, если хоть один файл страницы открывается с Диска."""
     if not any(url in main for url in disk_links().values()):
         return main
-    return re.sub(r'<p class="page-subtitle">.*?</p>', lambda m: m.group(0) + DISK_NOTE,
-                  main, count=1, flags=re.S)
+    return main.replace(HERO_END, HERO_END + DISK_NOTE, 1)
 
 
 def has_link(item):
@@ -290,115 +339,209 @@ def has_link(item):
     return "url" in item or "file" in item
 
 
-def render_item(item, depth):
-    label = f'<span class="item-label">{esc(item["label"])}</span>'
+# ------------------------------------------------- значки и мелкие части
+
+def icon(body, size=18, cls=""):
+    """Контурный значок темы: stroke 1.6, без заливки."""
+    cls_attr = f' class="{cls}"' if cls else ""
+    return (f'<svg{cls_attr} width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+            f'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{body}</svg>')
+
+
+ARROW = icon('<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>', cls="row__arrow")
+ARROW_DOWN = icon('<path d="M12 5v14"/><path d="m6 13 6 6 6-6"/>', cls="row__arrow")
+ARROW_OUT = icon('<path d="M7 17 17 7"/><path d="M8 7h9v9"/>', cls="row__arrow")
+ICON_WARN = icon('<path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5"/><path d="M12 17.4v.1"/>', size=20, cls="note__icon")
+
+
+def lower_first(text):
+    """Заголовок со строчной буквы — по правилу темы.
+
+    Имена собственные и аббревиатуры остаются как есть: слово из KEEP_CAPS,
+    слово целиком из заглавных (HSK) или с цифрой.
+    """
+    first = text.split(" ", 1)[0]
+    if first in KEEP_CAPS or first.isupper() or any(ch.isdigit() for ch in first):
+        return text
+    return text[:1].lower() + text[1:]
+
+
+def zh_pinyin(pair):
+    """«语法 · yǔfǎ» — иероглифы и пиньинь через точку."""
+    return f'<span lang="zh-CN">{pair[0]}</span> · <span lang="zh-Latn">{pair[1]}</span>'
+
+
+def crumbs(trail):
+    """Хлебные крошки: [(подпись, ссылка или None)], последний пункт — текущая страница."""
+    parts = []
+    for i, (label, href) in enumerate(trail):
+        if i == len(trail) - 1:
+            parts.append(f'<span aria-current="page">{label}</span>')
+        elif href:
+            parts.append(f'<a href="{href}">{label}</a>')
+        else:
+            parts.append(f"<span>{label}</span>")
+    sep = '<span aria-hidden="true">/</span>'
+    return f'''
+    <nav class="crumbs" aria-label="Навигация">
+      {sep.join(parts)}
+    </nav>'''
+
+
+def hero(title, lead, zh=None, meta="", side=""):
+    """Первый экран страницы: панель с заголовком слева и списком справа.
+
+    zh — (иероглифы, пиньинь) названия страницы, meta — строка над абзацем,
+    side — готовая разметка правой ячейки. После панели стоит метка
+    <!-- /hero -->: под неё встаёт плашка про VPN (with_disk_note и
+    scripts/apply_disk_links.py).
+    """
+    long_title = " page-title--long" if len(title) > 16 else ""
+    pinyin = f'''
+          <p class="title-pinyin"><b lang="zh-Latn">{zh[1]}</b><span lang="zh-CN">{zh[0]}</span></p>''' if zh else ""
+    meta_line = f'''
+        <p class="hero-meta">{meta}</p>''' if meta else ""
+    solo = "" if side else " panel--solo"
+    return f'''
+
+    <section class="panel panel--hero{solo}">
+      <div class="panel__main">
+        <div class="title-row">
+          <h1 class="page-title{long_title}">{title}</h1>{pinyin}
+        </div>{meta_line}
+        <p class="lead">{lead}</p>
+        <span class="sun" aria-hidden="true"></span>
+      </div>{side}
+    </section>
+    {HERO_END}'''
+
+
+def side_list(title, rows):
+    """Правая ячейка панели: заголовок и строки [(подпись, справа, ссылка, текущая)]."""
+    out = ""
+    for i, (label, right, href, current) in enumerate(rows, 1):
+        inner = (f'<span class="side-row__num">{i:02d}</span>'
+                 f'<span class="side-row__title">{label}</span>'
+                 f'<span class="side-row__note">{right}</span>')
+        if current:
+            out += f'''
+        <div class="side-row" aria-current="page">{inner}</div>'''
+        elif href:
+            out += f'''
+        <a class="side-row" href="{href}">{inner}</a>'''
+        else:
+            out += f'''
+        <div class="side-row">{inner}</div>'''
+    return f'''
+      <div class="panel__side">
+        <h2 class="panel__head">{title}</h2>{out}
+      </div>'''
+
+
+def note(text, cls=""):
+    """Плашка-примечание: значок и текст (HTML)."""
+    extra = f" {cls}" if cls else ""
+    return f'''
+    <p class="note{extra}" role="note">
+      {ICON_WARN}
+      <span>{text}</span>
+    </p>'''
+
+
+DISK_NOTE = note(DISK_NOTE_TEXT)
+
+
+# ------------------------------------------------- строки материалов
+
+def render_item(item, depth, num):
+    """Внешняя ссылка или файл без карточки — строка, нажимается целиком."""
     item_type = item.get("type")
     if "url" in item:
         item_type = item_type or "Внешняя ссылка"
-        link = (f'<a class="download" href="{attr(item["url"])}" target="_blank" rel="noopener">'
-                f'{esc(item.get("link_text", "Перейти на сайт"))}</a>')
-    elif "file" in item:
-        ext = os.path.splitext(item["file"])[1].lstrip(".").upper()
-        href = file_href(item["file"], depth)
+        href, target, arrow = attr(item["url"]), ' target="_blank" rel="noopener"', ARROW_OUT
+    else:
+        href = attr(file_href(item["file"], depth))
         target = ' target="_blank" rel="noopener"' if on_disk(item["file"]) else ""
-        link = (f'<a class="download" href="{attr(href)}"{target}>'
-                f'{"Скачать " + ext if ext else "Скачать"}</a>')
-    else:
-        link = ""
-    badge = f'<span class="item-type">{esc(item_type)}</span>' if item_type else ""
+        arrow = ARROW
+    # Без метки строка короче на колонку: номер | текст | стрелка.
+    tag = f'''
+            <span class="row__tags"><span class="tag">{esc(lower_first(item_type))}</span></span>''' if item_type else ""
+    plain = "" if item_type else " row--plain"
     return f'''
-        <li>{label}{badge}{link}</li>'''
+          <li><a class="row{plain}" href="{href}"{target}>
+            <span class="row__num">{num:02d}</span>
+            <span class="row__body"><span class="row__title">{esc(item["label"])}</span></span>{tag}
+            {arrow}
+          </a></li>'''
 
 
-def render_items(items, depth):
-    return "".join(render_item(item, depth) for item in items)
+def render_items(items, depth, start=1):
+    return "".join(render_item(item, depth, start + i) for i, item in enumerate(items))
 
 
-# ------------------------------------------------- карточки материалов
-
-def preview_for(item):
-    """Обложка материала: images/previews/<имя файла>.jpg.
-
-    Путь считается от имени самого файла, поэтому в content.json обложку
-    указывать не нужно — достаточно положить картинку рядом с остальными.
-    Поле "preview" перекрывает это правило, если картинка лежит не там.
-    Обложки собирает scripts/make_previews.py из первой страницы PDF.
-    """
-    if item.get("preview"):
-        return item["preview"]
-    if "file" not in item:
-        return None
-    rel = f'{PREVIEW_DIR}/{os.path.splitext(os.path.basename(item["file"]))[0]}.jpg'
-    return rel if os.path.isfile(os.path.join(BASE, rel)) else None
-
-
-def render_material(item, depth):
-    """Карточка файла: обложка, название, описание, «Открыть» и «Скачать»."""
-    p = depth_prefix(depth)
+def render_material(item, depth, num):
+    """Строка файла: номер, название и описание, метка, «открыть» и «скачать»."""
     href = attr(file_href(item["file"], depth))
-    ext = os.path.splitext(item["file"])[1].lstrip(".").upper()
     # Чужой адрес браузер по атрибуту download не скачивает, поэтому файл с
-    # Диска «Скачать» открывает в новой вкладке — там кнопка «Скачать» Диска.
+    # Диска «скачать» открывает в новой вкладке — там кнопка «Скачать» Диска.
     save = ' target="_blank" rel="noopener"' if on_disk(item["file"]) else " download"
-    preview = preview_for(item)
-    if preview:
-        cover = f'<img src="{attr(p + quote(preview))}" alt="" loading="lazy">'
-    else:
-        cover = f'<span class="material-fallback">{esc(ext or "Файл")}</span>'
-    desc = (f'''
-              <p class="material-desc">{esc(item["desc"])}</p>'''
+    desc = (f'<span class="row__text">{esc(item["desc"])}</span>'
             if item.get("desc") else "")
-    badge = (f'<span class="material-type">{esc(item["type"])}</span>'
-             if item.get("type") else "")
+    ext = os.path.splitext(item["file"])[1].lstrip(".").upper()
+    badge = item.get("type") or ext
+    tag = f'<span class="tag">{esc(badge)}</span>' if badge else ""
     return f'''
-          <article class="material-card">
-            <a class="material-cover" href="{href}" data-ext="{attr(ext)}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">{cover}</a>
-            <div class="material-body">
-              <h3 class="material-title"><a href="{href}" target="_blank" rel="noopener">{esc(item["label"])}</a></h3>{desc}
-              <div class="material-foot">
-                {badge}
-                <span class="material-actions">
-                  <a class="material-action is-open" href="{href}" target="_blank" rel="noopener">Открыть</a>
-                  <a class="material-action" href="{href}"{save}>Скачать</a>
-                </span>
-              </div>
-            </div>
-          </article>'''
+          <li class="row mat">
+            <span class="row__num">{num:02d}</span>
+            <span class="row__body"><a class="row__title" href="{href}" target="_blank" rel="noopener">{esc(item["label"])}</a>{desc}</span>
+            <span class="row__tags">{tag}</span>
+            <span class="mat__actions">
+              <a class="btn btn--sm" href="{href}" target="_blank" rel="noopener">открыть</a>
+              <a class="btn btn--sm btn--outline" href="{href}"{save}>скачать</a>
+            </span>
+          </li>'''
 
 
-def render_materials(items, depth):
-    return "".join(render_material(item, depth) for item in items)
+def render_materials(items, depth, start=1):
+    return "".join(render_material(item, depth, start + i) for i, item in enumerate(items))
 
 
-def content_blocks(items, depth, note="", placeholder=None):
-    """Разметка «Содержание раздела»: карточки файлов и, отдельно, ссылки.
-
-    Свои файлы идут карточками с обложкой — их видно и по ним сразу понятно,
-    что открываешь. Внешние ссылки живут отдельным списком внизу, чтобы чужие
-    сайты не мешались среди своих материалов.
-    """
+def split_items(items):
+    """(файлы, внешние ссылки): файлы идут строками с кнопками, ссылки — отдельным списком."""
     files = [item for item in items if "file" in item]
     links = [item for item in items if "file" not in item and "url" in item]
+    return files, links
+
+
+def content_blocks(items, depth, note_html="", placeholder=None):
+    """Разметка «содержание раздела»: строки файлов и, отдельно, ссылки.
+
+    Свои файлы идут первыми — с кнопками «открыть» и «скачать». Внешние
+    ссылки живут отдельным списком ниже, чтобы чужие сайты не мешались
+    среди своих материалов.
+    """
+    files, links = split_items(items)
     blocks = []
     if files:
         blocks.append(f'''
 
     <section class="section">
-      <h2>Содержание раздела</h2>
-      <div class="material-grid">{render_materials(files, depth)}
-      </div>{note}
+      <h2 class="section-label">содержание раздела</h2>
+      <ul class="list rows">{render_materials(files, depth)}
+      </ul>{note_html}
     </section>''')
     if links:
         blocks.append(f'''
 
     <section class="section">
-      <h2>Полезные ссылки по теме</h2>
-      <ul class="content-list">{render_items(links, depth)}
+      <h2 class="section-label">полезные ссылки по теме</h2>
+      <ul class="list rows">{render_items(links, depth)}
       </ul>
     </section>''')
     if not blocks and placeholder:
         blocks.append(f'''
-    <div class="placeholder-note">{placeholder}</div>''')
+
+    <p class="note note--empty">{placeholder}</p>''')
     return "".join(blocks)
 
 
@@ -485,30 +628,25 @@ def section_entries(content, level_slug, level, std, section, resources=()):
     return [item for item in items if has_link(item)], note
 
 
-def level_section_block(section, href, items, note, depth):
-    """Раздел на странице уровня: заголовок, описание, карточки и ссылки.
+def level_section_block(section, href, items, note_text, depth):
+    """Раздел на странице уровня: заголовок, описание, файлы и ссылки.
 
     Заголовок ведёт на отдельную страницу раздела, но ходить туда незачем:
     всё, что там есть, лежит тут же под заголовком.
     """
-    files = [item for item in items if "file" in item]
-    links = [item for item in items if "file" not in item and "url" in item]
-    body = ""
-    if files:
-        body += f'''
-        <div class="material-grid">{render_materials(files, depth)}
-        </div>'''
-    if note:
-        body += f'''
-        <div class="placeholder-note">{note}</div>'''
-    if links:
-        body += f'''
-        <ul class="content-list">{render_items(links, depth)}
-        </ul>'''
+    files, links = split_items(items)
+    rows = render_materials(files, depth) + render_items(links, depth, start=len(files) + 1)
+    extra = f'''
+        <p class="lib-group__note">{note_text}</p>''' if note_text else ""
     return f'''
-      <div class="level-section">
-        <h3><a href="{href}">{esc(section["title"])}</a></h3>
-        <p class="level-section-desc">{esc(section["desc"])}</p>{body}
+      <div class="list lib-group">
+        <div class="lib-group__head">
+          <h3 class="lib-group__title"><a href="{href}">{esc(lower_first(section["title"]))}</a></h3>
+          <span class="lib-group__zh">{zh_pinyin(SECTION_ZH[section["id"]])}</span>
+          <p class="lib-group__text">{esc(section["desc"])}</p>
+        </div>
+        <ul class="rows">{rows}
+        </ul>{extra}
       </div>'''
 
 
@@ -522,36 +660,40 @@ def hsk_section_page(content, level_slug, level, std, index, resources=()):
     section_title = section["title"]
 
     items, vocab_note = section_entries(content, level_slug, level, std, section, resources)
-    note = f'''
-      <div class="placeholder-note">{vocab_note}</div>''' if vocab_note else ""
+    note_html = note(vocab_note, "note--plain") if vocab_note else ""
 
     # Ничего открыть нельзя — вместо пустых блоков одна заглушка.
-    body = content_blocks(items, depth, note, placeholder=(
+    body = content_blocks(items, depth, note_html, placeholder=(
         "Раздел в процессе наполнения. Добавьте сюда свои материалы: "
         "PDF, ссылки на видео, аудио и конспекты."))
 
-    # «Назад» есть на каждой странице, «Дальше» — у всех разделов, кроме последнего.
+    # «Назад» есть на каждой странице, «дальше» — у всех разделов, кроме последнего.
     next_link = ""
     if index + 1 < len(content["hsk_sections"]):
         nxt = content["hsk_sections"][index + 1]
         next_link = f'''
-      <a href="{attr(nxt["file"])}" class="btn btn-secondary">Дальше → {esc(nxt["title"])}</a>'''
+      <a href="{attr(nxt["file"])}" class="btn btn--outline">дальше → {esc(lower_first(nxt["title"]))}</a>'''
     nav_next = f'''
+
     <nav class="nav-next">
-      <a href="../index.html" class="btn btn-secondary">← Все разделы уровня</a>{next_link}
+      <a href="../index.html" class="btn btn--outline">← все разделы уровня</a>{next_link}
     </nav>'''
 
-    main = f'''
-  <main>
-    <nav class="breadcrumb" aria-label="Навигация">
-      <a href="{p}index.html">Главная</a> / <a href="../../index.html">Библиотека</a> / <a href="../index.html">{esc(level_name)}</a> / {esc(std["title"])} / {esc(section_title)}
-    </nav>
-    <h1 class="page-title">{esc(section_title)}</h1>
-    <p class="page-subtitle">{esc(level_name)} · {esc(std["title"])} · {esc(block["subtitle"])}</p>
+    # Справа — все разделы уровня в этом стандарте, текущий отмечен.
+    side = side_list("разделы уровня", [
+        (esc(lower_first(s["title"])), zh_pinyin(SECTION_ZH[s["id"]]), attr(s["file"]), i == index)
+        for i, s in enumerate(content["hsk_sections"])])
 
-    <p>{esc(section["desc"])}</p>{body}{nav_next}
-  </main>
-'''
+    main = crumbs([
+        ("главная", f"{p}index.html"),
+        ("библиотека", "../../index.html"),
+        (esc(level_name), "../index.html"),
+        (esc(std["title"]), None),
+        (esc(lower_first(section_title)), None),
+    ]) + hero(
+        esc(lower_first(section_title)), esc(section["desc"]), zh=SECTION_ZH[section["id"]],
+        meta=f'{esc(level_name)} · {esc(std["title"])} · {esc(block["subtitle"])}', side=side,
+    ) + body + nav_next + "\n"
     title = f'{section_title} ({level_name}, {std["title"]})'
     return rel_path, page(content, rel_path, title, main)
 
@@ -579,22 +721,22 @@ def hsk_index(content, level_slug, level, resources=()):
         empty = []
         for section in content["hsk_sections"]:
             href = f'{attr(std["dir"])}/{attr(section["file"])}'
-            items, note = section_entries(content, level_slug, level, std, section, resources)
+            items, vocab_note = section_entries(content, level_slug, level, std, section, resources)
             if items:
-                blocks += level_section_block(section, href, items, note, depth)
+                blocks += level_section_block(section, href, items, vocab_note, depth)
             else:
-                empty.append(f'<a href="{href}">{esc(section["title"])}</a>')
+                empty.append(f'<a href="{href}">{esc(lower_first(section["title"]))}</a>')
         if empty:
             # Ссылки на пустые разделы остаются: у каждого своя страница, и
             # с обзора уровня на неё должно быть чем перейти (см. --check).
             lead = "Пока пусто" if blocks else "Материалы этого стандарта ещё не добавлены. Разделы"
             blocks += f'''
-      <p class="level-empty">{lead}: {" · ".join(empty)}</p>'''
+      <p class="lib-empty">{lead}: {" · ".join(empty)}</p>'''
         groups += f'''
 
-    <section class="section">
-      <h2>{esc(std["title"])} · {esc(std["label"])} стандарт</h2>
-      <p>{esc(block["subtitle"])}. {esc(std["desc"])}</p>{blocks}
+    <section class="section" id="{std_anchor(std)}">
+      <h2 class="section-label">{esc(std["title"])} · {esc(std["label"])} стандарт</h2>
+      <p class="section-intro">{esc(block["subtitle"])}. {esc(std["desc"])}</p>{blocks}
     </section>'''
 
     # Следующий уровень. У 1–5 он один и тот же в обоих стандартах — тогда
@@ -603,45 +745,76 @@ def hsk_index(content, level_slug, level, resources=()):
     nexts = [(std, block["next"]) for std, block in pairs if block["next"]]
     same = len({slug for _, slug in nexts}) == 1 and len(nexts) == len(pairs)
     links = ""
+    side_next = ""
     for std, next_slug in nexts:
         next_title = content["levels"][next_slug]["title"]
         via = "" if same else f' по {esc(std["title"])}'
         links += f'''
-      <a href="../{attr(next_slug)}/index.html" class="btn btn-secondary">Следующий уровень{via} → {esc(next_title)}</a>'''
+      <a href="../{attr(next_slug)}/index.html" class="btn btn--outline">следующий уровень{via} → {esc(next_title)}</a>'''
+        side_next += f'''
+        <a class="row row--plain" href="../{attr(next_slug)}/index.html">
+          <span class="row__num">{len(pairs) + 1:02d}</span>
+          <span class="row__body"><span class="row__title">{esc(next_title)}</span><span class="row__text">следующий уровень{via}</span></span>
+          {ARROW}
+        </a>'''
         if same:
             break
     nav_next = f'''
 
     <nav class="nav-next">
-      <a href="../index.html" class="btn btn-secondary">← Все уровни</a>{links}
+      <a href="../index.html" class="btn btn--outline">← все уровни</a>{links}
     </nav>'''
 
     if len(pairs) > 1:
-        intro = f'''
-      Все материалы уровня {esc(level_name)} собраны на этой странице: сначала по
-      стандарту {esc(pairs[0][0]["title"])}, ниже — по {esc(pairs[1][0]["title"])}.
-      Наборы слов и требования у стандартов разные, структура разделов одинаковая.'''
+        intro = (f'Все материалы уровня {esc(level_name)} собраны на этой странице: сначала по '
+                 f'стандарту {esc(pairs[0][0]["title"])}, ниже — по {esc(pairs[1][0]["title"])}. '
+                 f'Наборы слов и требования у стандартов разные, структура разделов одинаковая.')
     else:
         only = pairs[0][0]
-        intro = f'''
-      {esc(level_name)} существует только в стандарте {esc(only["title"])}: в старом
-      экзамене такой ступени не было. Все материалы ступени — на этой странице.'''
+        intro = (f'{esc(level_name)} существует только в стандарте {esc(only["title"])}: в старом '
+                 f'экзамене такой ступени не было. Все материалы ступени — на этой странице.')
 
-    standards_line = " · ".join(f'{std["title"]} ({std["label"]})' for std, _ in pairs)
+    # Справа — стандарты уровня (ссылки к их блокам ниже) и следующий уровень.
+    side_rows = ""
+    for i, (std, block) in enumerate(pairs, 1):
+        side_rows += f'''
+        <a class="row row--plain" href="#{std_anchor(std)}">
+          <span class="row__num">{i:02d}</span>
+          <span class="row__body"><span class="row__title">{esc(std["title"])} · {esc(std["label"])} стандарт</span><span class="row__text">{esc(block["subtitle"])}</span></span>
+          {ARROW_DOWN}
+        </a>'''
+    side = f'''
+      <div class="panel__side">
+        <h2 class="panel__head">на этой странице</h2>{side_rows}{side_next}
+      </div>'''
 
-    main = f'''
-  <main>
-    <nav class="breadcrumb" aria-label="Навигация">
-      <a href="{p}index.html">Главная</a> / <a href="../index.html">Библиотека</a> / {esc(level_name)}
-    </nav>
-    <h1 class="page-title">{esc(level_name)}</h1>
-    <p class="page-subtitle">{esc(standards_line)}</p>
-
-    <p>{intro}
-    </p>{groups}{nav_next}
-  </main>
-'''
+    main = crumbs([
+        ("главная", f"{p}index.html"),
+        ("библиотека", "../index.html"),
+        (esc(level_name), None),
+    ]) + hero(esc(level_name), intro, zh=LEVEL_ZH.get(level_slug), side=side) + groups + nav_next + "\n"
     return rel_path, page(content, rel_path, level_name, main)
+
+
+def std_anchor(std):
+    """Якорь блока стандарта на странице уровня: «2.0» → «std-2-0»."""
+    return "std-" + re.sub(r"[^0-9a-z]+", "-", std["dir"].lower())
+
+
+def collection_side(content, group, current):
+    """Правая ячейка страницы подборки: соседние страницы, текущая отмечена.
+
+    Ручные страницы подборки (COLLECTIONS[...]["manual"]) стоят в том же
+    списке; ими же пользуется сама ручная страница.
+    """
+    style = COLLECTIONS[group]
+    rows = [(esc(lower_first(e["title"])),
+             "" if e["items"] or e.get("resources") else "пока пусто",
+             f'{attr(e["slug"])}.html', e["slug"] == current)
+            for e in content[group]]
+    for pos, slug, title in style.get("manual", []):
+        rows.insert(pos, (esc(lower_first(title)), "", f"{slug}.html", slug == current))
+    return side_list(lower_first(style["back"]), rows)
 
 
 def collection_page(content, group, entry, resources=()):
@@ -649,24 +822,26 @@ def collection_page(content, group, entry, resources=()):
     rel_path = f'library/{group}/{entry["slug"]}.html'
     depth = rel_path.count("/")
     p = depth_prefix(depth)
-    title = esc(entry["title"])
+    title = esc(lower_first(entry["title"]))
     items = list(entry["items"])
     if entry.get("resources"):  # страница-каталог: сюда идут все ссылки из data/resources.json
         items += [resource_item(res) for res in resources]
     items = [item for item in items if has_link(item)]
     body = content_blocks(items, depth, placeholder=style["placeholder"])
 
-    main = f'''
-  <main>
-    <nav class="breadcrumb"><a href="{p}index.html">Главная</a> / <a href="../index.html">Библиотека</a> / <a href="index.html">{style["crumb"]}</a> / {title}</nav>
-    <h1 class="page-title">{title}</h1>
-    <p class="page-subtitle">{style["subtitle"]}</p>
-    <p>{esc(entry["desc"])}</p>{body}
+    side = collection_side(content, group, entry["slug"])
+
+    main = crumbs([
+        ("главная", f"{p}index.html"),
+        ("библиотека", "../index.html"),
+        (lower_first(style["crumb"]), "index.html"),
+        (title, None),
+    ]) + hero(title, esc(entry["desc"]), meta=lower_first(style["subtitle"]).replace("Все уровни", "все уровни"),
+              side=side) + body + f'''
 
     <nav class="nav-next">
-      <a href="index.html" class="btn btn-secondary">← {style["back"]}</a>
+      <a href="index.html" class="btn btn--outline">← {lower_first(style["back"])}</a>
     </nav>
-  </main>
 '''
     return rel_path, page(content, rel_path, entry["title"], main)
 
@@ -806,9 +981,6 @@ def missing_files(content):
             if ("file" in item and not os.path.isfile(os.path.join(BASE, item["file"]))
                     and not on_disk(item["file"])):
                 found.append(f'{where}: нет файла {item["file"]}')
-            elif "file" in item and not preview_for(item):
-                found.append(f'{where}: нет обложки для {item["file"]} '
-                             f'(соберите: python3 scripts/make_previews.py)')
 
     # PDF словарей собирает отдельный скрипт; без него страница словаря
     # отдаёт только CSV (см. vocab_items), а не битую ссылку.
@@ -870,7 +1042,7 @@ def chrome_blocks(text, is_home):
     if is_home:  # у главной свой <head> (шрифты, прелоадер) и свой подвал, общая только шапка
         return {"подключение шапки": header_includes(text)}
     blocks = {}
-    m = re.search(r'<!DOCTYPE html>.*?<div class="bg-fixed" aria-hidden="true"></div>', text, re.S)
+    m = re.search(r'<!DOCTYPE html>.*?<body[^>]*>', text, re.S)
     blocks["<head> и начало <body>"] = m.group(0) if m else ""
     blocks["подключение шапки"] = header_includes(text)
     m = re.search(r'<footer class="site-footer">.*</html>', text, re.S)
@@ -885,12 +1057,12 @@ def expected_chrome(content, rel_path):
 
 
 def html_pages():
-    """Страницы сайта. data/ и scripts/ — служебные папки, там страниц нет."""
+    """Страницы сайта. data/ и scripts/ — служебные папки, design/ — макеты темы."""
     found = []
     for path in glob.glob(os.path.join(BASE, "**", "*.html"), recursive=True):
         rel_path = os.path.relpath(path, BASE).replace(os.sep, "/")
         parts = rel_path.split("/")
-        if parts[0] in ("data", "scripts") or any(p.startswith((".", "__")) for p in parts):
+        if parts[0] in ("data", "scripts", "design") or any(p.startswith((".", "__")) for p in parts):
             continue
         found.append(rel_path)
     return sorted(found)
@@ -944,12 +1116,12 @@ def check_empty_cards(content):
         text = read(page)
         for entry in content[group]:
             empty = not entry["items"] and not entry.get("resources")
-            card = re.search(r'<article class="card( is-empty)?">\s*<h3><a href="'
+            card = re.search(r'<a class="row row--plain( is-empty)?" href="'
                              + re.escape(entry["slug"]) + r'\.html"', text)
             if not card:
-                found.append(f'{page}: не нашёл карточку {entry["slug"]}.html')
+                found.append(f'{page}: не нашёл строку {entry["slug"]}.html')
             elif bool(card.group(1)) != empty:
-                found.append(f'{page}: карточка {entry["slug"]} ' + (
+                found.append(f'{page}: строка {entry["slug"]} ' + (
                     "помечена пустой, хотя материалы есть" if card.group(1)
                     else "без пометки is-empty, хотя материалов нет"))
     return found

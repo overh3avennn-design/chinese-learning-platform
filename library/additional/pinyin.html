@@ -3,45 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Хань Юй Пинь Инь — Китайский язык</title>
+  <title>Хань Юй Пинь Инь — chineasy</title>
+  <meta name="theme-color" content="#D6DBE6">
   <link rel="icon" href="../../favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="../../favicon-192.png">
   <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/theme.css">
   <link rel="stylesheet" href="../../css/style.css">
   <link rel="stylesheet" href="../../components/site-header/header.css">
 </head>
 <body>
   <script src="../../components/site-header/header.js"></script>
-  <div class="bg-fixed" aria-hidden="true"></div>
+  <div class="layout">
+    <aside class="rail rail--left" aria-hidden="true">
+      <div class="rail__hanzi rail__hanzi--3" lang="zh-CN"><span>材</span><span>料</span><span>库</span></div>
+      <div class="rail__text">все материалы — по уровням и разделам</div>
+    </aside>
+    <main class="page">
+      <div class="container">
+        <nav class="crumbs" aria-label="Навигация">
+          <a href="../../index.html">главная</a><span aria-hidden="true">/</span><a href="../index.html">библиотека</a><span aria-hidden="true">/</span><a href="index.html">дополнительные</a><span aria-hidden="true">/</span><span aria-current="page">Хань Юй Пинь Инь</span>
+        </nav>
 
-  <main>
-    <nav class="breadcrumb"><a href="../../index.html">Главная</a> / <a href="../index.html">Библиотека</a> / <a href="index.html">Дополнительные</a> / Хань Юй Пинь Инь</nav>
-    <h1 class="page-title">Хань Юй Пинь Инь</h1>
-    <p class="page-subtitle">Дополнительные материалы · Все уровни</p>
-    <p>Полная система транскрипции и тренировки.</p>
-    <div class="placeholder-note">Добавьте материалы в этот раздел: справочники, статьи, ссылки на видео.</div>
+        <section class="panel panel--hero">
+          <div class="panel__main">
+            <div class="title-row">
+              <h1 class="page-title">Хань Юй Пинь Инь</h1>
+            </div>
+            <p class="hero-meta">дополнительные материалы · все уровни</p>
+            <p class="lead">Полная система транскрипции и тренировки.</p>
+            <span class="sun" aria-hidden="true"></span>
+          </div>
+          <div class="panel__side">
+            <h2 class="panel__head">дополнительные материалы</h2>
+            <a class="side-row" href="advanced-phonetics.html"><span class="side-row__num">01</span><span class="side-row__title">фонетика (углублённая)</span><span class="side-row__note">пока пусто</span></a>
+            <a class="side-row" href="grammar-reference.html"><span class="side-row__num">02</span><span class="side-row__title">грамматика (справочник)</span><span class="side-row__note">пока пусто</span></a>
+            <a class="side-row" href="advanced-characters.html"><span class="side-row__num">03</span><span class="side-row__title">иероглифика (углублённая)</span><span class="side-row__note">пока пусто</span></a>
+            <a class="side-row" href="spoken-chinese.html"><span class="side-row__num">04</span><span class="side-row__title">разговорный китайский</span><span class="side-row__note">пока пусто</span></a>
+            <div class="side-row" aria-current="page"><span class="side-row__num">05</span><span class="side-row__title">Хань Юй Пинь Инь</span><span class="side-row__note">пока пусто</span></div>
+            <a class="side-row" href="calligraphy.html"><span class="side-row__num">06</span><span class="side-row__title">каллиграфия</span><span class="side-row__note">пока пусто</span></a>
+            <a class="side-row" href="resources.html"><span class="side-row__num">07</span><span class="side-row__title">полезные ресурсы</span><span class="side-row__note"></span></a>
+            <a class="side-row" href="books.html"><span class="side-row__num">08</span><span class="side-row__title">книги и литература</span><span class="side-row__note"></span></a>
+          </div>
+        </section>
+        <!-- /hero -->
 
-    <nav class="nav-next">
-      <a href="index.html" class="btn btn-secondary">← Дополнительные материалы</a>
-    </nav>
-  </main>
+        <p class="note note--empty">Добавьте материалы в этот раздел: справочники, статьи, ссылки на видео.</p>
+
+        <nav class="nav-next">
+          <a href="index.html" class="btn btn--outline">← дополнительные материалы</a>
+        </nav>
+      </div>
+    </main>
+    <aside class="rail rail--right" aria-hidden="true">
+      <div class="rail__text">учебники · материалы · культура</div>
+      <span class="rail__dot"></span>
+    </aside>
+  </div>
 
   <footer class="site-footer">
-    <div class="footer-inner">
-      <div>
-        <strong class="footer-brand">Китайский язык</strong>
-        <p class="footer-tagline">Образовательная платформа · V1</p>
-      </div>
-      <div class="footer-links">
-        <a href="../../library/index.html">Библиотека</a>
-        <a href="../../flashcards/index.html">Карточки</a>
-        <a href="../../support/contacts.html">Контакты</a>
-      </div>
-      <p class="footer-copy">&copy; 2026 · Персональная образовательная платформа</p>
+    <div class="site-footer__brand">
+      <a class="site-footer__logo" href="../../index.html"><span class="seal seal--sm" lang="zh-CN" aria-hidden="true">中</span>chineasy.</a>
+      <small>образовательная платформа · V2</small>
+    </div>
+    <div>
+      <small><a href="../../support/contacts.html">контакты</a></small>
+      <span>Telegram: <a href="https://t.me/easily_chinesly" target="_blank" rel="noopener">@easily_chinesly</a></span>
+    </div>
+    <div>
+      <small>платформа</small>
+      <span>Есть пожелания к платформе — пишите в Telegram.</span>
     </div>
   </footer>
   <script src="../../js/main.js"></script>

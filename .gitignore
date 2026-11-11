@@ -45,3 +45,6 @@ images/previews/
 .dev.vars.*
 .wrangler/
 node_modules/
+
+# Макеты редизайна v2 (design/) — только локально, на сайт не попадают.
+design/

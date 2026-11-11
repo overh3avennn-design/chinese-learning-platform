@@ -1,1403 +1,1945 @@
-/* Chinese Learning Platform — V2, "Pine Shore" theme */
+/* chineasy — стили внутренних страниц (тема v2).
+   Основа темы — css/theme.css: переменные, каркас, панель, строки, кнопки,
+   поле, подвал; он подключается раньше. Здесь — компоненты страниц, по
+   порядку: библиотека и материалы, фильмы, контакты, карточки,
+   ИИ-помощник, словарь, окно слова и рукописный ввод. Главная —
+   css/home.css. */
 
-:root {
-  --color-primary: #24365c;
-  --color-primary-dark: #16223c;
-  /* Акцент библиотеки и внутренних страниц — красное солнце с фоновой
-     картинки images/bg-pine-shore.jpg (взято пипеткой с его ядра).
-     --color-accent-soft — осветлённый вариант: им подсвечиваются заливки,
-     где красный уже стоит фоном, например кнопка «Открыть» под курсором. */
-  --color-accent: #f65209;
-  --color-accent-soft: #ff7a45;
-  /* Зелёный «Знаю» в карточках — хвоя сосны с той же картинки (оттенок
-     ~150°), высветленная, чтобы читаться на тёмном. Его пара «Не знаю» —
-     то же красное солнце --color-accent. */
-  --color-know: #3cb878;
-  --color-know-soft: #74d6a2;
-  --color-bg: #0b1524;
-  --color-surface: rgba(18, 30, 48, 0.72);
-  --color-surface-solid: #101d31;
-  --color-text: #eef1f6;
-  --color-text-muted: #a7b3c4;
-  --color-border: rgba(168, 184, 209, 0.16);
-  --color-chinese: #f2d9a8;
-  --font-sans: "Segoe UI", system-ui, -apple-system, sans-serif;
-  /* Editorial display face for the first screen only: the homepage nav,
-     the hero lead and buttons, and the bottom bar. Body copy on the rest
-     of the site keeps --font-sans. */
-  --font-display: "Jost", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-chinese: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --max-width: 960px;
-  --hero-max: 1440px;
-  --radius: 8px;
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  --header-height: 72px;
-  /* Тень под светлым текстом поверх видео и фоновой картинки. */
-  --shadow-text: 0 1px 10px rgba(0, 0, 0, 0.55);
-  /* Тёмные боковые края: один и тот же слой у hero, серой секции под ним
-     и футера главной. */
-  --edge-shade: linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.35) 100%);
-  /* Заливка шва между hero и серой секцией: верх секции (серый #2e2e2e
-     с теми же краями). Маски проявляют её с двух сторон стыка. */
-  --seam-fill: var(--edge-shade), #2e2e2e;
-  --seam-mask-up: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.945) 8.3%, rgba(0, 0, 0, 0.797) 16.7%, rgba(0, 0, 0, 0.600) 25%, rgba(0, 0, 0, 0.404) 33.3%, rgba(0, 0, 0, 0.242) 41.7%, rgba(0, 0, 0, 0.130) 50%, rgba(0, 0, 0, 0.062) 58.3%, rgba(0, 0, 0, 0.027) 66.7%, rgba(0, 0, 0, 0.010) 75%, rgba(0, 0, 0, 0.003) 83.3%, rgba(0, 0, 0, 0.001) 91.7%, transparent 100%);
-  --seam-mask-down: linear-gradient(180deg, transparent 68%, rgba(0, 0, 0, 0.009) 71.2%, rgba(0, 0, 0, 0.058) 74.4%, rgba(0, 0, 0, 0.163) 77.6%, rgba(0, 0, 0, 0.317) 80.8%, rgba(0, 0, 0, 0.500) 84%, rgba(0, 0, 0, 0.683) 87.2%, rgba(0, 0, 0, 0.837) 90.4%, rgba(0, 0, 0, 0.942) 93.6%, rgba(0, 0, 0, 0.991) 96.8%, #000 100%);
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* Анимаций скролла на сайте нет: колесо, клавиатура, полоса прокрутки и
-   якорные ссылки работают нативно. scroll-padding-top не анимация — он
-   просто отводит якорю место под закреплённой шапкой (66px, см.
-   components/site-header/header.css). */
-html {
-  scroll-padding-top: 76px;
-}
-
-body {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--color-text);
-  background-color: var(--color-bg);
-  min-height: 100vh;
-}
-
-/* Фон под содержимым: элемент, прибитый к вьюпорту ровно по его размеру.
-   Никакого параллакса и вообще никакой реакции на скролл: ни transform,
-   ни will-change, ни отдельного слоя композитора — значит, и ни одного
-   кадра перерисовки на прокрутку. Картинка просто стоит на месте. */
-.bg-fixed {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image:
-    linear-gradient(180deg, rgba(8, 13, 23, 0.72) 0%, rgba(8, 13, 23, 0.58) 45%, rgba(8, 13, 23, 0.86) 100%),
-    url("../images/bg-pine-shore.jpg");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-}
-
-a {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-/* Кнопки и ссылки-действия под курсором не подчёркиваются: у них своя
-   подсветка — цвет, рамка, заливка, — а подчёркивание от общего правила
-   для ссылок выше только рябит. */
-.btn:hover,
-.material-action:hover,
-.material-title a:hover,
-.material-cover:hover {
-  text-decoration: none;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Одна и та же капитель первого экрана: кнопка в hero и ссылка рядом с
-   ней. Правило стоит раньше самих блоков, поэтому каждый из них может
-   переопределить что угодно из этого набора. */
-.hero-video-actions .btn-primary,
-.hero-link {
-  font-family: var(--font-display);
-  font-size: 0.78rem;
-  font-weight: 400;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-/* Main layout */
-main {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 2rem 1.25rem 3rem;
-}
-
-/* The homepage's hero video sits before `main` and fills the full
-   viewport height itself, so it doesn't need the header clearance. */
-.hero-video + main {
-  padding-top: 2rem;
-}
-
-/* Homepage "paper" palette: a grayish dirty white taken from the hero
-   wallpaper, dark ink text, and the same slightly darker side edges
-   everywhere it's used (section below the hero, header after scrolling,
-   mobile menu). */
-body.home {
-  --paper: #a9aaa9;
-  --paper-deep: #8e908f;
-  --paper-edges: linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.12) 100%);
-  --paper-line: rgba(0, 0, 0, 0.14);
-  --ink: #161719;
-}
-
-/* Homepage: the section under the hero sits on the paper palette and its
-   text uses the same --hero-max grid as the hero, so the left edges line
-   up. The tokens are overridden locally so links, borders and buttons
-   inside follow the same palette. */
-body.home .hero-video + main {
-  --color-text: #fff;
-  --color-text-muted: rgba(255, 255, 255, 0.8);
-  --color-border: var(--paper-line);
-  --color-accent: #fff;
-  --color-primary: var(--ink);
-  --color-primary-dark: #3a3b3d;
-  position: relative;
-  isolation: isolate;
-  max-width: none;
-  padding: 12.5rem max(1.25rem, calc((100% - var(--hero-max)) / 2 + 1.25rem)) 4rem;
-  color: var(--color-text);
-  /* Soft shadow so the white text stays readable on the light paper. */
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
-  background:
-    var(--paper-edges),
-    linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
-}
-
-/* Smooth hand-off from the hero: the top half of the section starts as
-   exactly the hero's bottom (dark gray #2e2e2e, see .hero-video::after)
-   and fades into the paper, so there's no seam. The fade follows a
-   gaussian curve: flat at the seam (no visible edge where the hero's
-   eased fade ends), then a long soft tail, so the text over it stays
-   readable while the tint still reaches halfway down. */
-body.home .hero-video + main::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  z-index: -1;
-  pointer-events: none;
-  background: var(--seam-fill);
-  -webkit-mask-image: var(--seam-mask-up);
-  mask-image: var(--seam-mask-up);
-}
-
-body.home .hero-video + main p {
-  color: #fff;
-}
-
-body.home .hero-video + main a:not(.btn) {
-  text-decoration: underline;
-  text-decoration-color: rgba(255, 255, 255, 0.5);
-  text-underline-offset: 0.2em;
-}
-
-body.home .hero-video + main a:not(.btn):hover {
-  text-decoration-color: #fff;
-}
-
-body.home .hero-video + main .btn-primary,
-body.home .hero-video + main .btn-primary:hover {
-  color: #f2f2f0;
-}
-
-.page-title {
-  font-size: 1.75rem;
-  margin: 0 0 0.5rem;
-  line-height: 1.3;
-}
-
+/* Подзаголовок страницы под .page-title. */
 .page-subtitle {
-  color: var(--color-text-muted);
-  margin: 0 0 2rem;
-  font-size: 1.05rem;
+  margin: 12px 0 32px;
+  max-width: 640px;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--text-2);
 }
 
-.breadcrumb {
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-  margin-bottom: 1.5rem;
+/* ============================================================ библиотека
+   Общие части внутренних страниц и страницы библиотеки: главная, уровни
+   HSK, разделы уровней, подборки и страницы материалов. Разметку уровней,
+   разделов и подборок собирает scripts/generate_pages.py, остальные
+   страницы ручные. */
+
+/* Длинный заголовок страницы («основная грамматика») — мельче. */
+.page-title--long {
+  font-size: 40px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
-.breadcrumb a {
-  color: var(--color-text-muted);
+/* Первый экран внутренней страницы: панель, слева заголовок, абзац и
+   «солнце», справа список. Текст лежит над «солнцем». */
+.panel--hero .panel__main {
+  padding-bottom: 40px;
 }
 
-/* Hero (video) — the whole first screen.
-
-   The <video> itself is left exactly as it was: it lives INSIDE this
-   section, absolutely positioned and object-fit: cover, so it fills the
-   first screen and stops where the section stops. It is never a page-wide
-   background and never reaches the sections below.
-
-   Unlike before, the content layer is in normal flow rather than
-   position: absolute — the section is at least 100vh but can grow taller
-   if the content needs it (small phones in landscape, large font sizes),
-   so nothing is ever clipped by `overflow: hidden`. */
-.hero-video {
+.panel--hero .panel__main > :not(.sun) {
   position: relative;
-  min-height: 100vh;
-  min-height: 100svh;
-  overflow: hidden;
-  isolation: isolate;
-  display: flex;
-  background: #06090f;
-}
-
-.hero-video-media {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-}
-
-/* Kept deliberately light: enough contrast for the text on the left and
-   along the bottom edge, while the video stays clearly visible. */
-.hero-video-overlay {
-  position: absolute;
-  inset: 0;
   z-index: 1;
-  background:
-    linear-gradient(105deg, rgba(6, 10, 18, 0.82) 0%, rgba(6, 10, 18, 0.5) 38%, rgba(6, 10, 18, 0.12) 62%, rgba(6, 10, 18, 0.28) 100%),
-    linear-gradient(180deg, rgba(6, 10, 18, 0.5) 0%, rgba(6, 10, 18, 0.05) 22%, rgba(6, 10, 18, 0.12) 52%, rgba(6, 10, 18, 0.78) 100%);
 }
 
-/* Bottom of the hero fades into the gray section below it: the layer
-   paints exactly the section's top (gray #2e2e2e plus its darker side
-   edges) and a mask reveals it gradually, so there's no visible seam
-   between the video and the section. */
-.hero-video::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: var(--seam-fill);
-  -webkit-mask-image: var(--seam-mask-down);
-  mask-image: var(--seam-mask-down);
+.panel--solo .panel__main {
+  border-right: 0;
 }
 
-.hero-video-inner {
-  position: relative;
-  z-index: 2;
-  flex: 1;
-  width: 100%;
-  max-width: var(--hero-max);
-  margin: 0 auto;
-  padding: calc(var(--header-height) + 3rem) 1.25rem 2.25rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.hero-video-content {
-  margin-top: auto;
-  max-width: 44rem;
-  padding-bottom: 4rem;
-}
-
-/* The headline is a single Chinese word, so it uses the Chinese face
-   rather than the Latin display one, at a size that makes it the loudest
-   thing on the screen. The trailing letter-spacing is cancelled on the
-   right so the block still aligns flush left. */
-.hero-video-title {
-  font-family: var(--font-chinese);
-  font-weight: 500;
-  font-size: clamp(5rem, 15vw, 13rem);
-  line-height: 1;
-  letter-spacing: 0.08em;
-  margin: 1.1rem -0.08em 1.75rem 0;
-  max-width: 100%;
-  text-shadow: 0 6px 44px rgba(0, 0, 0, 0.5);
-}
-
-.hero-video-lead {
-  font-family: var(--font-display);
-  font-weight: 300;
-  font-size: clamp(1rem, 1.05vw + 0.6rem, 1.15rem);
-  line-height: 1.75;
-  color: rgba(238, 241, 246, 0.86);
-  max-width: 34rem;
-  margin: 0 0 2.5rem;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
-}
-
-.hero-video-actions {
-  display: flex;
-  align-items: center;
-  gap: 1.75rem;
-  flex-wrap: wrap;
-}
-
-/* Hero-only button skin — .btn elsewhere on the site is untouched. */
-.hero-video-actions .btn-primary {
-  padding: 1rem 2.25rem;
-  border-radius: 999px;
-  color: #fff;
-  background: rgba(238, 241, 246, 0.1);
-  border: 1px solid rgba(238, 241, 246, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-}
-
-.hero-video-actions .btn-primary:hover {
-  background: rgba(238, 241, 246, 0.94);
-  border-color: rgba(238, 241, 246, 0.94);
-  color: #0b1524;
-}
-
-.hero-link {
-  color: rgba(238, 241, 246, 0.86);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid rgba(238, 241, 246, 0.3);
-  transition: color 0.25s ease, border-color 0.25s ease;
-}
-
-.hero-link span {
-  transition: transform 0.25s ease;
-}
-
-.hero-link:hover {
-  color: #fff;
-  border-color: rgba(238, 241, 246, 0.8);
-  text-decoration: none;
-}
-
-.hero-link:hover span {
-  transform: translateX(0.3rem);
-}
-
-/* Bottom information bar: a single transparent strip split by hairlines,
-   sitting on the video — not three separate cards. */
-.hero-video-footer {
-  border-top: 1px solid rgba(238, 241, 246, 0.24);
-  padding-top: 1.75rem;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.hero-video-footer-item {
-  display: block;
-  padding: 0.5rem 2rem 0.75rem;
-  border-left: 1px solid rgba(238, 241, 246, 0.18);
-  color: var(--color-text);
-  text-decoration: none;
-  border-radius: 2px;
-  transition: background 0.3s ease;
-}
-
-.hero-video-footer-item:first-child {
-  padding-left: 0;
-  border-left: none;
-}
-
-.hero-video-footer-item:hover {
-  background: rgba(238, 241, 246, 0.06);
-  text-decoration: none;
-}
-
-.hero-footer-index {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: 0.22em;
-  color: rgba(242, 217, 168, 0.75);
-  margin-bottom: 0.7rem;
-  transition: color 0.3s ease;
-}
-
-.hero-video-footer-item:hover .hero-footer-index {
-  color: var(--color-chinese);
-}
-
-.hero-video-footer-item h2 {
-  font-family: var(--font-display);
-  margin: 0 0 0.5rem;
-  font-size: 0.95rem;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  line-height: 1.3;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
-}
-
-.hero-video-footer-item p {
-  font-family: var(--font-display);
-  font-weight: 300;
+/* Строка над абзацем: «HSK 1 · HSK 2.0 · 150 слов». */
+.hero-meta {
   margin: 0;
-  font-size: 0.86rem;
-  line-height: 1.6;
-  max-width: 24rem;
-  color: rgba(238, 241, 246, 0.7);
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
 }
 
-/* Soft entrance for the first screen, staggered top to bottom. */
-@keyframes hero-rise {
-  from {
-    opacity: 0;
-    transform: translateY(1.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+/* Крупные строки правой ячейки растягиваются на всю её высоту. */
+.panel__side > .row {
+  flex: 1 1 auto;
 }
 
-.hero-video-title,
-.hero-video-lead,
-.hero-video-actions,
-.hero-video-footer {
-  animation: hero-rise 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-}
-
-.hero-video-title { animation-delay: 0.2s; }
-.hero-video-lead { animation-delay: 0.32s; }
-.hero-video-actions { animation-delay: 0.44s; }
-.hero-video-footer { animation-delay: 0.56s; }
-
-/* Preloader: covers the homepage until the hero video can actually play,
-   so a reload never shows a frozen frame — the video starts from its
-   first frame the moment the cover lifts. The <head> script adds
-   .is-loading, so without JS there's no cover at all. Placeholder look
-   for now; the real animation comes later. */
-.preloader {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
+/* Строка правой ячейки: номер | название | примечание (иероглифы и
+   пиньинь). Текущая страница отмечена красной точкой. */
+.side-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: center;
-  background: #06090f;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+  gap: 12px;
+  padding: 12px 28px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
 }
 
-.is-loading .preloader {
-  opacity: 1;
-  visibility: visible;
-  transition: none;
+.side-row:last-child {
+  border-bottom: 0;
 }
 
-.preloader-mark {
-  font-family: var(--font-chinese);
-  font-size: 3rem;
-  color: rgba(255, 255, 255, 0.85);
-  animation: preloader-pulse 1.4s ease-in-out infinite;
+.side-row__num {
+  font-size: 13px;
+  color: var(--text-2);
 }
 
-@keyframes preloader-pulse {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 1; }
+.side-row__title {
+  font-size: 15px;
+  font-weight: 600;
 }
 
-/* Hold the hero entrance until the cover lifts, so it isn't spent
-   behind the preloader. */
-.is-loading .hero-video-title,
-.is-loading .hero-video-lead,
-.is-loading .hero-video-actions,
-.is-loading .hero-video-footer {
-  animation-play-state: paused;
+.side-row__note {
+  font-size: 14px;
+  white-space: nowrap;
+  color: var(--text-2);
 }
 
-/* Buttons */
-.btn {
+a.side-row:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.side-row[aria-current] .side-row__title::before {
+  content: "";
   display: inline-block;
-  padding: 0.65rem 1.25rem;
-  border-radius: var(--radius);
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: middle;
+}
+
+/* Примечание: значок и текст в рамке (VPN и Яндекс Диск, машинный
+   перевод, «раздел наполняется»). */
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 20px 0 0;
+  padding: 14px 20px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.note b,
+.note strong {
   font-weight: 600;
-  font-size: 0.95rem;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s, transform 0.15s;
+  color: var(--text);
 }
 
-.btn:hover {
-  text-decoration: none;
+.note__icon {
+  flex: none;
+  margin-top: 1px;
 }
 
-.btn-primary {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background: var(--color-primary-dark);
-  color: #fff;
-}
-
-.btn-secondary {
-  background: rgba(238, 241, 246, 0.06);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-
-.btn-secondary:hover {
-  background: rgba(238, 241, 246, 0.12);
-}
-
-/* Sections */
-.section {
-  margin-bottom: 2.5rem;
-}
-
-.section h2 {
-  font-size: 1.35rem;
-  margin: 0 0 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--color-border);
-}
-
-.section h3 {
-  font-size: 1.1rem;
-  margin: 1.25rem 0 0.5rem;
-}
-
-/* Cards grid */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
-}
-
-.card {
-  position: relative;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-}
-
-/* Карточка нажимается целиком: ссылка заголовка растянута прозрачным слоем
-   на весь прямоугольник, поэтому попасть можно в любое её место, а не
-   только по названию. Ссылка в карточке одна — перекрывать нечего. */
-.card h3 a::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius);
-}
-
-.card:hover,
-.card:focus-within {
-  border-color: var(--color-accent);
-  box-shadow: 0 8px 24px rgba(36, 54, 92, 0.35);
-  transform: translateY(-2px);
-}
-
-/* Разделы, куда материалы ещё не добавлены: карточка та же, но прозрачная —
-   сразу видно, где пусто. Наведение и ссылка работают как обычно. */
-.card.is-empty {
-  background: transparent;
+.note--empty {
+  margin-top: 48px;
+  padding: 28px;
   border-style: dashed;
-  box-shadow: none;
+  border-color: var(--line-strong);
 }
 
-.card.is-empty h3 a {
-  color: var(--color-text-muted);
+/* Примечание под списком — без рамки. */
+.note--plain {
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
 }
 
-.card h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.05rem;
+/* Абзац под меткой секции. */
+.section-intro {
+  margin: 0 0 20px;
+  max-width: 720px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-2);
 }
 
-.card h3 a {
-  color: var(--color-text);
-  text-decoration: none;
+/* Раздел на странице уровня: шапка (название, иероглифы, описание) и
+   строки материалов в одной рамке. */
+.lib-group + .lib-group {
+  margin-top: 20px;
 }
 
-.card h3 a:hover {
-  color: var(--color-accent);
-}
-
-.card p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-}
-
-.card-meta {
-  font-size: 0.8rem;
-  color: var(--color-accent);
-  margin-top: 0.75rem;
-  font-weight: 500;
-}
-
-/* Разделы уровня на его главной странице: под заголовком стандарта сразу
-   идут материалы, поэтому у каждого раздела свой подзаголовок со ссылкой на
-   отдельную страницу раздела, описание и ниже карточки материалов. */
-.level-section {
-  margin: 2rem 0 0;
-}
-
-.level-section > h3 {
-  font-size: 1.1rem;
-  margin: 0 0 0.25rem;
-}
-
-.level-section > h3 a {
-  color: var(--color-text);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-}
-
-.level-section > h3 a:hover {
-  color: var(--color-accent);
-  border-bottom-color: var(--color-accent);
-}
-
-.level-section-desc {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-}
-
-.level-section .material-grid,
-.level-section .card-grid {
-  margin-top: 0.85rem;
-}
-
-.level-section .content-list {
-  margin-bottom: 0;
-}
-
-/* Разделы, куда материалы ещё не добавлены: не занимают на странице место
-   пустыми блоками, а собраны одной строкой в конце стандарта. */
-.level-empty {
-  margin: 2rem 0 0;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-}
-
-.level-empty a {
-  color: var(--color-text-muted);
-}
-
-.level-empty a:hover {
-  color: var(--color-accent);
-}
-
-/* Материалы раздела: карточка с обложкой первой страницы файла.
-   Обложки лежат в images/previews/ и собираются scripts/make_previews.py. */
-.material-grid {
+.lib-group__head {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-  gap: 1rem;
-  margin: 1.25rem 0 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 16px;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--line);
 }
 
-/* Карточка лежит на боку: слева небольшое превью, справа название,
-   описание и кнопки. Обложка во всю ширину карточки занимала полэкрана
-   и оттесняла текст вниз. */
-.material-card {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-}
-
-/* Под курсором карточка материала берётся красным ободком и мягким
-   свечением того же цвета — будто сзади зажгли подсветку. Свечение это
-   три тени подряд: плотный контур по краю, ореол вокруг карточки и
-   широкая подложка снизу; цвет — тот же --color-accent (#f65209).
-   :focus-within повторяет то же для перехода клавиатурой. */
-.material-card:hover,
-.material-card:focus-within {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px var(--color-accent),
-              0 0 18px rgba(246, 82, 9, 0.45),
-              0 12px 32px rgba(246, 82, 9, 0.22);
-  transform: translateY(-2px);
-}
-
-/* Превью на тёмной подложке, как книга на полке: у книг формат
-   вертикальный, у журналов горизонтальный, и подложка сглаживает разницу,
-   а обложка видна целиком, без обрезки. */
-.material-cover {
-  flex: 0 0 104px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem;
-  background: linear-gradient(160deg, rgba(36, 54, 92, 0.55), var(--color-primary-dark));
-  border-right: 1px solid var(--color-border);
-  overflow: hidden;
-}
-
-.material-cover img {
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  /* Потолок по высоте: у карточки с длинным описанием превью
-     не должно растягиваться на всю её высоту. */
-  max-height: 132px;
-  border-radius: 2px;
-  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.5);
-}
-
-/* Обложки ещё нет: вместо картинки плашка с расширением файла. */
-.material-fallback {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted);
-}
-
-.material-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  flex: 1;
-  min-width: 0;
-  padding: 0.85rem 1rem 0.85rem;
-}
-
-.material-title {
+.lib-group__title {
   margin: 0;
-  font-size: 0.97rem;
-  line-height: 1.35;
+  font-size: 18px;
   font-weight: 600;
-  color: var(--color-text);
 }
 
-/* По названию открывается сам файл — как по обложке и по кнопке «Открыть».
-   Цвет берётся у заголовка, красным название становится под курсором. */
-.material-title a {
+.lib-group__title a {
   color: inherit;
   text-decoration: none;
 }
 
-.material-title a:hover {
-  color: var(--color-accent);
+.lib-group__title a:hover {
+  color: var(--accent-text);
 }
 
-.material-desc {
+.lib-group__zh {
+  font-size: 14px;
+  white-space: nowrap;
+  color: var(--text-2);
+}
+
+.lib-group__text {
+  grid-column: 1 / -1;
   margin: 0;
-  font-size: 0.84rem;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.lib-group__note {
+  margin: 0;
+  padding: 14px 28px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+/* Разделы, куда материалы ещё не добавлены, — одной строкой. */
+.lib-empty {
+  margin: 20px 0 0;
+  font-size: 14px;
   line-height: 1.5;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
-.material-foot {
+.lib-empty a {
+  color: var(--text-2);
+}
+
+.lib-empty a:hover {
+  color: var(--accent-text);
+}
+
+/* Список строк: линии между пунктами рисует сам список. */
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rows > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.rows .row {
+  border-bottom: 0;
+}
+
+.row__tags {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: auto;
-  padding-top: 0.7rem;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 230px;
 }
 
-.material-type {
-  font-size: 0.72rem;
-  background: rgba(238, 241, 246, 0.08);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  color: var(--color-text-muted);
-  white-space: nowrap;
+/* Строка файла: номер | название и описание | метка | «открыть» и
+   «скачать». Название открывает файл, как и кнопка. */
+.mat {
+  grid-template-columns: 48px minmax(0, 1fr) auto auto;
 }
 
-.material-actions {
-  display: flex;
-  gap: 0.4rem;
-  margin-left: auto;
-}
-
-.material-action {
-  font-size: 0.8rem;
-  font-weight: 600;
-  white-space: nowrap;
+.mat .row__title {
+  color: var(--text);
   text-decoration: none;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 0.25rem 0.6rem;
-  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
 }
 
-.material-action:hover {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
+.mat .row__title:hover {
+  color: var(--accent-text);
 }
 
-.material-action.is-open {
-  color: var(--color-primary-dark);
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+.mat__actions {
+  display: flex;
+  gap: 8px;
 }
 
-.material-action.is-open:hover {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent-soft);
-  color: var(--color-primary-dark);
+/* Заглушка и сообщения в рамке (страница карточек). */
+.placeholder-note {
+  margin: 20px 0 0;
+  padding: 14px 20px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+/* Пустой раздел в списке подборки. */
+.row.is-empty .row__title {
+  color: var(--text-2);
+}
+
+/* Картинка в тексте страницы: упражнение, таблица. */
+.lib-figure {
+  display: block;
+  max-width: 100%;
+  margin: 0 0 16px;
+  border: 1px solid var(--line);
+}
+
+.lib-figure--sm {
+  max-width: min(100%, 420px);
+}
+
+/* Сноска под строками правой ячейки панели. */
+.panel__foot {
+  margin: 0;
+  padding: 14px 28px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+/* Шаг списка-инструкции: обычный текст со ссылками. */
+.row__step {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Кнопки «назад» и «дальше» внизу страницы. */
+.nav-next {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 48px;
+}
+
+/* ---------------------------------------- главная библиотеки */
+
+/* Подпись секции-ссылка («учебники», «материалы») выглядит как обычная. */
+.section-label a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.section-label a:hover {
+  color: var(--accent-text);
+}
+
+.lib-hero .sun {
+  right: 48px;
+  bottom: -100px;
+  width: 180px;
+  height: 180px;
+}
+
+/* Кнопка «путь обучения» и подпись рядом с ней. */
+.lib-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.lib-path__note {
+  max-width: 220px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+/* Уровни HSK — таблица: уровень | по HSK 2.0 | что умеете | стандарты. */
+.levels__inner {
+  min-width: 760px;
+}
+
+.levels__head,
+.levels__row {
+  display: grid;
+  grid-template-columns: 130px 110px minmax(0, 1fr) 120px 24px;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.levels__head {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.levels__row {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.levels__row:last-child {
+  border-bottom: 0;
+}
+
+.levels__row:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.levels__row:hover .row__arrow {
+  color: var(--accent-text);
+}
+
+.levels__name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.levels__name b {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* «начните здесь» — красным текстом. */
+.levels__name em {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+.levels__cefr {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.levels__text {
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.levels__std {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+/* Учебники: плитки серий, каждая ведёт на страницу серии. */
+.books {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.book {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  min-height: 260px;
+  padding: 24px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.book:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.book:hover .book__meta svg {
+  color: var(--accent-text);
+}
+
+.book__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.book__num {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.book__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.book__zh {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.book__title {
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.book__text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.book__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.book__meta svg {
+  flex: none;
+}
+
+.lib-ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  margin: 20px 0 0;
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+/* Материалы к занятиям: слева название с бледными иероглифами, справа
+   строки разделов. */
+.lib-feature {
+  flex: 1 1 380px;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 360px;
+  padding: 40px;
+  border-right: 1px solid var(--line);
+}
+
+.lib-feature__text {
+  margin: 16px 0 0;
+  max-width: 340px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.lib-feature__rows {
+  flex: 1 1 460px;
+}
+
+.lib-row {
+  grid-template-columns: 36px minmax(0, 1fr) auto 24px;
+  gap: 14px;
+  padding: 22px 28px;
+}
+
+.lib-row.row--plain {
+  grid-template-columns: 36px minmax(0, 1fr) 24px;
+}
+
+.lib-row .row__title {
+  font-size: 18px;
+}
+
+.lib-row .row__body {
+  gap: 3px;
+}
+
+.lib-row .row__tags {
+  max-width: 190px;
+}
+
+/* Чтение, культура и справочное: плитки по три в ряд. */
+.lib-tiles {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.lib-tiles .tile {
+  min-height: 240px;
+}
+
+.lib-tiles .tile__hanzi {
+  font-size: 76px;
+}
+
+.lib-tiles .tile__title {
+  font-size: 21px;
+}
+
+.lib-tiles .tile__more {
+  margin-top: 8px;
+}
+
+@media (max-width: 960px) {
+  .page-title--long {
+    font-size: 28px;
+  }
+
+  /* На телефоне панель первого экрана распадается: заголовок и абзац
+     стоят на фоне страницы, без рамки и «солнца», правая ячейка —
+     отдельным блоком в рамке. */
+  .panel--hero {
+    display: block;
+    border: 0;
+    background: none;
+  }
+
+  .panel--hero .panel__main {
+    gap: 8px;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+
+  .panel--hero .sun {
+    display: none;
+  }
+
+  .panel--hero .lead {
+    max-width: none;
+    font-size: 14px;
+  }
+
+  .panel--hero .panel__side {
+    margin-top: 16px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .hero-meta {
+    font-size: 13px;
+  }
+
+  .side-row {
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .side-row__note {
+    font-size: 13px;
+  }
+
+  .note {
+    margin-top: 16px;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .note--empty {
+    margin-top: 24px;
+    padding: 20px 16px;
+  }
+
+  .section-intro {
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+
+  .lib-group + .lib-group {
+    margin-top: 14px;
+  }
+
+  .lib-group__head {
+    padding: 14px 16px;
+  }
+
+  .lib-group__title {
+    font-size: 16px;
+  }
+
+  .lib-group__zh,
+  .lib-group__text {
+    font-size: 13px;
+  }
+
+  .lib-group__note {
+    padding: 12px 16px;
+  }
+
+  /* Строка на телефоне: номер | текст | стрелка, метки — под текстом. */
+  .row,
+  .row--plain {
+    grid-template-columns: 24px minmax(0, 1fr) 16px;
+    column-gap: 10px;
+    row-gap: 8px;
+  }
+
+  .row > .row__tags {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: flex-start;
+    max-width: none;
+  }
+
+  .row > .row__arrow {
+    grid-column: 3;
+    grid-row: 1;
+    width: 16px;
+    height: 16px;
+  }
+
+  .row__num {
+    font-size: 13px;
+  }
+
+  /* Строка файла: метка и кнопки — под названием, кнопки поровну. */
+  .mat {
+    grid-template-columns: 24px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .mat > .row__tags {
+    grid-row: auto;
+  }
+
+  .mat > .mat__actions {
+    grid-column: 2;
+  }
+
+  .mat__actions .btn {
+    flex: 1 1 0;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .panel__foot {
+    padding: 12px 16px;
+  }
+
+  .row__step {
+    font-size: 15px;
+  }
+
+  .nav-next {
+    margin-top: 32px;
+  }
+
+  .nav-next .btn {
+    flex: 1 1 auto;
+  }
+
+  /* Главная библиотеки на телефоне. */
+  .lib-path {
+    margin-top: 6px;
+  }
+
+  /* «путь обучения · от нуля до HSK 6» — тёмная кнопка во всю ширину. */
+  .lib-path__btn {
+    justify-content: space-between;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 16px;
+  }
+
+  .lib-path__in {
+    font-weight: 400;
+    color: #C9CDD6;
+  }
+
+  .lib-levels {
+    margin-top: 16px;
+  }
+
+  .levels {
+    overflow: visible;
+  }
+
+  .levels__inner {
+    min-width: 0;
+  }
+
+  .levels__phone-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .levels__phone-head h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .levels__phone-head small {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+
+  /* Строка уровня: название | ступень | описание в одну строку | стрелка. */
+  .levels__row {
+    grid-template-columns: 66px 28px minmax(0, 1fr) 16px;
+    gap: 8px;
+    min-height: 50px;
+    padding: 0 14px 0 16px;
+  }
+
+  .levels__name b {
+    font-size: 15px;
+  }
+
+  .levels__cefr {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-2);
+  }
+
+  .levels__text {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .levels__row .row__arrow {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Учебники — лента карточек, прокручивается пальцем; края ленты — у
+     краёв экрана. */
+  .books {
+    display: flex;
+    gap: 8px;
+    margin: 0 calc(-1 * var(--page-pad));
+    padding: 0 var(--page-pad);
+    border: 0;
+    background: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .books::-webkit-scrollbar {
+    display: none;
+  }
+
+  .book {
+    flex: 0 0 210px;
+    justify-content: flex-start;
+    gap: 4px;
+    min-height: 0;
+    padding: 14px;
+    border: 1px solid var(--line);
+  }
+
+  .book__top,
+  .book__zh,
+  .book__meta {
+    display: none;
+  }
+
+  .book__body {
+    gap: 4px;
+  }
+
+  .book__title {
+    font-size: 15px;
+  }
+
+  .book__text {
+    font-size: 12px;
+  }
+
+  .lib-ask {
+    margin-top: 14px;
+    font-size: 14px;
+  }
+
+  .lib-feature {
+    flex-basis: auto;
+    min-height: 0;
+    padding: 24px 16px 96px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lib-feature .big-hanzi {
+    left: 12px;
+    bottom: -22px;
+    font-size: 96px;
+  }
+
+  .lib-feature__text {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .lib-feature__rows {
+    flex-basis: auto;
+  }
+
+  .lib-row,
+  .lib-row.row--plain {
+    grid-template-columns: 24px minmax(0, 1fr) 16px;
+    gap: 8px 10px;
+    padding: 14px 16px;
+  }
+
+  .lib-row .row__title {
+    font-size: 16px;
+  }
+
+  /* Плитки — по две в ряд, компактные: номер и бледный иероглиф сверху,
+     название и описание снизу. */
+  .lib-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lib-tiles .tile {
+    justify-content: flex-end;
+    gap: 4px;
+    min-height: 148px;
+    padding: 44px 14px 14px;
+  }
+
+  .lib-tiles .tile__num {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    font-size: 12px;
+  }
+
+  .lib-tiles .tile__hanzi {
+    top: 10px;
+    right: 12px;
+    font-size: 52px;
+  }
+
+  .lib-tiles .tile__body {
+    gap: 4px;
+  }
+
+  .lib-tiles .tile__title {
+    font-size: 16px;
+    letter-spacing: 0;
+  }
+
+  .lib-tiles .tile__text {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .lib-tiles .tile__more {
+    display: none;
+  }
 }
 
 /* Фильмы с Яндекс Диска (library/culture/films.html). Список и плеер
    собирает js/main.js — initYandexFilms. Плеер появляется над списком,
-   когда выбран фильм; карточка фильма — кнопка того же вида, что карточка
-   материала: превью слева, название и формат справа. */
+   когда фильм выбран; карточка — кнопка с кадром фильма и названием. */
 .film-player {
-  margin: 0 0 2rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
+  margin: 0 0 20px;
+  border: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .film-player video {
   display: block;
   width: 100%;
   max-height: 70vh;
-  background: #000;
+  background: var(--text);
 }
 
 .film-player-info {
-  padding: 0.85rem 1.1rem 1rem;
+  padding: 16px 20px;
 }
 
-.section .film-player-title {
+.film-player-title {
   margin: 0;
-  padding: 0;
-  border: 0;
-  font-size: 1.1rem;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .film-player-note {
-  margin: 0.5rem 0 0;
-  font-size: 0.88rem;
-  color: var(--color-text-muted);
-}
-
-/* Предупреждение над списком: Яндекс Диск не отвечает через VPN. */
-.film-vpn {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  margin: 0 0 1.5rem;
-  padding: 0.85rem 1rem;
-  background: rgba(246, 82, 9, 0.10);
-  border: 1px solid var(--color-accent);
-  border-radius: var(--radius);
-  font-size: 0.92rem;
-}
-
-.film-vpn strong {
-  color: var(--color-accent);
-}
-
-.film-vpn-icon {
-  flex: none;
-  font-size: 1.2rem;
-  line-height: 1.3;
-}
-
-.film-vpn p {
-  margin: 0;
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--accent-text);
 }
 
 .film-status {
-  color: var(--color-text-muted);
+  margin: 0 0 16px;
+  font-size: 15px;
+  color: var(--text-2);
 }
 
 .film-status.is-error {
-  padding: 1rem;
-  background: rgba(246, 82, 9, 0.10);
-  border: 1px dashed var(--color-accent);
-  border-radius: var(--radius);
+  padding: 14px 20px;
+  border: 1px solid var(--line-strong);
+  color: var(--accent-text);
 }
 
-.section h3.film-group {
-  margin: 1.75rem 0 0.75rem;
+.film-group {
+  margin: 28px 0 12px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .film-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
 }
 
 .film-card {
   display: flex;
-  align-items: stretch;
-  width: 100%;
+  flex-direction: column;
   padding: 0;
-  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--text);
   font: inherit;
-  color: var(--color-text);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
+  text-align: left;
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
 .film-card:hover,
-.film-card:focus-visible,
-.film-card.is-active {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px var(--color-accent),
-              0 0 18px rgba(246, 82, 9, 0.45),
-              0 12px 32px rgba(246, 82, 9, 0.22);
-  transform: translateY(-2px);
+.film-card:focus-visible {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
 }
 
+.film-card.is-active {
+  border-color: var(--text);
+}
+
+/* Кадр 16:9; пока картинки нет — бледная подложка. */
 .film-cover {
   position: relative;
-  flex: 0 0 132px;
-  min-height: 84px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(160deg, rgba(36, 54, 92, 0.55), var(--color-primary-dark));
-  border-right: 1px solid var(--color-border);
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--hanzi-pale);
   overflow: hidden;
 }
 
 .film-cover img {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+/* Значок «смотреть»: тёмный квадрат с треугольником. Символ ▶ из скрипта
+   скрыт, треугольник нарисован рамками. */
 .film-play {
-  position: relative;
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  padding-left: 0.15rem;
-  border-radius: 50%;
-  font-size: 0.85rem;
-  color: var(--color-primary-dark);
-  background: var(--color-accent);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  width: 40px;
+  height: 40px;
+  background: var(--text);
+  color: var(--on-dark);
+  font-size: 0;
+}
+
+.film-play::before {
+  content: "";
+  margin-left: 3px;
+  border-style: solid;
+  border-width: 7px 0 7px 11px;
+  border-color: transparent transparent transparent currentColor;
 }
 
 .film-body {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  flex: 1;
-  min-width: 0;
-  padding: 0.85rem 1rem;
+  gap: 4px;
+  padding: 14px 16px 16px;
 }
 
 .film-title {
-  font-size: 0.97rem;
-  font-weight: 600;
+  font-size: 15px;
   line-height: 1.35;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
-.film-card:hover .film-title,
-.film-card.is-active .film-title {
-  color: var(--color-accent);
-}
-
 .film-meta {
-  margin-top: auto;
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
+  font-size: 13px;
+  color: var(--text-2);
 }
 
 .film-source {
-  margin: 1.5rem 0 0;
-  font-size: 0.88rem;
-  color: var(--color-text-muted);
+  margin: 20px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
 }
 
-/* Content lists */
-.content-list {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
+/* Фильмы на телефоне — по два в ряд. */
+@media (max-width: 960px) {
+  .film-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .film-body {
+    padding: 10px 12px 12px;
+  }
+
+  .film-title {
+    font-size: 14px;
+  }
+
+  .film-play {
+    left: 8px;
+    bottom: 8px;
+    width: 32px;
+    height: 32px;
+  }
 }
 
-.content-list li {
-  padding: 0.75rem 1rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+/* Страница «Контакты» (support/contacts.html). Первый экран — панель: слева
+   кто я и кнопки, справа «коротко». Ниже плитки «могу помочь, если ты»,
+   три сворачиваемых блока о занятиях (.fold на <details>) и обещание с
+   кнопкой записи. */
+.ct-hero .panel__main {
+  flex-basis: 560px;
+  gap: 18px;
+  min-height: 480px;
 }
 
-.content-list .item-label {
-  flex: 1;
-}
-
-.content-list .item-type {
-  font-size: 0.75rem;
-  background: rgba(238, 241, 246, 0.08);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  color: var(--color-text-muted);
-}
-
-.content-list a.download {
-  font-size: 0.85rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.placeholder-note {
-  font-style: italic;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-  padding: 1rem;
-  background: rgba(246, 82, 9, 0.10);
-  border: 1px dashed var(--color-accent);
-  border-radius: var(--radius);
-  margin: 1rem 0;
-}
-
-/* Contacts */
-.contact-info p {
-  margin: 0 0 1.25rem;
-  color: var(--color-text-muted);
-}
-
-/* Ник в Telegram — обычная ссылка на личку, чуть крупнее текста. */
-.contact-info .contact-tg {
-  font-size: 1.15rem;
-  font-weight: 600;
-}
-
-/* «Как начать» под Telegram: полупрозрачная подложка с красной
-   чертой слева. */
-.contact-steps {
-  margin-top: 2rem;
-  padding: 1.15rem 1.25rem;
-  border-left: 3px solid var(--color-accent);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  background: var(--color-surface);
-}
-
-.contact-steps h2 {
-  margin: 0 0 1rem;
-}
-
-.contact-steps ol {
-  list-style: none;
-  counter-reset: step;
+.ct-lead {
   margin: 0;
-  padding: 0;
+  max-width: 470px;
+  font-size: 18px;
+  line-height: 1.5;
 }
 
-.contact-steps li {
-  counter-increment: step;
-  position: relative;
-  min-height: 1.9rem;
-  margin-bottom: 0.9rem;
-  padding-left: 2.75rem;
-  color: var(--color-text-muted);
+.ct-about {
+  margin: 0;
+  max-width: 470px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-2);
 }
 
-.contact-steps li:last-child {
-  margin-bottom: 0;
-}
-
-/* Номер шага — красный кружок слева от текста. */
-.contact-steps li::before {
-  content: counter(step);
-  position: absolute;
-  left: 0;
-  top: 0;
+.ct-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  border: 1px solid var(--color-accent);
-  border-radius: 50%;
-  color: var(--color-accent);
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.ct-actions .btn--outline {
+  gap: 8px;
+  padding: 6px 20px;
+}
+
+.ct-actions__arrow {
+  display: inline-flex;
+}
+
+/* «коротко»: крупная цифра с подписью и пояснение. */
+.ct-stat {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 22px 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ct-stat__num {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.ct-stat__num b {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.ct-stat__num small {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.ct-stat__text {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.ct-tg {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding: 22px 28px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.ct-tg:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.ct-tg:hover .row__arrow {
+  color: var(--accent-text);
+}
+
+.ct-tg__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ct-tg__body small {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.ct-tg__body b {
+  font-size: 18px;
   font-weight: 600;
-  font-size: 0.95rem;
 }
 
-.contact-steps strong {
-  color: var(--color-text);
+/* «могу помочь, если ты»: четыре плитки с бледным иероглифом. */
+.ct-tiles {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.ct-tile {
+  gap: 48px;
+  min-height: 200px;
+  padding: 24px;
+}
+
+.ct-tile .tile__hanzi {
+  top: 16px;
+  right: 20px;
+  font-size: 72px;
+}
+
+.ct-tile__text {
+  font-size: 18px;
+  line-height: 1.35;
   font-weight: 600;
 }
 
-.contact-steps .note-small {
-  margin: 1rem 0 0;
+/* ------------------------------------------- сворачиваемые блоки */
+
+/* Блок раскрывается по нажатию на заголовок: номер | название |
+   пояснение | плюс (у открытого блока он повёрнут в крестик). */
+.fold + .fold {
+  border-top: 1px solid var(--line);
 }
 
-/* Частые вопросы под «Как начать». Каждый вопрос — <details> на той же
-   подложке, ответ раскрывается по клику без скриптов. */
-.contact-faq {
-  margin-top: 3rem;
-}
-
-.contact-faq h2 {
-  margin: 0 0 1rem;
-}
-
-.contact-faq details {
-  margin-bottom: 0.6rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface);
-}
-
-/* У раскрытого вопроса появляется та же красная черта слева. */
-.contact-faq details[open] {
-  box-shadow: inset 3px 0 0 var(--color-accent);
-}
-
-.contact-faq summary {
-  position: relative;
-  padding: 0.9rem 3rem 0.9rem 1.25rem;
-  font-weight: 600;
+.fold__head {
+  display: grid;
+  grid-template-columns: 48px minmax(0, auto) minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 16px;
+  padding: 26px 28px;
   list-style: none;
   cursor: pointer;
 }
 
-.contact-faq summary::-webkit-details-marker {
+.fold__head::-webkit-details-marker {
   display: none;
 }
 
-.contact-faq summary:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-  border-radius: var(--radius);
+.fold__head:hover {
+  background: var(--surface-2);
 }
 
-/* Плюс справа; у раскрытого вопроса он поворачивается в крестик. */
-.contact-faq summary::after {
-  content: "+";
-  position: absolute;
-  right: 1.25rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.4rem;
-  font-weight: 400;
-  line-height: 1;
-  color: var(--color-accent);
+.fold__head:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -3px;
+}
+
+.fold__num {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.fold__title {
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.fold__text {
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: right;
+  color: var(--text-2);
+}
+
+.fold__icon {
+  justify-self: end;
+  color: var(--text-2);
   transition: transform 0.2s ease;
 }
 
-.contact-faq details[open] summary::after {
-  transform: translateY(-50%) rotate(45deg);
+.fold[open] .fold__icon {
+  transform: rotate(45deg);
 }
 
-.contact-faq details p {
+.fold[open] > .fold__head {
+  border-bottom: 1px solid var(--line);
+}
+
+.fold__body {
+  position: relative;
+  overflow: hidden;
+}
+
+.fold__foot {
   margin: 0;
-  padding: 0 1.25rem 1rem;
-  color: var(--color-text-muted);
+  padding: 0 28px 28px 92px;
 }
 
-/* Мелкая сноска под блоком: примечание к контактам. Раньше эти
-   сноски были набраны inline-стилями в самой разметке. */
-.note-small {
-  margin: 1rem 0 0;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-}
-
-/* Nav next */
-.nav-next {
-  margin-top: 2.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-/* Footer */
-.site-footer {
-  background: rgba(6, 10, 18, 0.94);
-  color: var(--color-text-muted);
-  padding: 2rem 1.25rem;
-  margin-top: 2rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.footer-inner {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-}
-
-.footer-inner a {
-  color: var(--color-text-muted);
-}
-
-.footer-brand {
-  color: #fff;
-}
-
-.footer-tagline {
-  margin: 0.5rem 0 0;
-  font-size: 0.9rem;
-}
-
-.footer-links {
-  display: flex;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-}
-
-.footer-copy {
-  font-size: 0.85rem;
-  margin: 1.5rem 0 0;
-  width: 100%;
-  text-align: center;
-  color: rgba(167, 179, 196, 0.6);
-}
-
-/* Steps list */
-.steps-list {
-  list-style: none;
-  padding: 0;
-  counter-reset: step;
-}
-
-/* Только прямые пункты: вложенный список внутри шага (примеры задач на
-   support/contacts.html) не должен получать номер и линию. */
-.steps-list > li {
-  counter-increment: step;
-  padding: 0.75rem 0 0.75rem 2.5rem;
+/* Шаги: крупный номер и название с описанием. */
+.ct-steps {
   position: relative;
-  border-left: 2px solid var(--color-border);
-  margin-left: 0.75rem;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.steps-list > li::before {
-  content: counter(step);
-  position: absolute;
-  left: -0.85rem;
-  top: 0.65rem;
-  width: 1.5rem;
-  height: 1.5rem;
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: 50%;
-  font-size: 0.75rem;
+.ct-step {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 620px);
+  gap: 16px;
+  padding: 24px 28px;
+}
+
+.ct-step + .ct-step {
+  border-top: 1px solid var(--line);
+}
+
+.ct-step__num {
+  font-size: 28px;
   font-weight: 700;
+  line-height: 1;
+}
+
+.ct-step__body {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
 }
 
-/* Шаги с описанием: заголовок шага отдельной строкой, текст под ним. */
-.steps-list--detailed > li {
-  padding-bottom: 1.25rem;
+.ct-step__body h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.steps-list--detailed > li > strong {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-size: 1.05rem;
-}
-
-/* Список через тире вместо точек; тире — акцентным красным. */
-.dash-list {
-  list-style: none;
-  padding: 0;
-  margin: 0.5rem 0 0;
-}
-
-.dash-list li {
-  position: relative;
-  padding-left: 1.5rem;
-}
-
-.dash-list li + li {
-  margin-top: 0.35rem;
-}
-
-.dash-list li::before {
-  content: "—";
-  position: absolute;
-  left: 0;
-  color: var(--color-accent);
-}
-
-/* Вступление о преподавателе на странице «Контакты»: крупный первый абзац,
-   список через тире и обещание в рамке с красной полосой. Строки
-   ограничены ~68 знаками, чтобы текст не тянулся на всю ширину main. */
-.teacher-intro p,
-.teacher-intro .dash-list {
-  max-width: 68ch;
-}
-
-.teacher-intro p {
-  margin: 0 0 1rem;
-}
-
-.teacher-intro .dash-list {
-  margin: -0.5rem 0 1.5rem;
-}
-
-.teacher-lead {
-  font-size: 1.15rem;
+.ct-step__body p {
+  margin: 0;
+  font-size: 15px;
   line-height: 1.55;
+  color: var(--text-2);
 }
 
-.teacher-intro .teacher-promise {
-  margin: 1.5rem 0 0;
-  padding: 0.9rem 1.15rem;
-  border-left: 3px solid var(--color-accent);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  background: var(--color-surface);
+/* Список через тире. */
+.ct-dash {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.45;
 }
 
-/* Раздел «Карточки» (flashcards/index.html, js/flashcards.js). Колоды
-   стоят теми же .card-grid и .card, что модули библиотеки; здесь только
-   то, чего у них нет: полоса прогресса, заглушка будущей функции, экран
-   изучения и итоги сессии. Три экрана переключаются атрибутом hidden. */
+.ct-dash li {
+  display: flex;
+  gap: 10px;
+}
+
+.ct-dash li::before {
+  content: "—";
+  color: var(--text-2);
+}
+
+/* Бледные иероглифы 上课 в правом нижнем углу раскрытого блока. */
+.ct-steps__hanzi {
+  left: auto;
+  right: 28px;
+  bottom: -34px;
+}
+
+.ct-faq {
+  margin: 0;
+}
+
+.ct-qa {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 620px);
+  gap: 6px 16px;
+  padding: 20px 28px;
+}
+
+.ct-qa + .ct-qa {
+  border-top: 1px solid var(--line);
+}
+
+.ct-qa dt {
+  grid-column: 2;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ct-qa dd {
+  grid-column: 2;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+/* Обещание: красная точка, крупная фраза и кнопка записи. */
+.ct-promise {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  margin-top: 112px;
+  text-align: center;
+}
+
+.ct-promise__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.ct-promise p {
+  margin: 0;
+  max-width: 760px;
+  font-size: 30px;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.ct-promise__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+.ct-promise__actions .btn {
+  padding-left: 26px;
+  padding-right: 26px;
+}
+
+@media (max-width: 960px) {
+  /* Первый экран: заголовок, абзац, три цифры, кнопки — друг под другом.
+     Ячейка с текстом не рисуется (display: contents), порядок задаёт order. */
+  .ct-hero {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ct-hero .panel__main {
+    display: contents;
+  }
+
+  .ct-hero .title-row {
+    order: 1;
+  }
+
+  .ct-lead {
+    order: 2;
+    max-width: none;
+    margin-top: 10px;
+    font-size: 15px;
+  }
+
+  .ct-hero .panel__side {
+    order: 3;
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .ct-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 12px;
+    border: 0;
+    background: var(--surface);
+  }
+
+  .ct-stat__num b {
+    font-size: 18px;
+  }
+
+  .ct-stat__text {
+    font-size: 12px;
+    line-height: 1.3;
+    color: var(--text-2);
+  }
+
+  .ct-actions {
+    order: 4;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .ct-actions .btn {
+    min-height: 48px;
+  }
+
+  .ct-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ct-tile {
+    gap: 20px;
+    min-height: 124px;
+    padding: 14px;
+  }
+
+  .ct-tile .tile__hanzi {
+    top: 8px;
+    right: 10px;
+    font-size: 44px;
+  }
+
+  .ct-tile__text {
+    font-size: 14px;
+  }
+
+  .fold__head {
+    grid-template-columns: 24px minmax(0, 1fr) 22px;
+    gap: 4px 10px;
+    padding: 16px;
+  }
+
+  .fold__num {
+    font-size: 13px;
+  }
+
+  .fold__title {
+    font-size: 20px;
+  }
+
+  .fold__text {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .fold__icon {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .fold__foot {
+    padding: 0 16px 16px;
+  }
+
+  .fold__foot .btn {
+    display: flex;
+  }
+
+  .ct-step,
+  .ct-qa {
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 4px 10px;
+    padding: 14px 16px;
+  }
+
+  .ct-step__num {
+    font-size: 20px;
+    line-height: 1.1;
+  }
+
+  .ct-step__body {
+    gap: 4px;
+  }
+
+  .ct-step__body h3,
+  .ct-qa dt {
+    font-size: 15px;
+  }
+
+  .ct-step__body p,
+  .ct-qa dd {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .ct-promise {
+    gap: 20px;
+    margin-top: 48px;
+  }
+
+  .ct-promise p {
+    font-size: 20px;
+  }
+
+  .ct-promise__actions {
+    flex-direction: column;
+    align-self: stretch;
+    gap: 16px;
+  }
+
+  .ct-promise__actions .btn {
+    align-self: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fold__icon {
+    transition: none;
+  }
+}
+
+/* Раздел «Карточки» (flashcards/index.html, js/flashcards.js). Девять
+   экранов на одной странице переключаются атрибутом hidden: список колод
+   и папок, страницы колоды и папки, редакторы, изучение, итоги и слова с
+   фото. Строки папок и колод строит js/flashcards.js. */
 .fc-view[hidden] {
   display: none;
 }
 
+/* Подписи кнопок и заголовки редакторов приходят и из разметки, и из
+   скриптов — строчными их делает CSS. Названия колод сюда не входят. */
+[data-flashcards] .btn,
+[data-flashcards] .fc-btn,
+[data-flashcards] .fc-undo,
+[data-flashcards] .fc-reset,
+[data-flashcards] .fc-chip,
+[data-flashcards] .fc-toggle,
+[data-flashcards] legend,
+[data-flashcards] .fc-field-label,
+[data-flashcards] .fc-save-option,
+[data-flashcards] [data-edit-title],
+[data-flashcards] [data-deck-edit-title] {
+  text-transform: lowercase;
+}
+
+/* ------------------------------------------------ первый экран */
+
+.fc-hero .panel__main {
+  min-height: 440px;
+}
+
+.fc-hero .lead {
+  max-width: 440px;
+}
+
+.fc-hero .sun {
+  right: 40px;
+  bottom: -120px;
+  width: 220px;
+  height: 220px;
+}
+
+/* Демо-карточка: «← ещё раз | 学习 | знаю →». */
+.fc-demo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.fc-demo__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 260px;
+  height: 150px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+}
+
+.fc-demo__card b {
+  font-family: var(--font-zh);
+  font-size: 46px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--text);
+}
+
+.fc-demo__card small {
+  font-size: 12px;
+}
+
+.fc-photo-cta__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fc-photo-actions .btn {
+  min-height: 48px;
+  padding: 0 22px;
+}
+
+/* Есть камера — «сфотографировать» главная, «выбрать фото» контурная. */
+.fc-photo-actions [data-photo-camera]:not([hidden]) + [data-photo-pick] {
+  background: transparent;
+  color: var(--text);
+}
+
+.fc-photo-note {
+  max-width: 200px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+/* «как работает прогресс»: строки «действие — что будет». */
+.fc-info-list > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  padding: 13px 28px;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+}
+
+.fc-info-list > div:last-child {
+  border-bottom: 0;
+}
+
+.fc-info-list dt {
+  font-weight: 600;
+}
+
+.fc-info-list dd {
+  margin: 0;
+  color: var(--text-2);
+}
+
+/* ------------------------------------------------ папки */
+
+/* Строка папки: значок | название и состав | прогресс | стрелка. */
+.fc-folder-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) minmax(160px, 240px) 24px;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.fc-folder-row:last-child {
+  border-bottom: 0;
+}
+
+.fc-folder-row:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.fc-folder-row:hover .row__arrow {
+  color: var(--accent-text);
+}
+
+/* «новая папка» — без прогресса, значок в пунктирной рамке. */
+.fc-folder-row--new {
+  grid-template-columns: 44px minmax(0, 1fr) 24px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.fc-folder-row__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+}
+
+.fc-folder-row--new .fc-folder-row__icon {
+  border: 1px dashed var(--line-strong);
+}
+
+.fc-folder-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.fc-folder-row__title {
+  font-size: 18px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.fc-folder-row--new .fc-folder-row__title {
+  font-size: 16px;
+}
+
+.fc-folder-row__meta {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.fc-folder-row .fc-set__progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fc-set__learned {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* ------------------------------------------------ колоды */
+
+/* Подпись секции с кнопкой «новая колода» справа. */
+.fc-decks-label::after {
+  display: none;
+}
+
+.fc-decks-label h2 {
+  margin: 0;
+  font: inherit;
+}
+
+.fc-decks-label__line {
+  flex: 1 1 120px;
+  height: 1px;
+  background: var(--line);
+}
+
+.fc-new-deck {
+  color: var(--text);
+}
+
+/* Таблица колод: колода | слов | прогресс | стрелка. Пустая таблица не
+   рисуется — вместо неё строка «Колод пока нет». */
+.fc-decks:has(.fc-decks__rows:empty) {
+  display: none;
+}
+
+.fc-decks__head,
+.fc-decks__rows {
+  min-width: 720px;
+}
+
+.fc-decks__head,
+.fc-set {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 300px 24px;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.fc-decks__head {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.fc-set {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.fc-set:last-child {
+  border-bottom: 0;
+}
+
+.fc-set:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.fc-set:hover .row__arrow {
+  color: var(--accent-text);
+}
+
+.fc-set__name {
+  font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.fc-set__size {
+  font-size: 15px;
+}
+
+.fc-set .fc-set__progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.fc-set .fc-progress {
+  flex: 1 1 auto;
+}
+
+.fc-set .fc-set__learned {
+  flex: 0 0 120px;
+}
+
+.fc-deck-learned {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.fc-deck-summary .fc-progress {
+  margin-top: 14px;
+}
+
+.fc-result-actions {
+  margin-top: 24px;
+}
+
 /* Полоса прогресса колоды: доля выученных слов. */
 .fc-progress {
-  height: 6px;
-  margin-top: 0.9rem;
-  border-radius: 999px;
-  background: rgba(238, 241, 246, 0.1);
+  height: 4px;
+  margin-top: 0;
+  background: var(--hanzi-pale);
   overflow: hidden;
 }
 
@@ -1405,21 +1947,17 @@ body.home .hero-video + main .btn-primary:hover {
   display: block;
   width: 0;
   height: 100%;
-  border-radius: inherit;
-  background: var(--color-accent);
+  background: var(--text);
   transition: width 0.4s ease;
 }
 
 .fc-progress.is-done span {
-  background: var(--color-know);
-}
-
-.fc-deck .card-meta {
-  margin-top: 0.5rem;
+  background: var(--text);
 }
 
 .fc-status {
-  color: var(--color-text-muted);
+  color: var(--text-2);
+  font-size: 15px;
 }
 
 .fc-errors p {
@@ -1436,43 +1974,31 @@ body.home .hero-video + main .btn-primary:hover {
 .fc-photo-cta {
   position: relative;
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem 1rem;
-  margin: 1.5rem 0 1rem;
-  padding: 1rem 1.25rem;
-  background: rgba(16, 29, 49, 0.72);
-  border: 1px solid rgba(246, 82, 9, 0.45);
-  border-radius: var(--radius);
-}
-
-.fc-photo-icon {
-  flex: none;
-  font-size: 1.75rem;
-  line-height: 1;
-}
-
-.fc-photo-body {
-  flex: 1 1 16rem;
-  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px;
+  border-bottom: 1px solid var(--line);
 }
 
 .fc-photo-cta-title {
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
 }
 
-.fc-photo-body p {
+.fc-photo-cta p {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 15px;
   line-height: 1.5;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .fc-photo-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 10px 16px;
+  align-items: center;
+  margin-top: 4px;
 }
 
 .fc-photo-actions .btn,
@@ -1496,48 +2022,22 @@ body.home .hero-video + main .btn-primary:hover {
   pointer-events: none;
 }
 
-.fc-own-hint {
-  margin: -0.5rem 0 1rem;
-  font-size: 0.88rem;
-  color: var(--color-text-muted);
-}
-
 /* «Как работает прогресс»: короткая справка под заглушкой — объясняет,
    почему после первого прохода «Выучено» может быть 0. */
 .fc-info {
-  margin: 0 0 2.5rem;
-  padding: 0.9rem 1.25rem 1rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  margin: 0;
 }
 
 .fc-info-title {
-  margin: 0 0 0.4rem;
-  font-size: 0.95rem;
+  margin: 0;
+  font-size: 15px;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--line);
+  font-weight: 600;
 }
 
 .fc-info-list {
   margin: 0;
-  padding-left: 1.1rem;
-  font-size: 0.88rem;
-  line-height: 1.5;
-  color: var(--color-text-muted);
-}
-
-.fc-info-list li + li {
-  margin-top: 0.2rem;
-}
-
-.fc-info-list b {
-  color: var(--color-text);
-}
-
-.btn:disabled,
-.btn:disabled:hover {
-  opacity: 0.45;
-  cursor: not-allowed;
-  background: rgba(238, 241, 246, 0.06);
 }
 
 /* Экран изучения: всё по центру, карточка — в «сцене» фиксированной
@@ -1558,19 +2058,21 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .fc-back {
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
+  font-size: 14px;
+  color: var(--text-2);
+  text-decoration: none;
 }
 
 .fc-back:hover {
-  color: var(--color-accent);
+  color: var(--accent-text);
   text-decoration: none;
 }
 
 .fc-study-title {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 22px;
   line-height: 1.3;
+  font-weight: 600;
 }
 
 .fc-counter {
@@ -1582,26 +2084,25 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .fc-chip {
-  padding: 0.3rem 0.8rem;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 13px;
+  color: var(--text-2);
+  background: transparent;
+  border: 1px solid var(--line);
 }
 
 .fc-chip b {
   margin-left: 0.2rem;
-  color: var(--color-text);
+  color: var(--text);
   font-variant-numeric: tabular-nums;
 }
 
 .fc-chip.is-miss b {
-  color: var(--color-accent);
+  color: var(--accent-text);
 }
 
 .fc-chip.is-know b {
-  color: var(--color-know);
+  color: var(--text);
 }
 
 .fc-stage {
@@ -1622,10 +2123,9 @@ body.home .hero-video + main .btn-primary:hover {
   content: "";
   position: absolute;
   inset: 12px 16px -12px;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  opacity: 0.7;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  opacity: 1;
 }
 
 /* Внешний слой карточки ездит за пальцем (translate + rotate), внутренний
@@ -1636,7 +2136,6 @@ body.home .hero-video + main .btn-primary:hover {
   position: absolute;
   inset: 0;
   perspective: 1200px;
-  border-radius: 16px;
   cursor: grab;
   touch-action: pan-y;
   user-select: none;
@@ -1717,10 +2216,8 @@ body.home .hero-video + main .btn-primary:hover {
   gap: 0.6rem;
   padding: 1.5rem;
   text-align: center;
-  background: linear-gradient(160deg, #172943 0%, var(--color-surface-solid) 70%);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -1734,15 +2231,18 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .fc-card:focus-visible .fc-face {
-  border-color: var(--color-accent);
+  border-color: var(--text);
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
 }
 
 .fc-hanzi {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: clamp(4.5rem, 24vw, 7.5rem);
   line-height: 1.1;
-  color: var(--color-chinese);
+  color: var(--text);
   overflow-wrap: anywhere;
+  font-weight: 400;
 }
 
 .fc-hanzi.is-long {
@@ -1759,15 +2259,14 @@ body.home .hero-video + main .btn-primary:hover {
   right: 0;
   bottom: 1rem;
   font-size: 0.8rem;
-  color: var(--color-text-muted);
-  opacity: 0.75;
+  color: var(--text-2);
 }
 
 .fc-hanzi-small {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 1.6rem;
   line-height: 1.2;
-  color: var(--color-chinese);
+  color: var(--text);
 }
 
 .fc-pinyin {
@@ -1779,7 +2278,7 @@ body.home .hero-video + main .btn-primary:hover {
 .fc-translation {
   font-size: 1.15rem;
   line-height: 1.4;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 /* Подсветка при перетаскивании: прозрачность задаёт скрипт по тому,
@@ -1793,36 +2292,33 @@ body.home .hero-video + main .btn-primary:hover {
   align-items: flex-start;
   padding: 1rem;
   border: 2px solid;
-  border-radius: 16px;
   opacity: 0;
   pointer-events: none;
 }
 
 .fc-tint.is-know {
   justify-content: flex-start;
-  color: var(--color-know-soft);
-  border-color: var(--color-know);
-  background: rgba(60, 184, 120, 0.16);
-  box-shadow: 0 0 28px rgba(60, 184, 120, 0.45);
+  color: var(--text);
+  border-color: var(--text);
+  background: rgba(47, 52, 65, 0.08);
 }
 
 .fc-tint.is-miss {
   justify-content: flex-end;
-  color: var(--color-accent-soft);
-  border-color: var(--color-accent);
-  background: rgba(246, 82, 9, 0.16);
-  box-shadow: 0 0 28px rgba(246, 82, 9, 0.45);
+  color: var(--accent-text);
+  border-color: var(--accent-text);
+  background: rgba(179, 48, 42, 0.08);
 }
 
 .fc-tint-label {
   padding: 0.2rem 0.6rem;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: 2px solid currentColor;
-  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: lowercase;
+  border: 1px solid currentColor;
   transform: rotate(-8deg);
+  background: var(--surface-2);
 }
 
 .fc-tint.is-miss .fc-tint-label {
@@ -1849,36 +2345,37 @@ body.home .hero-video + main .btn-primary:hover {
   padding: 0 1rem;
   font: inherit;
   font-weight: 600;
-  background: var(--color-surface-solid);
-  border: 1px solid;
-  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--text);
   cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+  font-size: 15px;
+  color: var(--text);
 }
 
 .fc-btn:active,
 .fc-speak:active {
-  transform: scale(0.96);
+  transform: none;
 }
 
 .fc-btn.is-miss {
-  color: var(--color-accent-soft);
-  border-color: rgba(246, 82, 9, 0.55);
+  color: var(--text);
+  border-color: var(--text);
 }
 
 .fc-btn.is-miss:hover {
-  background: rgba(246, 82, 9, 0.14);
-  border-color: var(--color-accent);
+  background: var(--surface-2);
+  border-color: var(--text);
 }
 
 .fc-btn.is-know {
-  color: var(--color-know-soft);
-  border-color: rgba(60, 184, 120, 0.55);
+  color: var(--on-dark);
+  border-color: var(--text);
+  background: var(--text);
 }
 
 .fc-btn.is-know:hover {
-  background: rgba(60, 184, 120, 0.14);
-  border-color: var(--color-know);
+  background: var(--text-hover);
+  border-color: var(--text-hover);
 }
 
 .fc-speak {
@@ -1889,16 +2386,14 @@ body.home .hero-video + main .btn-primary:hover {
   width: 52px;
   height: 52px;
   padding: 0;
-  color: var(--color-chinese);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line-strong);
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
 }
 
 .fc-speak:hover {
-  border-color: var(--color-chinese);
+  border-color: var(--text);
 }
 
 .fc-speak[hidden] {
@@ -1914,18 +2409,17 @@ body.home .hero-video + main .btn-primary:hover {
   margin-top: 0.9rem;
   padding: 0.4rem 0.9rem;
   font: inherit;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
+  font-size: 14px;
+  color: var(--text-2);
   background: none;
   border: 1px solid transparent;
-  border-radius: 999px;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  min-height: 44px;
 }
 
 .fc-undo:hover:not(:disabled) {
-  color: var(--color-accent);
-  border-color: var(--color-border);
+  color: var(--text);
+  border-color: var(--line);
 }
 
 .fc-undo:disabled {
@@ -1935,8 +2429,8 @@ body.home .hero-video + main .btn-primary:hover {
 
 .fc-keys {
   margin: 1rem 0 0;
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
+  font-size: 13px;
+  color: var(--text-2);
   text-align: center;
 }
 
@@ -1951,37 +2445,38 @@ body.home .hero-video + main .btn-primary:hover {
 .fc-result-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 1px;
+  margin-bottom: 20px;
+  background: var(--line);
+  border: 1px solid var(--line);
 }
 
 .fc-result-stat {
-  padding: 1rem 0.75rem;
+  padding: 20px 12px;
   text-align: center;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  background: var(--surface);
+  border: 0;
 }
 
 .fc-result-stat b {
   display: block;
-  font-size: 1.75rem;
+  font-size: 28px;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
 .fc-result-stat span {
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
+  font-size: 13px;
+  color: var(--text-2);
 }
 
 .fc-result-stat.is-miss b {
-  color: var(--color-accent);
+  color: var(--accent-text);
 }
 
 .fc-result-stat.is-know b {
-  color: var(--color-know);
+  color: var(--text);
 }
 
 .fc-result-learn {
@@ -1994,10 +2489,12 @@ body.home .hero-video + main .btn-primary:hover {
 
 .fc-missed-list {
   display: grid;
-  gap: 0.5rem;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .fc-missed-list li {
@@ -2005,16 +2502,21 @@ body.home .hero-video + main .btn-primary:hover {
   align-items: baseline;
   flex-wrap: wrap;
   gap: 0.25rem 1rem;
-  padding: 0.65rem 1rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  padding: 12px 20px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.fc-missed-list li:last-child,
+.fc-word:last-child {
+  border-bottom: 0;
 }
 
 .fc-missed-hanzi {
-  font-family: var(--font-chinese);
-  font-size: 1.35rem;
-  color: var(--color-chinese);
+  font-family: var(--font-zh);
+  font-size: 22px;
+  color: var(--text);
 }
 
 .fc-missed-pinyin {
@@ -2022,7 +2524,7 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .fc-missed-translation {
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .fc-result-actions {
@@ -2047,13 +2549,13 @@ body.home .hero-video + main .btn-primary:hover {
   align-items: center;
   gap: 0.5rem 1rem;
   margin: 1.75rem 0 0;
-  font-size: 0.88rem;
+  font-size: 14px;
 }
 
 .fc-reset {
   padding: 0;
   font: inherit;
-  color: var(--color-text-muted);
+  color: var(--text-2);
   background: none;
   border: 0;
   text-decoration: underline;
@@ -2062,11 +2564,11 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .fc-reset:hover {
-  color: var(--color-accent);
+  color: var(--accent-text);
 }
 
 .fc-reset-done {
-  color: var(--color-know-soft);
+  color: var(--text);
 }
 
 /* Страница колоды — между списком и изучением, как в Quizlet: сводка
@@ -2074,8 +2576,8 @@ body.home .hero-video + main .btn-primary:hover {
    модулей библиотеки (.card): та же плашка, рамка, радиус и тень. */
 .fc-deck-page .fc-back {
   display: inline-block;
-  padding: 0.35rem 0;
-  margin-bottom: 0.75rem;
+  padding: 6px 0;
+  margin-bottom: 12px;
 }
 
 .fc-deck-page .page-subtitle {
@@ -2083,11 +2585,9 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .fc-deck-summary {
-  padding: 1rem 1.25rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  padding: 20px 28px;
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 
 .fc-deck-counts {
@@ -2096,29 +2596,28 @@ body.home .hero-video + main .btn-primary:hover {
   gap: 0.5rem;
 }
 
-.fc-deck-summary .card-meta {
-  margin-top: 0.5rem;
-}
-
 /* Точка статуса слова: серая — новое, красная — изучается, зелёная —
    выучено. Та же пара цветов, что у «Не знаю» и «Знаю». */
 .fc-dot {
   display: inline-block;
   flex: none;
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 8px;
+  height: 8px;
   margin-right: 0.4rem;
   border-radius: 50%;
-  background: var(--color-text-muted);
+  background: transparent;
   vertical-align: 0.08em;
+  border: 1px solid var(--line-strong);
 }
 
 .fc-dot.is-learning {
-  background: var(--color-accent);
+  background: #9AA1AF;
+  border-color: #9AA1AF;
 }
 
 .fc-dot.is-learned {
-  background: var(--color-know);
+  background: var(--text);
+  border-color: var(--text);
 }
 
 .fc-deck-actions {
@@ -2134,8 +2633,9 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .fc-learn {
-  padding: 0.95rem 2rem;
-  font-size: 1.05rem;
+  padding: 0 32px;
+  font-size: 15px;
+  min-height: 56px;
 }
 
 .fc-words-bar {
@@ -2148,8 +2648,8 @@ body.home .hero-video + main .btn-primary:hover {
 
 .fc-words-hint {
   margin: 0;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
+  font-size: 14px;
+  color: var(--text-2);
 }
 
 /* Переключатель «Скрыть перевод»: настоящий чекбокс спрятан, но остаётся
@@ -2160,7 +2660,7 @@ body.home .hero-video + main .btn-primary:hover {
   align-items: center;
   gap: 0.6rem;
   min-height: 44px;
-  font-size: 0.95rem;
+  font-size: 15px;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -2179,11 +2679,9 @@ body.home .hero-video + main .btn-primary:hover {
   position: relative;
   flex: none;
   width: 44px;
-  height: 26px;
-  background: rgba(238, 241, 246, 0.1);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  transition: background-color 0.15s, border-color 0.15s;
+  height: 24px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
 }
 
 .fc-toggle-track::after {
@@ -2191,34 +2689,34 @@ body.home .hero-video + main .btn-primary:hover {
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--color-text-muted);
-  transition: transform 0.15s, background-color 0.15s;
+  width: 16px;
+  height: 16px;
+  background: var(--text-2);
 }
 
 .fc-toggle input:checked + .fc-toggle-track {
-  background: rgba(246, 82, 9, 0.2);
-  border-color: var(--color-accent);
+  background: var(--text);
+  border-color: var(--text);
 }
 
 .fc-toggle input:checked + .fc-toggle-track::after {
-  transform: translateX(18px);
-  background: var(--color-accent);
+  transform: translateX(20px);
+  background: var(--on-dark);
 }
 
 .fc-toggle input:focus-visible + .fc-toggle-track {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
 .fc-words {
   display: grid;
-  gap: 0.6rem;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
 }
 
 /* Строка — сетка: иероглиф | текст | озвучка. Колонка иероглифа одной
@@ -2231,22 +2729,20 @@ body.home .hero-video + main .btn-primary:hover {
   grid-template-columns: calc(5 * var(--fc-hanzi-size)) minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 1rem;
-  padding: 0.85rem 0.85rem 0.85rem 1.1rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  transition: border-color 0.15s;
+  padding: 14px 16px 14px 20px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
 }
 
 /* Слово длиннее 5 знаков (--fc-hanzi-len ставит flashcards.js) получает
    шрифт меньше, чтобы уместиться в колонку, а не раздвигать её. */
 .fc-word-hanzi {
   min-width: 0;
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: calc(var(--fc-hanzi-size) * 5 / max(5, var(--fc-hanzi-len, 5)));
   line-height: 1.2;
-  color: var(--color-chinese);
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
 }
@@ -2262,32 +2758,29 @@ body.home .hero-video + main .btn-primary:hover {
 
 .fc-word-pinyin {
   font-weight: 600;
-  border-radius: 4px;
 }
 
 .fc-word-translation {
   max-width: 100%;
-  font-size: 0.95rem;
+  font-size: 15px;
   line-height: 1.4;
-  color: var(--color-text-muted);
-  border-radius: 4px;
-  transition: color 0.15s, background-color 0.15s;
+  color: var(--text-2);
 }
 
 .fc-word-status {
   display: inline-flex;
   align-items: center;
   margin-top: 0.2rem;
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
+  font-size: 12px;
+  color: var(--text-2);
 }
 
 .fc-word-status.is-learning {
-  color: var(--color-accent-soft);
+  color: var(--text-2);
 }
 
 .fc-word-status.is-learned {
-  color: var(--color-know-soft);
+  color: var(--text-2);
 }
 
 .fc-word-speak {
@@ -2317,19 +2810,19 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .fc-words.is-hiding .fc-word:hover {
-  border-color: var(--color-accent);
+  background: var(--surface-2);
 }
 
 .fc-words.is-hiding .fc-word:not(.is-revealed) .fc-word-pinyin,
 .fc-words.is-hiding .fc-word:not(.is-revealed) .fc-word-translation {
   color: transparent;
-  background: rgba(238, 241, 246, 0.1);
+  background: var(--hanzi-pale);
   user-select: none;
   -webkit-user-select: none;
 }
 
 .fc-words.is-hiding .fc-word-translation:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
@@ -2349,9 +2842,8 @@ body.home .hero-video + main .btn-primary:hover {
   width: 112px;
   padding: 0;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
   cursor: zoom-in;
 }
 
@@ -2381,25 +2873,25 @@ body.home .hero-video + main .btn-primary:hover {
   align-items: center;
   gap: 0.6rem;
   margin: 0 0 0.4rem;
-  font-size: 1.05rem;
+  font-size: 17px;
   font-weight: 600;
 }
 
 .fc-photo-msg.is-error {
-  color: var(--color-accent-soft);
+  color: var(--accent-text);
 }
 
 .fc-photo-hint {
   margin: 0 0 0.9rem;
-  font-size: 0.88rem;
-  color: var(--color-text-muted);
+  font-size: 14px;
+  color: var(--text-2);
 }
 
 .fc-photo-tips {
   margin: 0 0 1rem;
   padding-left: 1.2rem;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
+  font-size: 14px;
+  color: var(--text-2);
 }
 
 .fc-photo-buttons {
@@ -2417,8 +2909,8 @@ body.home .hero-video + main .btn-primary:hover {
   flex: none;
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(246, 82, 9, 0.25);
-  border-top-color: var(--color-accent);
+  border: 2px solid var(--hanzi-pale);
+  border-top-color: var(--text);
   border-radius: 50%;
   animation: fc-spin 0.8s linear infinite;
 }
@@ -2434,28 +2926,27 @@ body.home .hero-video + main .btn-primary:hover {
 .fc-mark {
   display: inline-block;
   padding: 0 0.35rem;
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   line-height: 1.5;
-  letter-spacing: 0.04em;
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.12);
-  border: 1px solid rgba(246, 82, 9, 0.5);
-  border-radius: 4px;
+  letter-spacing: 0;
+  color: var(--accent-text);
+  background: var(--surface-2);
+  border: 1px solid currentColor;
   vertical-align: 0.1em;
 }
 
 .fc-mark.is-added {
-  color: var(--color-text-muted);
-  background: rgba(167, 179, 196, 0.1);
-  border-color: rgba(167, 179, 196, 0.45);
+  color: var(--text-2);
+  background: var(--surface-2);
+  border-color: var(--line-strong);
 }
 
 /* «ИИ» — этого не было на фото, дописала нейросеть. */
 .fc-mark.is-ai {
-  color: #9dbcff;
-  background: rgba(143, 180, 255, 0.12);
-  border-color: rgba(143, 180, 255, 0.5);
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: var(--text);
 }
 
 /* Таблица слов: иероглифы | пиньинь | перевод | удалить. На телефоне —
@@ -2463,37 +2954,42 @@ body.home .hero-video + main .btn-primary:hover {
 .fc-edit-head,
 .fc-edit-row {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.6fr) 2.25rem;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.6fr) 44px;
   gap: 0.5rem;
   align-items: center;
 }
 
 .fc-edit-head {
-  padding: 0 0.6rem 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  padding: 0 12px 8px;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: lowercase;
+  color: var(--text-2);
 }
 
 .fc-edit-list {
   display: grid;
-  gap: 0.5rem;
-  margin: 0 0 0.75rem;
+  gap: 0;
+  margin: 0 0 16px;
   padding: 0;
   list-style: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .fc-edit-row {
-  padding: 0.5rem 0.6rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.fc-edit-row:last-child {
+  border-bottom: 0;
 }
 
 .fc-edit-row.is-invalid {
-  border-color: var(--color-accent);
+  outline: 1px solid var(--accent-text);
+  outline-offset: -1px;
 }
 
 .fc-cell {
@@ -2504,19 +3000,19 @@ body.home .hero-video + main .btn-primary:hover {
 .fc-input {
   width: 100%;
   min-width: 0;
-  padding: 0.5rem 0.6rem;
+  padding: 8px 10px;
   font: inherit;
-  font-size: 1rem;
-  color: var(--color-text);
-  color-scheme: dark;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
+  font-size: 16px;
+  color: var(--text);
+  color-scheme: light;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  min-height: 44px;
 }
 
 .fc-input:focus {
-  outline: none;
-  border-color: var(--color-accent);
+  outline: 1px solid var(--text);
+  border-color: var(--text);
 }
 
 .fc-input:disabled {
@@ -2524,19 +3020,20 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .fc-input::placeholder {
-  color: rgba(167, 179, 196, 0.45);
+  color: var(--text-2);
+  opacity: 1;
 }
 
 .fc-cell-hanzi .fc-input {
-  font-family: var(--font-chinese);
-  font-size: 1.15rem;
-  color: var(--color-chinese);
+  font-family: var(--font-zh);
+  font-size: 18px;
+  color: var(--text);
 }
 
 .fc-cell.is-unsure .fc-input {
   padding-right: 2rem;
   border-style: dashed;
-  border-color: rgba(246, 82, 9, 0.65);
+  border-color: var(--accent-text);
 }
 
 .fc-cell.is-added .fc-input {
@@ -2547,7 +3044,7 @@ body.home .hero-video + main .btn-primary:hover {
 .fc-cell.is-ai .fc-input {
   padding-right: 2.4rem;
   border-style: dashed;
-  border-color: rgba(143, 180, 255, 0.55);
+  border-color: var(--text);
 }
 
 /* Замечание нейросети под словом: что не так, и кнопка «Исправить»,
@@ -2559,29 +3056,30 @@ body.home .hero-video + main .btn-primary:hover {
   align-items: center;
   gap: 0.35rem 0.75rem;
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 14px;
   line-height: 1.4;
-  color: var(--color-accent-soft);
+  color: var(--accent-text);
 }
 
 .fc-edit-note-text::before {
-  content: "⚠ ";
+  content: "";
 }
 
 .fc-edit-fix {
-  padding: 0.2rem 0.75rem;
+  padding: 0 12px;
   font: inherit;
   font-weight: 600;
-  color: var(--color-text);
-  background: rgba(246, 82, 9, 0.16);
-  border: 1px solid rgba(246, 82, 9, 0.55);
-  border-radius: 999px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--text);
   cursor: pointer;
+  min-height: 32px;
+  text-transform: lowercase;
 }
 
 .fc-edit-fix:hover,
 .fc-edit-fix:focus-visible {
-  background: rgba(246, 82, 9, 0.3);
+  background: var(--surface-2);
 }
 
 .fc-cell .fc-mark {
@@ -2593,27 +3091,26 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .fc-edit-row.is-invalid .fc-cell-hanzi .fc-input {
-  background: rgba(246, 82, 9, 0.12);
-  border-color: var(--color-accent);
+  background: var(--surface-2);
+  border-color: var(--accent-text);
 }
 
 .fc-edit-del {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 44px;
+  height: 44px;
   padding: 0;
-  color: var(--color-text-muted);
+  color: var(--text-2);
   background: none;
   border: 1px solid transparent;
-  border-radius: 6px;
   cursor: pointer;
 }
 
 .fc-edit-del:hover {
-  color: var(--color-accent-soft);
-  border-color: rgba(246, 82, 9, 0.45);
+  color: var(--accent-text);
+  border-color: var(--line);
 }
 
 .fc-edit-add {
@@ -2622,10 +3119,9 @@ body.home .hero-video + main .btn-primary:hover {
 
 .fc-save {
   margin: 0 0 1rem;
-  padding: 0.75rem 1rem 1rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  padding: 16px 20px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 
 .fc-save legend {
@@ -2655,43 +3151,40 @@ body.home .hero-video + main .btn-primary:hover {
   width: 1.05rem;
   height: 1.05rem;
   margin: 0;
-  accent-color: var(--color-accent);
+  accent-color: var(--text);
 }
 
 .fc-save-error {
   margin: 0 0 1rem;
   padding: 0.6rem 0.9rem;
-  font-size: 0.92rem;
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.1);
-  border: 1px solid rgba(246, 82, 9, 0.45);
-  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--accent-text);
+  background: transparent;
+  border: 1px solid var(--accent-text);
 }
 
 /* После сохранения слов с фото — строка «Сохранено: …» на странице колоды. */
 .fc-saved {
-  margin: -1.25rem 0 1.5rem;
+  margin: 0 0 20px;
   padding: 0.6rem 0.9rem;
-  font-size: 0.95rem;
-  color: var(--color-know-soft);
-  background: rgba(60, 184, 120, 0.1);
-  border: 1px solid rgba(60, 184, 120, 0.45);
-  border-radius: var(--radius);
+  font-size: 15px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
 }
 
 /* Своя колода: где хранится, «Скачать файл колоды», «Удалить колоду». */
 .fc-own {
   margin-top: 2rem;
-  padding: 1rem 1.25rem;
-  background: var(--color-surface);
-  border: 1px dashed rgba(168, 184, 209, 0.35);
-  border-radius: var(--radius);
+  padding: 20px 28px;
+  background: transparent;
+  border: 1px dashed var(--line-strong);
 }
 
 .fc-own-text {
   margin: 0 0 0.75rem;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
+  font-size: 14px;
+  color: var(--text-2);
 }
 
 .fc-own-actions {
@@ -2701,63 +3194,10 @@ body.home .hero-video + main .btn-primary:hover {
   gap: 0.75rem 1.25rem;
 }
 
-/* Папки (js/flashcards.js). Плашка папки — та же .card колоды, но
-   «стопкой»: сверху справа выглядывает край ещё одной карточки, — и со
-   значком папки перед названием. Сетке папок — место под этот край. */
-.fc-folder-grid {
-  padding-top: 6px;
-}
-
-.fc-folder {
-  margin-right: 6px;
-  box-shadow: 6px -6px 0 -1px var(--color-surface-solid), 6px -6px 0 0 var(--color-border), var(--shadow);
-}
-
-.fc-folder:hover,
-.fc-folder:focus-within {
-  box-shadow: 6px -6px 0 -1px var(--color-surface-solid), 6px -6px 0 0 rgba(246, 82, 9, 0.55), 0 8px 24px rgba(36, 54, 92, 0.35);
-}
-
-.fc-folder h3 {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .fc-folder-icon {
   display: inline-flex;
   flex: none;
-  color: var(--color-accent);
-}
-
-.card .fc-folder-decks {
-  display: -webkit-box;
-  margin-top: 0.3rem;
-  overflow: hidden;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-/* «+ Новая папка» и «+ Новая колода» — пунктирные пустые плашки
-   (.card.is-empty), содержимое по центру; высотой — как соседние плашки
-   ряда. Справа у папки — место под край «стопки», как у плашек папок. */
-.fc-folder-new,
-.fc-deck-new {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 7.5rem;
-}
-
-.fc-folder-new {
-  margin-right: 6px;
-}
-
-.fc-folder-new:hover h3 a,
-.fc-deck-new:hover h3 a {
-  color: var(--color-accent);
+  color: var(--text);
 }
 
 .fc-folder-heading {
@@ -2777,6 +3217,7 @@ body.home .hero-video + main .btn-primary:hover {
   display: block;
   margin-bottom: 0.4rem;
   font-weight: 600;
+  font-size: 15px;
 }
 
 .fc-field .fc-input {
@@ -2798,15 +3239,15 @@ body.home .hero-video + main .btn-primary:hover {
 
 .fc-pick-count {
   margin-left: 0.35rem;
-  font-size: 0.9rem;
+  font-size: 14px;
   font-weight: 400;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .fc-pick-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 0.6rem;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -2817,21 +3258,19 @@ body.home .hero-video + main .btn-primary:hover {
   align-items: center;
   gap: 0.75rem;
   height: 100%;
-  padding: 0.75rem 0.95rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
 }
 
 .fc-pick-row:hover {
-  border-color: rgba(246, 82, 9, 0.5);
+  border-color: var(--line-strong);
 }
 
 .fc-pick-row.is-checked {
-  background: rgba(246, 82, 9, 0.1);
-  border-color: var(--color-accent);
+  background: var(--surface-2);
+  border-color: var(--text);
 }
 
 .fc-pick-row input {
@@ -2839,7 +3278,7 @@ body.home .hero-video + main .btn-primary:hover {
   width: 1.15rem;
   height: 1.15rem;
   margin: 0;
-  accent-color: var(--color-accent);
+  accent-color: var(--text);
 }
 
 .fc-pick-text {
@@ -2856,9 +3295,9 @@ body.home .hero-video + main .btn-primary:hover {
 .fc-pick-meta {
   display: block;
   margin-top: 0.15rem;
-  font-size: 0.82rem;
+  font-size: 13px;
   line-height: 1.4;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .fc-folder-form .btn {
@@ -2908,114 +3347,215 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
-/* Раздел «ИИ-помощник» (assistant/index.html, js/assistant.js). Вопросы
-   ученика — пузыри справа, ответы — карточки во всю ширину с разметкой
-   (markdown → HTML в js/ai.js). Поле ввода прилипает к низу окна. */
-.ai-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0 1rem;
+/* Раздел «ИИ-помощник» (assistant/index.html, js/assistant.js). Первый
+   экран — панель: слева описание, справа «о чём спросить» (нажатие
+   отправляет вопрос). Ниже диалог в рамке: вопрос — тёмный блок справа,
+   ответ — светлый блок слева со знаком 问, внизу рамки — поле ввода, оно
+   прилипает к низу окна. */
+.ai-hero .panel__main {
+  flex-basis: 520px;
+  min-height: 460px;
 }
 
-.ai-new {
-  display: inline-flex;
+.ai-hero .panel__side {
+  flex-basis: 400px;
+}
+
+.ai-hero .lead {
+  max-width: 430px;
+}
+
+.ai-hero .sun {
+  bottom: -120px;
+  width: 220px;
+  height: 220px;
+}
+
+/* «пока работает только с VPN» — метка со значком. */
+.ai-vpn {
+  align-self: flex-start;
+  gap: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+.ai-ask__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ai-ask__head h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ai-ask__head small {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+/* Вопрос-строка: текст и стрелка. */
+.ai-prompt {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px;
   align-items: center;
-  gap: 0.4rem;
-  margin: 0.2rem 0 1.25rem;
-  font-family: inherit;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 28px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ai-prompt:last-child {
+  border-bottom: 0;
+}
+
+.ai-prompt:hover {
+  background: var(--surface-2);
+}
+
+.ai-prompt__arrow {
+  color: var(--text-2);
+}
+
+.ai-prompt:hover .ai-prompt__arrow {
+  color: var(--accent-text);
+}
+
+/* ------------------------------------------------ диалог */
+
+/* Подпись секции: «диалог», линия, пояснение и «новый диалог». */
+.ai-chat__label {
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.ai-chat__label::after {
+  display: none;
+}
+
+.ai-chat__label h2 {
+  margin: 0;
+  font: inherit;
+}
+
+.ai-chat__line {
+  flex: 1 1 120px;
+  height: 1px;
+  background: var(--line);
+}
+
+.ai-chat__note {
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .ai-new[hidden] {
   display: none;
 }
 
-.ai-intro {
-  margin-bottom: 1.25rem;
-  padding: 1.1rem 1.25rem 1.25rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+.ai-box {
+  border: 1px solid var(--line);
+  background: var(--surface);
 }
 
-.ai-intro-title {
-  margin: 0 0 0.4rem;
-  font-size: 1.05rem;
+/* Подсказка в пустом диалоге (её прячет js/assistant.js, когда появляются
+   сообщения). */
+.ai-empty {
+  margin: 0;
+  max-width: 720px;
+  padding: 32px 40px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-2);
 }
 
-.ai-intro p {
-  margin: 0 0 1rem;
-  font-size: 0.95rem;
-  color: var(--color-text-muted);
-}
-
-.ai-prompts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.ai-prompt {
-  padding: 0.45rem 0.9rem;
-  font: inherit;
-  font-size: 0.9rem;
-  text-align: left;
-  color: var(--color-text);
-  background: rgba(238, 241, 246, 0.06);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
-}
-
-.ai-prompt:hover {
-  background: rgba(246, 82, 9, 0.1);
-  border-color: rgba(246, 82, 9, 0.6);
+.ai-empty[hidden] {
+  display: none;
 }
 
 .ai-log {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 24px;
+  padding: 32px 40px;
 }
 
-/* Ответ прокручивается к началу — под закреплённую шапку. */
+.ai-log:empty {
+  display: none;
+}
+
+/* Ответ прокручивается к началу — с небольшим отступом от верха окна. */
 .ai-msg {
-  scroll-margin-top: 84px;
+  scroll-margin-top: 24px;
 }
 
 .ai-msg.is-user {
   align-self: flex-end;
-  max-width: min(85%, 36rem);
-  padding: 0.6rem 1rem;
-  background: var(--color-primary);
-  border: 1px solid rgba(168, 184, 209, 0.22);
-  border-radius: 16px 16px 4px 16px;
+  max-width: 70%;
+  padding: 14px 18px;
+  background: var(--text);
+  color: var(--on-dark);
+  font-size: 16px;
+  line-height: 1.45;
 }
 
 .ai-user-text {
   margin: 0;
+  line-height: inherit;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
+/* Ответ: светлый блок, слева от него — знак 问 в рамке. */
 .ai-msg.is-assistant {
-  align-self: stretch;
-  padding: 1rem 1.25rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 16px 16px 16px 4px;
-  box-shadow: var(--shadow);
+  position: relative;
+  align-self: flex-start;
+  max-width: calc(86% - 50px);
+  margin-left: 50px;
+  padding: 22px 24px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.ai-msg.is-assistant::before {
+  content: "问";
+  position: absolute;
+  top: -1px;
+  left: -51px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  font-family: var(--font-zh);
+  font-size: 17px;
+  line-height: 1;
 }
 
 .ai-msg.is-waiting {
-  align-self: flex-start;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
-  color: var(--color-text-muted);
+  gap: 8px 12px;
+  padding: 14px 18px;
+  font-size: 15px;
+  color: var(--text-2);
 }
 
 .ai-msg.is-error {
@@ -3023,38 +3563,38 @@ body.home .hero-video + main .btn-primary:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 1rem;
-  padding: 0.75rem 1rem;
-  background: rgba(246, 82, 9, 0.08);
-  border: 1px solid rgba(246, 82, 9, 0.45);
-  border-radius: 16px;
+  gap: 10px 16px;
+  margin-left: 50px;
+  padding: 14px 18px;
+  border: 1px solid var(--accent-text);
+  font-size: 15px;
+  color: var(--accent-text);
 }
 
 .ai-msg.is-error p {
   margin: 0;
 }
 
-.ai-retry {
-  padding: 0.4rem 0.9rem;
-  font-family: inherit;
-  font-size: 0.88rem;
-}
-
 .ai-link {
   padding: 0;
-  font: inherit;
-  color: var(--color-accent-soft);
-  background: none;
   border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
   text-decoration: underline;
   text-underline-offset: 0.2em;
+  text-transform: lowercase;
   cursor: pointer;
 }
 
+.ai-link:hover {
+  color: var(--accent-text);
+}
+
 .ai-truncated {
-  margin: 0.85rem 0 0;
-  font-size: 0.88rem;
-  color: var(--color-text-muted);
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
 }
 
 /* Три точки «думаю»: здесь и в объяснении слова (окно слова). */
@@ -3064,10 +3604,10 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .ai-dots i {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--color-accent-soft);
+  background: var(--text-2);
   animation: ai-dot 1.2s ease-in-out infinite;
 }
 
@@ -3090,10 +3630,11 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
-/* Ответ нейросети: заголовки, списки, таблицы, цитаты. Китайский текст
-   (span.zh из js/ai.js) — шрифтом и цветом иероглифов. */
+/* Ответ нейросети: заголовки, списки, таблицы, цитаты. Иероглифы в ответе
+   крупнее текста. */
 .ai-md {
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
@@ -3111,36 +3652,52 @@ body.home .hero-video + main .btn-primary:hover {
 .ai-md blockquote,
 .ai-md pre,
 .ai-md .ai-table {
-  margin: 0 0 0.85rem;
+  margin: 0 0 14px;
+  line-height: inherit;
 }
 
 .ai-md h3 {
-  margin: 1.25rem 0 0.5rem;
-  font-size: 1.1rem;
-  line-height: 1.35;
+  margin: 22px 0 8px;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 600;
 }
 
 .ai-md h4 {
-  margin: 1rem 0 0.4rem;
-  font-size: 1rem;
+  margin: 18px 0 6px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .ai-md ul,
 .ai-md ol {
-  padding-left: 1.4rem;
+  padding-left: 22px;
 }
 
 .ai-md li + li {
-  margin-top: 0.3rem;
+  margin-top: 5px;
 }
 
 .ai-md li > ul,
 .ai-md li > ol {
-  margin: 0.3rem 0 0;
+  margin: 5px 0 0;
 }
 
 .ai-md strong {
-  color: #fff;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Иероглифы выделяются размером, а не жирностью: жирного начертания
+   Noto Sans SC сайт не грузит. */
+.ai-md strong .zh,
+.ai-md .zh strong {
+  font-weight: 400;
+}
+
+.ai-md blockquote > :last-child,
+.ai-md li > p:last-child {
+  margin-bottom: 0;
 }
 
 .ai-md a {
@@ -3148,17 +3705,16 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .ai-md code {
-  padding: 0.1rem 0.35rem;
+  padding: 1px 5px;
   font-size: 0.9em;
-  background: rgba(238, 241, 246, 0.08);
-  border-radius: 4px;
+  background: var(--surface);
 }
 
 .ai-md pre {
-  padding: 0.75rem 1rem;
+  padding: 12px 16px;
   overflow-x: auto;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 
 .ai-md pre code {
@@ -3167,15 +3723,15 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .ai-md blockquote {
-  padding: 0.2rem 0 0.2rem 1rem;
-  color: var(--color-text-muted);
-  border-left: 3px solid rgba(246, 82, 9, 0.6);
+  padding: 2px 0 2px 16px;
+  border-left: 2px solid var(--line-strong);
+  color: var(--text-2);
 }
 
 .ai-md hr {
-  margin: 1rem 0;
+  margin: 18px 0;
   border: 0;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--line);
 }
 
 .ai-table {
@@ -3184,135 +3740,260 @@ body.home .hero-video + main .btn-primary:hover {
 
 .ai-md table {
   min-width: 100%;
-  font-size: 0.92rem;
+  font-size: 15px;
   border-collapse: collapse;
 }
 
-/* В ячейках слова переносятся только целиком: узкой таблице лучше
-   прокрутиться вбок (.ai-table), чем рвать «завершен-о». */
+/* В ячейках слова переносятся только целиком: узкой таблице помогает
+   прокрутка .ai-table. */
 .ai-md th,
 .ai-md td {
-  padding: 0.45rem 0.7rem;
+  padding: 8px 12px;
   text-align: left;
   vertical-align: top;
   overflow-wrap: normal;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--line);
 }
 
 .ai-md th {
   font-weight: 600;
-  background: rgba(238, 241, 246, 0.05);
+  background: var(--surface);
 }
 
 .ai-md .zh,
-.ai-user-text .zh,
 .hz-ai .zh {
-  font-family: var(--font-chinese);
-  color: var(--color-chinese);
+  font-family: var(--font-zh);
+  font-size: 1.2em;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.ai-user-text .zh {
+  font-family: var(--font-zh);
 }
 
 .hz-ai-zh .zh,
 .hz-ai-word .zh {
+  font-size: inherit;
   color: inherit;
 }
 
-/* Поле ввода прилипает к низу окна; плотная подложка с мягким верхним краем
-   отделяет его от ответов, которые прокручиваются под ним. Предупреждение
-   «Нейросеть может ошибаться» — под полем и не прилипает: на телефоне
-   каждая строка экрана на счету. */
+/* Поле ввода — внизу рамки диалога; прилипает к низу окна, пока рамка на
+   экране. */
 .ai-form {
   position: sticky;
   bottom: 0;
   z-index: 5;
-  margin-top: 1rem;
-  padding: 1rem 0 calc(0.75rem + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(180deg, rgba(8, 13, 23, 0) 0%, rgba(8, 13, 23, 0.97) 1rem);
-}
-
-/* На телефоне внизу окна — нижняя панель разделов (components/site-header):
-   поле прилипает над ней, а полоску «Домой» iPhone закрывает сама панель. */
-@media (max-width: 899.98px) {
-  .ai-form {
-    bottom: var(--site-tabbar-space, 0px);
-    padding-bottom: 0.75rem;
-  }
-}
-
-.ai-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
-.ai-form-row {
   display: flex;
   align-items: flex-end;
-  gap: 0.5rem;
-  padding: 0.35rem 0.35rem 0.35rem 0.5rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
+  gap: 10px;
+  margin: 0;
+  padding: 16px 24px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
 }
 
-.ai-form-row:focus-within {
-  border-color: rgba(246, 82, 9, 0.6);
+.ai-empty + .ai-log:empty + .ai-form,
+.ai-box > .ai-form:first-child {
+  border-top: 1px solid var(--line);
 }
 
+/* Шрифт не меньше 16px: иначе iOS увеличивает страницу при вводе. */
 .ai-input {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
-  min-height: 44px;
+  min-height: 54px;
   max-height: 200px;
-  padding: 0.6rem 0.4rem;
+  padding: 15px 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  background: var(--surface-2);
+  color: var(--text);
   font: inherit;
-  font-size: 1rem;
-  line-height: 1.45;
-  color: var(--color-text);
-  background: transparent;
-  border: 0;
-  outline: none;
+  font-size: 16px;
+  line-height: 1.4;
   resize: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ai-input:focus {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
 }
 
 .ai-input::placeholder {
-  color: var(--color-text-muted);
+  color: var(--text-2);
+  opacity: 1;
 }
 
+/* Отправка — тёмная квадратная кнопка. */
 .ai-send {
-  flex: none;
+  flex: 0 0 54px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 54px;
+  height: 54px;
   padding: 0;
-  background: var(--color-accent);
-  border-radius: 10px;
+  border: 0;
+  border-radius: 0;
+  background: var(--text);
+  color: var(--on-dark);
+  cursor: pointer;
 }
 
 .ai-send:hover {
-  background: var(--color-accent-soft);
+  background: var(--text-hover);
+}
+
+.ai-send:disabled {
+  background: var(--line-strong);
+  cursor: default;
 }
 
 .ai-note {
-  margin: 0;
-  font-size: 0.78rem;
-  text-align: center;
-  color: var(--color-text-muted);
+  margin: 16px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
 }
 
-@media (max-width: 640px) {
-  .ai-msg.is-user {
-    max-width: 90%;
+/* Телефон и Telegram Mini App (макет design/mockups/phone-assistant.html):
+   вопросы — короткими кнопками, сообщения без рамки вокруг диалога, поле
+   ввода — над нижней панелью разделов. */
+@media (max-width: 960px) {
+  .ai-hero .panel__main {
+    min-height: 0;
   }
 
-  .ai-msg.is-assistant {
-    padding: 0.9rem 1rem;
+  .ai-hero .page-title {
+    font-size: 30px;
+  }
+
+  .ai-hero .panel__side {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    border: 0;
+    background: none;
+  }
+
+  .ai-ask__head {
+    flex: 1 1 100%;
+    padding: 0;
+    border: 0;
+  }
+
+  .ai-ask__head h2 {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-2);
+  }
+
+  .ai-prompt,
+  .ai-prompt:last-child {
+    flex: 0 0 auto;
+    display: inline-flex;
+    width: auto;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 14px;
+  }
+
+  .ai-prompt__arrow {
+    display: none;
+  }
+
+  .ai-chat {
+    margin-top: 20px;
+  }
+
+  .ai-chat__label {
+    display: none;
+  }
+
+  .ai-chat__label:has(.ai-new:not([hidden])) {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 14px;
+  }
+
+  .ai-chat__label:has(.ai-new:not([hidden])) > :not(.ai-new) {
+    display: none;
+  }
+
+  .ai-box {
+    border: 0;
+    background: none;
+  }
+
+  .ai-empty {
+    padding: 0 0 16px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .ai-log {
+    gap: 14px;
+    padding: 0 0 20px;
+  }
+
+  .ai-msg.is-user {
+    max-width: 78%;
+    padding: 11px 14px;
+    font-size: 15px;
+  }
+
+  .ai-msg.is-assistant,
+  .ai-msg.is-error {
+    align-self: stretch;
+    max-width: none;
+    margin-left: 0;
+    padding: 16px;
+  }
+
+  .ai-msg.is-assistant::before {
+    display: none;
+  }
+
+  .ai-msg.is-waiting {
+    align-self: flex-start;
+    padding: 12px 14px;
+  }
+
+  .ai-md {
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .ai-md table {
+    font-size: 14px;
+  }
+
+  .ai-form {
+    bottom: var(--site-tabbar-space, 0px);
+    gap: 8px;
+    margin: 0 calc(-1 * var(--page-pad));
+    padding: 12px var(--page-pad);
+    background: var(--bg);
+  }
+
+  .ai-input {
+    min-height: 48px;
+    padding: 12px 14px;
+  }
+
+  .ai-send {
+    flex-basis: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .ai-note {
+    margin-top: 12px;
+    font-size: 13px;
   }
 }
 
@@ -3327,71 +4008,62 @@ body.home .hero-video + main .btn-primary:hover {
   }
 }
 
-/* Раздел «Словарь» (dictionary/index.html, js/dictionary.js): строка
-   поиска и статьи 大БКРС карточками, как слова колоды в «Карточках». */
+/* Раздел «Словарь» (dictionary/index.html, js/dictionary.js): панель с
+   поиском и списком «как искать», под ней выдача. Первое точное
+   совпадение — крупная карточка .dict-main с блоком «написание»,
+   остальные статьи — строки .dict-row в рамке. Разметку выдачи строит
+   js/dictionary.js, блок «написание» — js/hanzi-window.js. */
+.dict-hero .sun {
+  bottom: -112px;
+}
+
 .dict-search {
-  margin-bottom: 1.5rem;
+  max-width: 580px;
+  margin: 4px 0 0;
 }
 
-/* Подпись поля для экранных дикторов: глазами её заменяет подсказка в
-   самом поле. */
-.dict-search-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.dict-search-row {
-  display: flex;
-  gap: 0.6rem;
+.dict-search .field {
+  height: 60px;
+  padding: 0 6px 0 18px;
 }
 
 /* Шрифт не меньше 16px: иначе iOS увеличивает страницу при вводе. */
-.dict-input {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface-solid);
-  color: var(--color-text);
-  font-family: var(--font-sans), var(--font-chinese);
-  font-size: 1.05rem;
-  -webkit-appearance: none;
-  appearance: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+.dict-search .field input {
+  height: 46px;
+  font-size: 18px;
 }
 
-.dict-input::placeholder {
-  color: var(--color-text-muted);
-  opacity: 0.8;
+.dict-search .icon-btn {
+  width: 46px;
+  height: 46px;
 }
 
-.dict-input:focus {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(246, 82, 9, 0.25);
-}
-
-.dict-submit {
-  flex-shrink: 0;
-  padding: 0.75rem 1.4rem;
+.dict-search .field__go {
+  height: 46px;
+  padding: 0 26px;
 }
 
 .dict-hint {
-  margin: 0.6rem 0 0;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+/* Пока открыта клетка рукописного ввода, подсказка под ней не нужна —
+   иначе она сползает на «солнце». */
+.dict-search:has(.hw:not([hidden])) .dict-hint {
+  display: none;
+}
+
+.dict-hero .side-row {
+  padding-top: 13px;
+  padding-bottom: 13px;
 }
 
 .dict-status {
-  margin: 0 0 1rem;
-  color: var(--color-text-muted);
+  margin: 24px 0 0;
+  font-size: 15px;
+  color: var(--text-2);
 }
 
 .dict-status:empty {
@@ -3399,96 +4071,116 @@ body.home .hero-video + main .btn-primary:hover {
 }
 
 .dict-status.is-error {
-  color: var(--color-accent-soft);
+  color: var(--accent-text);
 }
 
-.dict-group {
-  margin-bottom: 2rem;
+.dict-results:not(:empty) {
+  margin-top: 96px;
 }
 
-.dict-group-title {
-  margin: 0 0 0.75rem;
-  padding-bottom: 0.4rem;
-  font-size: 1.1rem;
-  border-bottom: 2px solid var(--color-border);
+.dict-status:not(:empty) + .dict-results:not(:empty) {
+  margin-top: 24px;
+}
+
+/* «результаты · запрос» — подпись, линия и пояснение справа. */
+.dict-results-label {
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.dict-results-label::after {
+  display: none;
+}
+
+.dict-results-label h2 {
+  margin: 0;
+  font: inherit;
+}
+
+.dict-results-label__q {
+  color: var(--text);
+}
+
+.dict-results-label__line {
+  flex: 1 1 120px;
+  height: 1px;
+  background: var(--line);
+}
+
+.dict-results-label__note {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.dict-group + .dict-group,
+.dict-main-slot:not(:empty) + .dict-box {
+  margin-top: 24px;
+}
+
+.dict-box {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.dict-box[hidden] {
+  display: none;
+}
+
+.dict-box__title {
+  margin: 0;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .dict-list {
-  display: grid;
-  gap: 0.6rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.dict-entry {
-  padding: 1rem 1.15rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-
-.dict-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.2rem 0.9rem;
-  margin-bottom: 0.4rem;
-}
+/* ------------------------------------------------ текст статьи */
 
 .dict-hanzi {
-  font-family: var(--font-chinese);
-  font-size: 1.75rem;
-  line-height: 1.25;
-  color: var(--color-chinese);
-  overflow-wrap: anywhere;
-}
-
-.dict-pinyin {
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.dict-text {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
+  font-family: var(--font-zh);
+  font-weight: 400;
+  color: var(--text);
 }
 
 .dict-line {
   margin: 0;
 }
 
-.dict-line + .dict-line {
-  margin-top: 0.2rem;
-}
-
-/* Пример: китайская фраза цветом иероглифов, перевод приглушён. */
+/* Пример: китайская фраза цветом текста, перевод приглушён. */
 .dict-ex {
-  padding-left: 1rem;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
+  padding-left: 16px;
+  color: var(--text-2);
 }
 
 .dict-ex-zh {
-  font-family: var(--font-chinese);
-  color: var(--color-chinese);
+  font-family: var(--font-zh);
+  color: var(--text);
 }
 
 /* Пометки словаря (гл., см., уст.) и комментарии. */
 .dict-label {
-  font-size: 0.85em;
-  font-style: italic;
-  color: var(--color-accent-soft);
+  font-size: 0.9em;
+  color: var(--text-2);
 }
 
 .dict-note {
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .dict-ref {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
+  color: var(--text);
+  text-underline-offset: 0.15em;
+}
+
+.dict-ref:hover {
+  color: var(--accent-text);
 }
 
 /* Длинная статья видна первыми строками, остальное — по кнопке. */
@@ -3496,168 +4188,693 @@ body.home .hero-video + main .btn-primary:hover {
   display: none;
 }
 
-.dict-toggle {
-  margin: 0;
-  padding: 0.45rem 0 0;
-  border: 0;
-  background: none;
-  color: var(--color-accent);
-  font: inherit;
-  font-size: 0.875rem;
+/* Дополнения к статьям БКРС (build.py, enrich). Подобранный пиньинь —
+   с пометкой «авто». */
+.dict-pinyin.is-auto,
+.hz-pinyin.is-auto,
+.hz-char-pinyin.is-auto,
+.hz-part-py.is-auto {
+  text-decoration: underline dotted var(--line-strong);
+  text-underline-offset: 0.2em;
+}
+
+.dict-auto,
+.hz-auto {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  vertical-align: middle;
+  color: var(--text-2);
+}
+
+.dict-tag,
+.hz-mt {
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--text-2);
+}
+
+.dict-no-ru {
+  color: var(--text-2);
+}
+
+.dict-words .dict-ref {
+  color: var(--text);
+}
+
+.dict-text.is-foreign .dict-line:not(.dict-mt):not(.dict-no-ru),
+.dict-article.is-foreign .dict-line {
+  color: var(--text-2);
+}
+
+/* ------------------------------------------- точное совпадение */
+
+/* Крупная карточка: слева иероглифы и статья, справа «написание».
+   Нажатие на карточку открывает окно слова. */
+.dict-main {
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.dict-main.has-card {
   cursor: pointer;
 }
 
-.dict-toggle:hover {
-  text-decoration: underline;
+.dict-main__word {
+  flex: 1 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 32px;
+  padding: 40px;
+}
+
+.dict-main .dict-hanzi {
+  flex: none;
+  max-width: 100%;
+  font-size: 140px;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+/* Чем длиннее слово, тем мельче иероглифы. */
+.dict-main .dict-hanzi.is-len-2 {
+  font-size: 104px;
+}
+
+.dict-main .dict-hanzi.is-len-3 {
+  font-size: 76px;
+}
+
+.dict-main .dict-hanzi.is-len-4 {
+  font-size: 60px;
+}
+
+.dict-main .dict-hanzi.is-len-5,
+.dict-main .dict-hanzi.is-len-6,
+.dict-main .dict-hanzi.is-len-7,
+.dict-main .dict-hanzi.is-len-8,
+.dict-main .dict-hanzi.is-len-9 {
+  flex: 1 1 100%;
+  font-size: 44px;
+  line-height: 1.2;
+}
+
+.dict-main__body {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dict-main__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.dict-main .dict-pinyin {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.dict-main .dict-text {
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.dict-main .dict-ex {
+  font-size: 15px;
+}
+
+.dict-main .dict-ex-zh {
+  font-size: 17px;
+}
+
+/* «показать всю статью · ещё N строк» — текст с подчёркиванием. */
+.dict-main .dict-toggle {
+  align-self: flex-start;
+  padding: 0 0 3px;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dict-main .dict-toggle:hover {
+  color: var(--accent-text);
+}
+
+.dict-main .dict-toggle,
+.dict-main__meta {
+  justify-self: start;
+  text-align: left;
+}
+
+.dict-main__meta {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.dict-main__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.dict-main__vpn {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* «написание»: порядок черт по шагам и строки о ключе и составе. */
+.dict-main__writing {
+  flex: 1 1 360px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px;
+  border-left: 1px solid var(--line);
+}
+
+.dict-main__writing[hidden] {
+  display: none;
+}
+
+.dict-main__writing-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.dict-main__writing-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dict-main__writing-head span {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.dict-writing {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hz-writing {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.hz-writing__char {
+  flex: none;
+  width: 28px;
+  font-family: var(--font-zh);
+  font-size: 24px;
+  line-height: 44px;
+  text-align: center;
+}
+
+.hz-writing__cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Клетка 田字格 с шагом порядка черт: будущие черты бледные, написанные —
+   серые, текущая — цветом текста. */
+.hz-wcell {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.hz-wcell::before,
+.hz-wcell::after {
+  content: "";
+  position: absolute;
+}
+
+.hz-wcell::before {
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px dashed var(--hanzi-pale);
+}
+
+.hz-wcell::after {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  border-left: 1px dashed var(--hanzi-pale);
+}
+
+.hz-wcell svg {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+}
+
+.hz-wcell path {
+  fill: var(--hanzi-pale);
+}
+
+.hz-wcell path[class^="is-"] {
+  fill: #9AA1AF;
+}
+
+.hz-wcell path.is-current {
+  fill: var(--text);
+}
+
+/* Много черт или несколько иероглифов — клетки мельче. */
+.hz-writing__cells:has(> :nth-child(9)) .hz-wcell {
+  width: 52px;
+  height: 52px;
+}
+
+.hz-writing__char + .hz-writing__cells .hz-wcell {
+  width: 44px;
+  height: 44px;
+}
+
+.hz-writing__cells:has(> :nth-child(9)) .hz-wcell svg,
+.hz-writing__char + .hz-writing__cells .hz-wcell svg {
+  padding: 5px;
+}
+
+.hz-facts {
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+
+.hz-fact {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.hz-fact:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.hz-fact dt {
+  color: var(--text-2);
+}
+
+.hz-fact dt[lang] {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.hz-fact dd {
+  margin: 0;
+}
+
+/* ------------------------------------------------ строки списка */
+
+/* Иероглифы | пиньинь | короткое значение | «статья» | стрелка. Нажатие
+   на строку открывает окно слова, «статья» раскрывает полный текст. */
+.dict-row {
+  display: grid;
+  grid-template-columns: 120px 150px minmax(0, 1fr) auto 24px;
+  align-items: center;
+  gap: 0 16px;
+  padding: 8px 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.dict-row:last-child {
+  border-bottom: 0;
+}
+
+.dict-row.has-card {
+  cursor: pointer;
+}
+
+.dict-row .dict-head {
+  display: contents;
+}
+
+.dict-row .dict-hanzi {
+  font-size: 24px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.dict-row .dict-hanzi.is-len-5,
+.dict-row .dict-hanzi.is-len-6,
+.dict-row .dict-hanzi.is-len-7,
+.dict-row .dict-hanzi.is-len-8,
+.dict-row .dict-hanzi.is-len-9 {
+  font-size: 18px;
+}
+
+.dict-row .dict-pinyin {
+  font-size: 15px;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+.dict-row .dict-text {
+  min-width: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* Короткое значение — не больше двух строк. */
+.dict-gloss {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dict-row__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+button.dict-row__more:hover {
+  color: var(--text);
+}
+
+.dict-row.is-open .dict-row__more svg {
+  transform: rotate(180deg);
+}
+
+.dict-row__open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+/* Полный текст статьи под строкой. */
+.dict-article {
+  grid-column: 2 / -1;
+  margin-top: 4px;
+  padding: 12px 0 10px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.55;
+  cursor: auto;
+}
+
+.dict-row:not(.is-open) .dict-article {
+  display: none;
+}
+
+.dict-article .dict-ex-zh {
+  font-size: 17px;
+}
+
+@media (hover: hover) {
+  .dict-row.has-card:hover {
+    background: var(--surface-2);
+  }
+
+  .dict-row.has-card:hover .dict-row__open {
+    color: var(--accent-text);
+  }
 }
 
 .dict-more {
-  display: block;
-  margin: 0 auto;
+  margin-top: 24px;
 }
 
 .dict-more[hidden] {
   display: none;
 }
 
-/* Источник словаря — строкой над копирайтом. */
-.footer-source {
-  width: 100%;
-  margin: 1.5rem 0 0;
-  font-size: 0.85rem;
-  text-align: center;
-}
-
-.footer-source + .footer-copy {
-  margin-top: 0;
-}
-
-@media (max-width: 640px) {
-  .dict-entry {
-    padding: 0.85rem 0.9rem;
+@media (max-width: 960px) {
+  .dict-search {
+    max-width: none;
+    margin-top: 6px;
   }
 
-  .dict-hanzi {
-    font-size: 1.5rem;
+  .dict-search .field {
+    gap: 4px;
+    height: 54px;
+    padding: 0 5px 0 14px;
   }
 
-  .dict-submit {
-    padding: 0.75rem 1rem;
+  .dict-search .field input {
+    height: 44px;
+    font-size: 17px;
   }
-}
 
-/* Дополнения к статьям БКРС (build.py, enrich). Подобранный пиньинь —
-   с пометкой «авто», машинный перевод — с подписью; у статей, где в БКРС
-   перевод не на русском, сам текст статьи бледнее. */
-.dict-pinyin.is-auto,
-.hz-pinyin.is-auto,
-.hz-char-pinyin.is-auto,
-.hz-part-py.is-auto {
-  font-weight: 500;
-}
-
-.dict-auto,
-.hz-auto {
-  display: inline-block;
-  margin-left: 0.4rem;
-  padding: 0 0.35rem;
-  font-size: 0.62rem;
-  font-weight: 600;
-  line-height: 1.5;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  vertical-align: 0.2em;
-  color: var(--color-text-muted);
-  border: 1px dashed rgba(168, 184, 209, 0.45);
-  border-radius: 4px;
-  cursor: help;
-}
-
-.dict-tag,
-.hz-mt {
-  display: inline-block;
-  margin-right: 0.35rem;
-  padding: 0 0.45rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  line-height: 1.6;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  vertical-align: 0.1em;
-  color: #8fc3f0;
-  border: 1px solid rgba(143, 195, 240, 0.45);
-  border-radius: 999px;
-}
-
-.dict-no-ru {
-  color: var(--color-text-muted);
-}
-
-.dict-words .dict-ref {
-  color: var(--color-accent-soft);
-}
-
-.dict-text.is-foreign .dict-line:not(.dict-mt):not(.dict-no-ru) {
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-}
-
-/* Статья словаря нажимается целиком — открывает окно слова
-   (js/hanzi-window.js). Метка «字 Разбор» в шапке статьи показывает, что
-   так можно. */
-.dict-entry.has-card {
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-
-@media (hover: hover) {
-  .dict-entry.has-card:hover {
-    border-color: rgba(246, 82, 9, 0.45);
+  .dict-search .icon-btn {
+    width: 44px;
+    height: 44px;
   }
-}
 
-.dict-card-btn {
-  align-self: center;
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.75rem;
-  font: inherit;
-  font-size: 0.8rem;
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.08);
-  border: 1px solid rgba(246, 82, 9, 0.4);
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
-}
+  .dict-search .field__go {
+    height: 44px;
+    padding: 0 16px;
+  }
 
-.dict-card-btn:hover {
-  background: rgba(246, 82, 9, 0.16);
-  border-color: var(--color-accent);
-}
+  .dict-status {
+    margin-top: 16px;
+    font-size: 14px;
+  }
 
-.dict-card-btn .zh {
-  font-family: var(--font-chinese);
-  font-size: 0.95rem;
-}
+  .dict-results:not(:empty),
+  .dict-status:not(:empty) + .dict-results:not(:empty) {
+    margin-top: 16px;
+  }
 
-/* «ИИ Объяснить» стоит перед «字 Разбор»; вторая кнопка прижата к первой,
-   а не делит с ней свободное место. */
-.dict-card-btn + .dict-card-btn {
-  margin-left: -0.4rem;
-}
-
-.dict-explain-btn .ai {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-@media (max-width: 640px) {
-  .dict-card-btn .txt {
+  .dict-results-label {
     display: none;
+  }
+
+  /* Карточка точного совпадения: иероглифы слева, пиньинь и статья
+     справа, кнопки — во всю ширину под ними. */
+  .dict-main {
+    display: block;
+    padding: 18px;
+  }
+
+  .dict-main__word {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px 18px;
+    padding: 0;
+  }
+
+  .dict-main__body {
+    display: contents;
+  }
+
+  .dict-main .dict-hanzi {
+    grid-row: 1 / span 4;
+    align-self: start;
+    font-size: 80px;
+  }
+
+  .dict-main .dict-hanzi.is-len-2 {
+    font-size: 56px;
+  }
+
+  .dict-main .dict-hanzi.is-len-3 {
+    font-size: 40px;
+  }
+
+  .dict-main .dict-hanzi.is-len-4 {
+    font-size: 30px;
+  }
+
+  .dict-main .dict-hanzi.is-len-5,
+  .dict-main .dict-hanzi.is-len-6,
+  .dict-main .dict-hanzi.is-len-7,
+  .dict-main .dict-hanzi.is-len-8,
+  .dict-main .dict-hanzi.is-len-9 {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    font-size: 28px;
+  }
+
+  .dict-main__top .tag {
+    display: none;
+  }
+
+  .dict-main .dict-pinyin {
+    font-size: 22px;
+  }
+
+  .dict-main .dict-text {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .dict-main .dict-ex {
+    padding-left: 10px;
+    font-size: 14px;
+  }
+
+  .dict-main .dict-ex-zh {
+    font-size: 16px;
+  }
+
+  .dict-main__meta {
+    font-size: 13px;
+  }
+
+  .dict-main__actions {
+    grid-column: 1 / -1;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .dict-main__actions .btn {
+    flex: 1 1 0;
+    padding: 0 8px;
+    font-size: 14px;
+  }
+
+  /* Заголовок рамки на телефоне — как метка секции: подпись и линия. */
+  .dict-box {
+    border: 0;
+    background: none;
+  }
+
+  .dict-box__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 0 10px;
+    border: 0;
+    font-size: 14px;
+    color: var(--text-2);
+  }
+
+  .dict-box__title::after {
+    content: "";
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .dict-group + .dict-group,
+  .dict-main-slot:not(:empty) + .dict-box {
+    margin-top: 0;
+  }
+
+  .dict-list {
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .dict-row {
+    grid-template-columns: 52px 76px minmax(0, 1fr) auto 16px;
+    gap: 0 8px;
+    min-height: 52px;
+    padding: 4px 14px;
+  }
+
+  .dict-row .dict-hanzi {
+    font-size: 18px;
+  }
+
+  .dict-row .dict-hanzi.is-len-5,
+  .dict-row .dict-hanzi.is-len-6,
+  .dict-row .dict-hanzi.is-len-7,
+  .dict-row .dict-hanzi.is-len-8,
+  .dict-row .dict-hanzi.is-len-9 {
+    font-size: 15px;
+  }
+
+  .dict-row .dict-pinyin,
+  .dict-row .dict-text {
+    font-size: 13px;
+  }
+
+  .dict-gloss {
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* От кнопки «статья» остаётся стрелка-уголок. */
+  .dict-row__more span {
+    display: none;
+  }
+
+  button.dict-row__more {
+    justify-content: center;
+    width: 32px;
+    padding: 0;
+  }
+
+  .dict-row__open {
+    width: 16px;
+  }
+
+  .dict-row__open svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .dict-article {
+    grid-column: 1 / -1;
+    font-size: 14px;
+  }
+
+  .dict-article .dict-ex-zh {
+    font-size: 16px;
+  }
+
+  .dict-more {
+    width: 100%;
+    margin-top: 16px;
   }
 }
 
@@ -3673,22 +4890,20 @@ html.hz-lock {
 .hz {
   /* Цвета частей иероглифа (.is-p0 … .is-p3; первая часть — обычно ключ,
      поэтому золото, как у ключа) и текущей черты. */
-  --hz-p0: #e9b44c;
-  --hz-p1: #8fc3f0;
-  --hz-p2: #74d6a2;
-  --hz-p3: #d9a4f2;
-  --hz-current: #ff6a2b;
-  --hz-ghost: rgba(242, 217, 168, 0.12);
+  --hz-p0: #B3302A;
+  --hz-p1: #2E5E8C;
+  --hz-p2: #2F7A62;
+  --hz-p3: #7A4FA3;
+  --hz-current: var(--accent);
+  --hz-ghost: var(--hanzi-pale);
   width: min(720px, calc(100vw - 2rem));
   max-width: none;
   max-height: calc(100vh - 2rem);
   margin: auto;
   padding: 0;
-  color: var(--color-text);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   overflow: hidden;
 }
 
@@ -3706,7 +4921,7 @@ html.hz-lock {
 }
 
 .hz::backdrop {
-  background: rgba(4, 9, 18, 0.72);
+  background: rgba(47, 52, 65, 0.55);
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
 }
@@ -3750,21 +4965,19 @@ html.hz-lock {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   margin: 0.75rem -0.75rem 0 0;
   padding: 0;
-  color: var(--color-text-muted);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
 }
 
 .hz-close:hover {
-  color: var(--color-text);
-  border-color: var(--color-text-muted);
+  color: var(--text);
+  border-color: var(--text);
 }
 
 .hz-close svg {
@@ -3787,10 +5000,10 @@ html.hz-lock {
 }
 
 .hz-word {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 3.4rem;
   line-height: 1.15;
-  color: var(--color-chinese);
+  color: var(--text);
   letter-spacing: 0.04em;
   overflow-wrap: anywhere;
 }
@@ -3826,20 +5039,18 @@ html.hz-lock {
   height: 48px;
   margin-top: 0.5rem;
   padding: 0;
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.1);
-  border: 1px solid rgba(246, 82, 9, 0.45);
-  border-radius: 50%;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--text);
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s;
 }
 
 .hz-say:hover {
-  background: rgba(246, 82, 9, 0.2);
+  background: var(--surface-2);
 }
 
 .hz-say:active {
-  transform: scale(0.94);
+  transform: none;
 }
 
 .hz-say[hidden] {
@@ -3873,20 +5084,19 @@ html.hz-lock {
   font: inherit;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.1);
-  border: 1px solid rgba(246, 82, 9, 0.45);
-  border-radius: 999px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--text);
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s;
+  text-transform: lowercase;
 }
 
 .hz-explain:hover {
-  background: rgba(246, 82, 9, 0.2);
+  background: var(--surface-2);
 }
 
 .hz-explain:active {
-  transform: scale(0.97);
+  transform: none;
 }
 
 .hz-explain[hidden] {
@@ -3907,9 +5117,9 @@ html.hz-lock {
 .hz-ai-card {
   padding: 1rem 1.1rem;
   line-height: 1.55;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(246, 82, 9, 0.35);
-  border-radius: 12px;
+  background: var(--surface-2);
+  border: 0;
+  border-left: 2px solid var(--line-strong);
 }
 
 .hz-ai-wait {
@@ -3917,7 +5127,7 @@ html.hz-lock {
   align-items: center;
   gap: 0.6rem;
   margin: 0;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-ai-head {
@@ -3936,9 +5146,8 @@ html.hz-lock {
 .hz-ai-pos {
   padding: 0.05rem 0.55rem;
   font-size: 0.8rem;
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  color: var(--text-2);
+  border: 1px solid var(--line);
 }
 
 .hz-ai-meaning {
@@ -3947,11 +5156,11 @@ html.hz-lock {
 
 .hz-ai-sub {
   margin: 1rem 0 0.45rem;
-  font-size: 0.78rem;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  letter-spacing: 0;
+  text-transform: lowercase;
+  color: var(--text-2);
 }
 
 .hz-ai-examples,
@@ -3967,13 +5176,13 @@ html.hz-lock {
   display: flex;
   flex-direction: column;
   padding-left: 0.75rem;
-  border-left: 2px solid rgba(246, 82, 9, 0.45);
+  border-left: 2px solid var(--line);
 }
 
 .hz-ai-zh {
-  font-family: var(--font-chinese);
-  font-size: 1.1rem;
-  color: var(--color-chinese);
+  font-family: var(--font-zh);
+  font-size: 1.25rem;
+  color: var(--text);
 }
 
 .hz-ai-expy {
@@ -3983,27 +5192,27 @@ html.hz-lock {
 
 .hz-ai-ru {
   font-size: 0.92rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-ai-word {
   padding: 0;
   font: inherit;
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-chinese);
+  font-weight: 400;
+  color: var(--text);
   background: none;
   border: 0;
 }
 
 button.hz-ai-word {
-  border-bottom: 1px dashed rgba(242, 217, 168, 0.5);
+  border-bottom: 1px dashed var(--line-strong);
   cursor: pointer;
 }
 
 button.hz-ai-word:hover {
-  color: #fff;
+  color: var(--accent-text);
   border-bottom-color: currentColor;
 }
 
@@ -4011,39 +5220,39 @@ button.hz-ai-word:hover {
   margin: 1rem 0 0;
   padding: 0.6rem 0.8rem;
   font-size: 0.92rem;
-  background: rgba(238, 241, 246, 0.05);
-  border-radius: 8px;
+  background: var(--surface);
 }
 
 .hz-ai-foot {
   margin: 0.9rem 0 0;
   font-size: 0.78rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-ai-card.is-error p {
   margin: 0 0 0.6rem;
-  color: var(--color-accent-soft);
+  color: var(--accent-text);
 }
 
 .hz-ai-retry {
   padding: 0.35rem 0.9rem;
   font: inherit;
   font-size: 0.85rem;
-  color: var(--color-text);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line-strong);
   cursor: pointer;
+  min-height: 36px;
+  text-transform: lowercase;
 }
 
 .hz-section {
   margin: 0 0 0.75rem;
-  font-size: 0.8rem;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  letter-spacing: 0;
+  text-transform: lowercase;
+  color: var(--text-2);
 }
 
 .hz-cards {
@@ -4053,9 +5262,8 @@ button.hz-ai-word:hover {
 
 .hz-card {
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
 }
 
 /* Слева клетка, справа значение, под значением — «Состав». На телефоне
@@ -4092,9 +5300,8 @@ button.hz-ai-word:hover {
   position: relative;
   width: 100%;
   aspect-ratio: 1;
-  background: rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(242, 217, 168, 0.22);
-  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
   overflow: hidden;
 }
 
@@ -4109,7 +5316,7 @@ button.hz-ai-word:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-char,
@@ -4126,9 +5333,9 @@ button.hz-ai-word:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 5rem;
-  color: var(--color-chinese);
+  color: var(--text);
 }
 
 .hz-retry {
@@ -4140,15 +5347,14 @@ button.hz-ai-word:hover {
   padding: 0.35rem 0.8rem;
   font: inherit;
   font-size: 0.8rem;
-  color: var(--color-text);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   cursor: pointer;
 }
 
 .hz-grid line {
-  stroke: rgba(242, 217, 168, 0.16);
+  stroke: var(--hanzi-pale);
   stroke-width: 4;
   stroke-dasharray: 18 14;
 }
@@ -4160,7 +5366,7 @@ button.hz-ai-word:hover {
 /* Черта — толстая линия вдоль оси, обрезанная по контуру черты. */
 .hz-ink {
   fill: none;
-  stroke: var(--color-chinese);
+  stroke: var(--text);
   stroke-width: 200;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -4191,7 +5397,7 @@ button.hz-ai-word:hover {
 
 .hz-badge text {
   fill: #fff;
-  font-family: var(--font-sans);
+  font-family: var(--font);
   font-size: 58px;
   font-weight: 700;
   text-anchor: middle;
@@ -4206,21 +5412,20 @@ button.hz-ai-word:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 34px;
+  width: 44px;
+  height: 40px;
   padding: 0;
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.08);
-  border: 1px solid rgba(246, 82, 9, 0.38);
-  border-radius: 999px;
+  color: var(--text-2);
+  background: transparent;
+  border: 1px solid var(--line-strong);
   cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
 }
 
 .hz-icon:hover:not(:disabled),
 .hz-icon[aria-expanded="true"] {
-  background: rgba(246, 82, 9, 0.2);
-  border-color: var(--color-accent);
+  background: var(--surface);
+  border-color: var(--text);
+  color: var(--text);
 }
 
 .hz-icon:disabled {
@@ -4237,7 +5442,7 @@ button.hz-ai-word:hover {
   margin: 0;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-card-info p,
@@ -4247,14 +5452,14 @@ button.hz-ai-word:hover {
 
 .hz-char-pinyin {
   font-size: 1.15rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .hz-char-gloss {
   margin-top: 0.15rem !important;
   font-size: 0.92rem;
   line-height: 1.45;
-  color: var(--color-text-muted);
+  color: var(--text-2);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -4275,11 +5480,11 @@ button.hz-ai-word:hover {
 
 .hz-parts-title {
   margin-bottom: 0.4rem !important;
-  font-size: 0.75rem;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  letter-spacing: 0;
+  text-transform: lowercase;
+  color: var(--text-2);
 }
 
 .hz-layout {
@@ -4294,13 +5499,12 @@ button.hz-ai-word:hover {
   margin: 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border: 1px solid var(--line);
   overflow: hidden;
 }
 
 .hz-part + .hz-part {
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--line);
 }
 
 .hz-part-btn {
@@ -4323,7 +5527,7 @@ button.hz-ai-word:hover {
 }
 
 .hz-part-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface);
 }
 
 .hz-part-btn:disabled .hz-chev {
@@ -4333,7 +5537,7 @@ button.hz-ai-word:hover {
 .hz-part-char {
   flex: none;
   width: 1.6em;
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 1.5rem;
   line-height: 1.2;
   text-align: center;
@@ -4372,24 +5576,23 @@ button.hz-ai-word:hover {
 }
 
 .hz-part-name {
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-tag {
   padding: 0.05rem 0.45rem;
-  font-size: 0.7rem;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: lowercase;
   color: var(--hz-p0);
-  border: 1px solid rgba(233, 180, 76, 0.5);
-  border-radius: 999px;
+  border: 1px solid currentColor;
 }
 
 .hz-part-gloss {
   font-size: 0.82rem;
   line-height: 1.4;
-  color: var(--color-text-muted);
+  color: var(--text-2);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -4403,13 +5606,13 @@ button.hz-ai-word:hover {
 .hz-chev {
   flex: none;
   font-size: 1.2rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-radical {
   margin-top: 0.75rem !important;
   font-size: 0.875rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-radical[hidden] {
@@ -4417,7 +5620,7 @@ button.hz-ai-word:hover {
 }
 
 .hz-radical b {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-size: 1.15rem;
   font-weight: 400;
   color: var(--hz-p0);
@@ -4438,19 +5641,23 @@ button.hz-ai-word:hover {
   padding: 0;
   font: inherit;
   font-size: 0.85rem;
-  color: var(--color-accent-soft);
+  color: var(--text);
   background: none;
   border: 0;
   cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  text-transform: lowercase;
 }
 
 .hz-link b {
-  font-family: var(--font-chinese);
+  font-family: var(--font-zh);
   font-weight: 400;
 }
 
 .hz-link:hover {
   text-decoration: underline;
+  color: var(--accent-text);
 }
 
 .hz-link[hidden] {
@@ -4461,7 +5668,7 @@ button.hz-ai-word:hover {
 .hz-panel {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--line);
 }
 
 .hz-panel[hidden] {
@@ -4499,12 +5706,12 @@ button.hz-ai-word:hover {
 
 .hz-step {
   font-size: 0.95rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-step b {
   font-size: 1.15rem;
-  color: var(--color-text);
+  color: var(--text);
 }
 
 .hz-controls {
@@ -4518,26 +5725,22 @@ button.hz-ai-word:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  min-width: 40px;
-  height: 40px;
-  padding: 0 0.9rem;
+  gap: 6px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 14px;
   font: inherit;
-  font-size: 0.875rem;
-  color: var(--color-text);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  font-size: 14px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line-strong);
   cursor: pointer;
-  transition: border-color 0.15s, background-color 0.15s, transform 0.1s;
+  text-transform: lowercase;
 }
 
 .hz-btn:hover:not(:disabled) {
-  border-color: var(--color-text-muted);
-}
-
-.hz-btn:active:not(:disabled) {
-  transform: scale(0.96);
+  border-color: var(--text);
+  background: var(--surface-2);
 }
 
 .hz-btn:disabled {
@@ -4558,24 +5761,25 @@ button.hz-ai-word:hover {
 
 .hz-btn.is-play {
   min-width: 124px;
-  color: #fff;
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+  color: var(--on-dark);
+  background: var(--text);
+  border-color: var(--text);
 }
 
 .hz-btn.is-play:hover:not(:disabled) {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent-soft);
+  background: var(--text-hover);
+  border-color: var(--text-hover);
 }
 
 .hz-btn[aria-pressed="true"] {
-  background: rgba(168, 184, 209, 0.14);
+  background: var(--text);
+  color: var(--on-dark);
+  border-color: var(--text);
 }
 
 .hz-speed {
   display: inline-flex;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  border: 1px solid var(--line-strong);
   overflow: hidden;
 }
 
@@ -4583,34 +5787,35 @@ button.hz-ai-word:hover {
   padding: 0.35rem 0.75rem;
   font: inherit;
   font-size: 0.8rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
   background: none;
   border: 0;
   cursor: pointer;
+  min-height: 36px;
 }
 
 .hz-speed button + button {
-  border-left: 1px solid var(--color-border);
+  border-left: 1px solid var(--line-strong);
 }
 
 .hz-speed button[aria-pressed="true"] {
-  color: var(--color-text);
-  background: rgba(168, 184, 209, 0.14);
+  color: var(--on-dark);
+  background: var(--text);
 }
 
 .hz-write-msg {
   min-height: 2.6em;
   font-size: 0.9rem;
   line-height: 1.45;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hz-write-msg.is-miss {
-  color: var(--color-accent-soft);
+  color: var(--accent-text);
 }
 
 .hz-write-msg.is-done {
-  color: var(--color-know-soft);
+  color: var(--text);
 }
 
 /* Лента шагов: весь порядок черт сразу, нажатие — к этому шагу. */
@@ -4630,7 +5835,7 @@ button.hz-ai-word:hover {
   padding: 0;
   font: inherit;
   font-size: 0.7rem;
-  color: var(--color-text-muted);
+  color: var(--text-2);
   background: none;
   border: 0;
   cursor: pointer;
@@ -4641,14 +5846,12 @@ button.hz-ai-word:hover {
   width: 46px;
   height: 46px;
   margin-bottom: 0.15rem;
-  background: rgba(0, 0, 0, 0.18);
-  border: 1px solid var(--color-border);
-  border-radius: 5px;
-  transition: border-color 0.15s;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
 }
 
 .hz-cell path { fill: var(--hz-ghost); }
-.hz-cell path.is-ink { fill: var(--color-chinese); }
+.hz-cell path.is-ink { fill: var(--text); }
 .hz-cell path.is-p0 { fill: var(--hz-p0); }
 .hz-cell path.is-p1 { fill: var(--hz-p1); }
 .hz-cell path.is-p2 { fill: var(--hz-p2); }
@@ -4656,22 +5859,21 @@ button.hz-ai-word:hover {
 .hz-cell path.is-current { fill: var(--hz-current); }
 
 .hz-cell:hover svg {
-  border-color: var(--color-text-muted);
+  border-color: var(--line-strong);
 }
 
 .hz-cell[aria-current="step"] {
-  color: var(--color-accent-soft);
+  color: var(--text);
 }
 
 .hz-cell[aria-current="step"] svg {
-  border-color: var(--color-accent);
+  border-color: var(--text);
 }
 
 .hz-note {
   margin: 1rem 0 0;
   font-size: 0.75rem;
-  color: var(--color-text-muted);
-  opacity: 0.8;
+  color: var(--text-2);
 }
 
 .hz-note a {
@@ -4687,7 +5889,6 @@ button.hz-ai-word:hover {
     max-height: 94dvh;
     margin: auto 0 0;
     border-width: 1px 0 0;
-    border-radius: 16px 16px 0 0;
   }
 
   .hz[open] {
@@ -4775,29 +5976,11 @@ button.hz-ai-word:hover {
   }
 }
 
-/* Рукописный ввод в словаре (js/handwriting.js): кнопка с кисточкой между
-   полем и «Найти» и клетка 米字格, в которой рисуют иероглиф, рядом —
-   похожие иероглифы. На компьютере клетка раскрывается под строкой
-   поиска, на телефоне — панелью внизу экрана, как клавиатура. */
-.dict-hw-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 0 0.85rem;
-}
-
-.dict-hw-btn svg {
-  width: 22px;
-  height: 22px;
-}
-
-.dict-hw-btn[aria-expanded="true"] {
-  color: var(--color-accent-soft);
-  background: rgba(246, 82, 9, 0.12);
-  border-color: var(--color-accent);
-}
-
+/* Рукописный ввод (js/handwriting.js): кнопка с кисточкой в строке поиска
+   открывает клетку 田字格, в которой рисуют иероглиф, рядом — похожие
+   иероглифы. Есть в словаре и в поиске на главной. На компьютере клетка
+   раскрывается под строкой поиска, на телефоне — панелью внизу экрана,
+   как клавиатура. */
 .hw {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
@@ -4805,12 +5988,11 @@ button.hz-ai-word:hover {
   grid-template-areas:
     "board cands"
     "board tools";
-  gap: 0.9rem 1.1rem;
-  margin-top: 0.75rem;
-  padding: 0.9rem;
-  background: var(--color-surface-solid);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  gap: 14px 18px;
+  margin-top: 8px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
 }
 
 .hw[hidden] {
@@ -4821,13 +6003,18 @@ button.hz-ai-word:hover {
   grid-area: board;
 }
 
+/* В клетке рукописного ввода — только крест 田字格, без диагоналей. */
+.hw .hz-grid line:nth-child(n + 3) {
+  display: none;
+}
+
 /* touch-action: none — палец рисует, а не прокручивает страницу. */
 .hw-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  color: var(--color-chinese);
+  color: var(--text);
   cursor: crosshair;
   touch-action: none;
   -webkit-user-select: none;
@@ -4840,52 +6027,47 @@ button.hz-ai-word:hover {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  gap: 0.45rem;
+  gap: 8px;
 }
 
 .hw-cand {
   min-width: 52px;
   height: 52px;
-  padding: 0 0.45rem;
-  font-family: var(--font-chinese);
-  font-size: 1.75rem;
+  padding: 0 7px;
+  font-family: var(--font-zh);
+  font-size: 28px;
   line-height: 1;
-  color: var(--color-chinese);
-  background: rgba(0, 0, 0, 0.22);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 0;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
 }
 
 /* Первый вариант — самый похожий. */
 .hw-cand:first-child {
-  border-color: rgba(246, 82, 9, 0.55);
+  border-color: var(--line-strong);
 }
 
 .hw-cand:hover {
-  border-color: var(--color-accent);
-}
-
-.hw-cand:active {
-  transform: scale(0.94);
+  border-color: var(--text);
 }
 
 .hw-msg {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 14px;
   line-height: 1.45;
-  color: var(--color-text-muted);
+  color: var(--text-2);
 }
 
 .hw-msg.is-error {
-  color: var(--color-accent-soft);
+  color: var(--accent-text);
 }
 
 .hw-retry {
   padding: 0;
   font: inherit;
-  color: var(--color-text);
+  color: var(--text);
   background: none;
   border: 0;
   text-decoration: underline;
@@ -4897,7 +6079,11 @@ button.hz-ai-word:hover {
   grid-area: tools;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 8px;
+}
+
+.hw-tool span {
+  text-transform: lowercase;
 }
 
 .hw-tool[data-hw="done"] {
@@ -4916,12 +6102,10 @@ button.hz-ai-word:hover {
     grid-template-areas:
       "cands cands"
       "board tools";
-    gap: 0.6rem;
+    gap: 10px;
     margin: 0;
-    padding: 0.6rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
     border-width: 1px 0 0;
-    border-radius: 16px 16px 0 0;
-    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
     animation: hz-up 0.22s ease-out;
   }
 
@@ -4942,12 +6126,12 @@ button.hz-ai-word:hover {
     flex: none;
     min-width: 46px;
     height: 46px;
-    font-size: 1.5rem;
+    font-size: 24px;
   }
 
   .hw-msg {
     align-self: center;
-    font-size: 0.85rem;
+    font-size: 13px;
   }
 
   .hw-tools {
@@ -4958,12 +6142,12 @@ button.hz-ai-word:hover {
 
   .hw-tool {
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 3px;
     width: 68px;
     height: auto;
-    padding: 0.45rem 0;
-    font-size: 0.72rem;
-    border-radius: 10px;
+    min-height: 44px;
+    padding: 6px 0;
+    font-size: 11.5px;
   }
 
   .hw-tool svg {
@@ -4995,243 +6179,155 @@ button.hz-ai-word:hover {
 
 /* Responsive */
 
-/* Laptop — keep the wide composition, pull the gutters in. */
-@media (max-width: 1280px) {
-  .hero-video-inner {
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+/* Карточки на телефоне и в Telegram Mini App (макет
+   design/mockups/phone-cards.html). */
+@media (max-width: 960px) {
+  .fc-hero .panel__main {
+    min-height: 0;
   }
 
-  .hero-video-footer-item {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+  .fc-hero .panel__side {
+    margin-top: 14px;
   }
 
-  .hero-video-footer-item:first-child {
-    padding-left: 0;
-  }
-}
-
-/* Tablet — the hero title shrinks. */
-@media (max-width: 1024px) {
-  .hero-video-content {
-    max-width: 100%;
-    padding-bottom: 3rem;
+  .fc-photo-cta {
+    gap: 8px;
+    padding: 16px;
+    border-bottom: 0;
   }
 
-  .hero-video-title {
-    font-size: clamp(4.5rem, 16vw, 10rem);
-  }
-}
-
-/* Small tablet / large phone — the strip stays a strip, stacked. */
-@media (max-width: 860px) {
-  .hero-video-footer {
-    grid-template-columns: 1fr;
-    gap: 1.1rem;
+  .fc-photo-cta-title {
+    font-size: 15px;
   }
 
-  .hero-video-footer-item,
-  .hero-video-footer-item:first-child {
-    padding: 0 0 0 1rem;
-    border-left: 1px solid rgba(238, 241, 246, 0.2);
+  .fc-photo-cta p {
+    font-size: 13px;
+    line-height: 1.45;
   }
 
-  .hero-video-footer-item p {
-    max-width: 100%;
+  .fc-photo-actions .btn {
+    flex: 1 1 100%;
+    min-height: 44px;
+  }
+
+  /* Папка: название и размер в одну строку, под ними полоса и подпись. */
+  .fc-folder-row {
+    grid-template-columns: minmax(0, 1fr) 16px;
+    gap: 6px 10px;
+    padding: 14px 14px 14px 16px;
+  }
+
+  .fc-folder-row__icon,
+  .fc-folder-row__names {
+    display: none;
+  }
+
+  .fc-folder-row__body {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .fc-folder-row__title,
+  .fc-folder-row--new .fc-folder-row__title {
+    font-size: 15px;
+  }
+
+  .fc-folder-row__meta {
+    font-size: 12px;
+    text-align: right;
+  }
+
+  .fc-folder-row .fc-set__progress {
+    grid-column: 1;
+    gap: 6px;
+  }
+
+  .fc-folder-row .row__arrow {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    width: 16px;
+    height: 16px;
+  }
+
+  .fc-folder-row--new .row__arrow {
+    grid-row: 1;
+  }
+
+  .fc-progress {
+    height: 3px;
+  }
+
+  .fc-set__learned {
+    font-size: 12px;
+  }
+
+  /* «новая» — текстом с плюсом, без рамки. */
+  .fc-decks-label {
+    margin-bottom: 0;
+  }
+
+  .fc-new-deck {
+    gap: 4px;
+    margin-right: -10px;
+    padding: 0 10px;
+    border: 0;
+    font-size: 14px;
+  }
+
+  /* Колода: название и «5 из 18» в одну строку, под ними полоса. */
+  .fc-decks {
+    overflow: visible;
+  }
+
+  .fc-decks__head {
+    display: none;
+  }
+
+  .fc-decks__rows {
+    min-width: 0;
+  }
+
+  .fc-set {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-content: center;
+    gap: 6px 8px;
+    min-height: 58px;
+    padding: 10px 16px;
+  }
+
+  .fc-set__name {
+    font-size: 15px;
+  }
+
+  .fc-set__size,
+  .fc-set .row__arrow {
+    display: none;
+  }
+
+  .fc-set .fc-set__progress {
+    display: contents;
+  }
+
+  .fc-set .fc-set__learned {
+    flex: none;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .fc-set .fc-progress {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .fc-deck-summary,
+  .fc-own {
+    padding: 16px;
   }
 }
 
 @media (max-width: 640px) {
-  .card-grid {
-    grid-template-columns: 1fr;
-  }
-
-  /* Главная библиотеки: уровни HSK — низкие плашки, название и метка
-     уровня в одной строке, описание под ними. */
-  .card-grid.is-levels {
-    gap: 0.6rem;
-  }
-
-  .card-grid.is-levels .card {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: baseline;
-    column-gap: 0.75rem;
-    row-gap: 0.2rem;
-    padding: 0.7rem 1rem;
-  }
-
-  .card-grid.is-levels .card h3 {
-    margin: 0;
-  }
-
-  .card-grid.is-levels .card p {
-    grid-column: 1 / -1;
-    font-size: 0.85rem;
-  }
-
-  .card-grid.is-levels .card .card-meta {
-    grid-row: 1;
-    grid-column: 2;
-    margin: 0;
-    font-size: 0.75rem;
-  }
-
-  /* Сетки разделов библиотеки (is-pairs: «Дополнительно» и «Все разделы»
-     на главной библиотеки, обзоры «Учебников», «Материалов», «Культуры»
-     и т. д.) — по две карточки в ряд. Карточки уже, поэтому шрифт мельче,
-     а описание переносится по слогам и показывается целиком. Заголовок
-     переносится только целыми словами; слову, которое не влезает в
-     полкарточки на экране 360px, в разметке ставится мягкий перенос &shy;.
-     Последняя карточка без пары — во всю ширину. */
-  .card-grid.is-pairs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.6rem;
-  }
-
-  .card-grid.is-pairs .card {
-    padding: 0.8rem 0.85rem;
-    hyphens: auto;
-    -webkit-hyphens: auto;
-    overflow-wrap: break-word;
-  }
-
-  .card-grid.is-pairs .card:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-
-  .card-grid.is-pairs .card h3 {
-    margin-bottom: 0.35rem;
-    font-size: 0.95rem;
-    line-height: 1.3;
-    hyphens: manual;
-    -webkit-hyphens: manual;
-  }
-
-  .card-grid.is-pairs .card p {
-    font-size: 0.8rem;
-    line-height: 1.45;
-  }
-
-  .card-grid.is-pairs .card .card-meta {
-    margin-top: 0.5rem;
-    font-size: 0.72rem;
-  }
-
-  /* Материалы и фильмы на телефоне — тоже по две карточки в ряд. На боку
-     карточка в полэкрана не помещается, поэтому встаёт: превью сверху,
-     под ним название, описание целиком и кнопки «Открыть» / «Скачать»
-     поровну. Последняя карточка без пары (и единственная в разделе) —
-     во всю ширину и остаётся на боку, с превью слева. */
-  .material-grid,
-  .film-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.6rem;
-  }
-
-  .material-card:last-child:nth-child(odd),
-  .film-card:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-
-  .material-cover {
-    flex-basis: 84px;
-    padding: 0.6rem;
-  }
-
-  .material-body {
-    gap: 0.3rem;
-    padding: 0.7rem 0.75rem 0.75rem;
-  }
-
-  /* Названий материалов много и в них бывают слова длиннее полкарточки
-     («Диагностический», «(«Головоломка»)»), поэтому переносы автоматические,
-     но только в словах от 12 знаков (скобки и кавычки считаются) —
-     короткие переносятся целиком. Через .material-card — иначе
-     перебивает .section h3 с крупным шрифтом и отступом сверху. */
-  .material-card .material-title,
-  .film-title {
-    margin: 0;
-    font-size: 0.88rem;
-    line-height: 1.3;
-    hyphens: auto;
-    -webkit-hyphens: auto;
-    hyphenate-limit-chars: 12 4 4;
-    overflow-wrap: break-word;
-  }
-
-  .material-desc {
-    font-size: 0.78rem;
-    line-height: 1.45;
-    hyphens: auto;
-    -webkit-hyphens: auto;
-    overflow-wrap: break-word;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) {
-    flex-direction: column;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-cover {
-    flex: 0 0 auto;
-    height: 116px;
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-cover img {
-    max-height: 100%;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-foot {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.45rem;
-    padding-top: 0.5rem;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-type {
-    align-self: flex-start;
-    white-space: normal;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-actions {
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    margin-left: 0;
-  }
-
-  .material-card:not(:last-child:nth-child(odd)) .material-action {
-    flex: 1 1 auto;
-    text-align: center;
-    font-size: 0.75rem;
-    padding: 0.35rem 0.3rem;
-  }
-
-  .film-body {
-    padding: 0.7rem 0.75rem;
-  }
-
-  .film-card:not(:last-child:nth-child(odd)) {
-    flex-direction: column;
-  }
-
-  .film-card:not(:last-child:nth-child(odd)) .film-cover {
-    flex: 0 0 auto;
-    aspect-ratio: 16 / 9;
-    min-height: 0;
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  /* На узком экране подпись, метка и ссылка не влезают в строку: метка
-     отжимала подпись в колонку из одного-двух слов. Ставим их друг под друга. */
-  .content-list li {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   /* Карточки: шапка экрана изучения ниже, кнопки итогов — во всю ширину. */
   .fc-study-head {
     margin-bottom: 0.75rem;
@@ -5247,10 +6343,6 @@ button.hz-ai-word:hover {
 
   .fc-controls {
     margin-top: 1.5rem;
-  }
-
-  .fc-result-stats {
-    gap: 0.5rem;
   }
 
   .fc-result-stat {
@@ -5272,10 +6364,6 @@ button.hz-ai-word:hover {
     text-align: center;
   }
 
-  .fc-deck-summary {
-    padding: 0.9rem 1rem;
-  }
-
   .fc-word {
     --fc-hanzi-size: 1.5rem;
     --fc-hanzi-gap: 1.5rem;
@@ -5286,86 +6374,11 @@ button.hz-ai-word:hover {
   .fc-word-text {
     margin-left: calc(var(--fc-hanzi-gap) - 0.75rem);
   }
-
-  .hero-video-inner {
-    padding: calc(var(--header-height) + 2rem) 1.25rem 1.75rem;
-  }
-
-  .hero-video-content {
-    padding-bottom: 2.5rem;
-  }
-
-  .hero-video-title {
-    font-size: clamp(4rem, 20vw, 7.5rem);
-    margin-top: 0.75rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .hero-video-lead {
-    font-size: 0.98rem;
-    line-height: 1.65;
-    margin-bottom: 1.75rem;
-  }
-
-  .hero-video-actions {
-    gap: 1.25rem;
-  }
-
-  .hero-video-actions .btn-primary {
-    padding: 0.9rem 1.6rem;
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-  }
-
-  .hero-link {
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-  }
-
-  .hero-video-footer {
-    padding-top: 1.25rem;
-    gap: 0.9rem;
-  }
-
-  .hero-footer-index {
-    margin-bottom: 0.4rem;
-    font-size: 0.65rem;
-  }
-
-  .hero-video-footer-item h2 {
-    font-size: 0.82rem;
-    letter-spacing: 0.1em;
-  }
-
-  .hero-video-footer-item p {
-    font-size: 0.78rem;
-    line-height: 1.5;
-  }
 }
 
 /* prefers-reduced-motion — один блок на весь сайт (у шапки свой, в
    components/site-header/header.css). */
 @media (prefers-reduced-motion: reduce) {
-  /* Вместо видео — его постер (на него же смотрит js/main.js, чтобы не
-     ждать загрузки видео, которого не будет). */
-  .hero-video-media {
-    display: none;
-  }
-
-  .hero-video {
-    background-image: url("../images/hero-poster.jpg");
-    background-size: cover;
-    background-position: center;
-  }
-
-  .hero-video-title,
-  .hero-video-lead,
-  .hero-video-actions,
-  .hero-video-footer,
-  .preloader-mark {
-    animation: none;
-  }
-
   /* Карточки переворачиваются и меняются мгновенно (js/flashcards.js
      тоже пропускает анимацию улёта). */
   .fc-card-inner,
@@ -5375,39 +6388,10 @@ button.hz-ai-word:hover {
   }
 }
 
-/* 375–390px phones: tighten the gutters so the first screen keeps its
-   air without the content crowding the edges. */
+/* Телефоны 375–390px. */
 @media (max-width: 400px) {
-  .hero-video-inner {
-    padding-left: 1.1rem;
-    padding-right: 1.1rem;
-  }
-
   /* Колода: колонка иероглифа уже, чтобы тексту справа хватало места. */
   .fc-word {
     --fc-hanzi-size: 1.25rem;
   }
-}
-
-/* Homepage footer: same monochrome palette as the gray section above it,
-   with no gap between them so the navy page background never shows. */
-body.home {
-  background-color: #262626;
-}
-
-body.home .site-footer {
-  margin-top: 0;
-  color: #a6a6a6;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  background:
-    var(--edge-shade),
-    #262626;
-}
-
-body.home .site-footer a {
-  color: #f2f2f2;
-}
-
-body.home .footer-copy {
-  color: rgba(255, 255, 255, 0.4);
 }

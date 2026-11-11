@@ -1,13 +1,11 @@
-/* Весь скрипт сайта одним файлом: заглушки вместо обложек, прелоадер,
-   фильмы с Яндекс Диска, кнопка «назад», появление плиток главной и
-   работа внутри Telegram (Mini App бота @chinese_free_bot). Шапка —
-   отдельный компонент components/site-header. Каждый блок сам проверяет,
-   есть ли на странице то, с чем он работает, поэтому файл подключается ко
-   всем страницам одинаково.
+/* Весь скрипт сайта одним файлом: заглушки вместо обложек, фильмы с
+   Яндекс Диска, кнопка «назад», короткая подсказка в поле поиска на
+   телефоне и работа внутри Telegram (Mini App бота @chinese_free_bot).
+   Шапка — отдельный компонент components/site-header. Каждый блок сам
+   проверяет, есть ли на странице то, с чем он работает, поэтому файл
+   подключается ко всем страницам одинаково.
    Прокрутку сайт не перехватывает: колесо, клавиатура и якорные ссылки
-   работают нативно, фон под содержимым не движется. С прокруткой связано
-   только одно — плитки телефонной главной проявляются, когда до них
-   докручивают (initReveal). */
+   работают нативно. */
 (function () {
   "use strict";
 
@@ -37,94 +35,6 @@
     // Картинки, которые не загрузились ещё до запуска скрипта.
     Array.prototype.forEach.call(document.querySelectorAll(".material-cover img"), function (img) {
       if (img.complete && !img.naturalWidth) fallback(img);
-    });
-  }
-
-  // ------------------------------------------------------- прелоадер
-  // Держит заставку (см. css/style.css) до тех пор, пока hero-видео не
-  // забуферизуется достаточно, чтобы играть без рывков, затем отматывает
-  // его на первый кадр и запускает вместе с уходом заставки. Поэтому при
-  // перезагрузке страница никогда не показывает замерший кадр.
-  function initPreloader() {
-    var root = document.documentElement;
-    var video = document.querySelector(".hero-video-media");
-    var revealed = false;
-    var started = false;
-
-    // Не держать заставку бесконечно на медленном соединении.
-    var MAX_WAIT_MS = 6000;
-
-    function reveal() {
-      if (revealed) return;
-      revealed = true;
-      root.classList.remove("is-loading");
-    }
-
-    function rewind() {
-      try {
-        video.currentTime = 0;
-      } catch (e) {}
-    }
-
-    function play(onBlocked) {
-      var playing = video.play();
-      // Автозапуск заблокирован (например, режим энергосбережения).
-      if (playing && playing.catch) playing.catch(onBlocked);
-    }
-
-    function start() {
-      if (started) return;
-      started = true;
-      rewind();
-      video.addEventListener("playing", reveal, { once: true });
-      play(reveal);
-    }
-
-    // У видео главной источник только для компьютерной версии (<source
-    // media>): на телефоне оно не скачивается. Если окно потом расширили,
-    // источник выбирается заново, дальше видео запускает autoplay.
-    function loadWhenShown() {
-      var source = video.querySelector("source[media]");
-      if (!source || !window.matchMedia) return;
-      var wide = window.matchMedia(source.getAttribute("media"));
-      function sync() {
-        if (wide.matches && !video.currentSrc && getComputedStyle(video).display !== "none") video.load();
-      }
-      if (wide.addEventListener) wide.addEventListener("change", sync);
-      else wide.addListener(sync);
-    }
-
-    // Видео нет или оно скрыто — ради prefers-reduced-motion или на
-    // телефоне, где фон — его постер (css/home.css), — ждать нечего.
-    if (!video || getComputedStyle(video).display === "none") {
-      reveal();
-      if (video) loadWhenShown();
-      return;
-    }
-
-    // Отложить автозапуск, пока не наберётся данных на плавное воспроизведение.
-    video.pause();
-    rewind();
-
-    if (video.readyState >= 4) {
-      start();
-    } else {
-      video.addEventListener("canplaythrough", start, { once: true });
-      video.addEventListener("error", reveal, { once: true });
-    }
-
-    setTimeout(function () {
-      if (revealed) return;
-      start();
-      reveal();
-    }, MAX_WAIT_MS);
-
-    // Возврат через кэш «назад/вперёд» восстанавливает видео там, где его
-    // поставили на паузу; вместо этого запускаем его с начала.
-    window.addEventListener("pageshow", function (event) {
-      if (!event.persisted) return;
-      rewind();
-      play(function () {});
     });
   }
 
@@ -332,48 +242,48 @@
   }
 
   // ------------------------------------------------- кнопка «назад»
-  // Часть разделов открывается двумя путями: с главной библиотеки (блок
-  // «Все разделы») и из своего раздела-родителя («Учебники», «Материалы»).
-  // В разметке «назад» ведёт к родителю. Карточки на главной библиотеки
-  // добавляют к адресу ?from=library — тогда кнопка возвращает в
-  // библиотеку. Адрес библиотеки берём из хлебных крошек страницы.
+  // Часть разделов открывается двумя путями: с главной библиотеки и из
+  // своего раздела-родителя («учебники», «материалы»). В разметке «назад»
+  // ведёт к родителю. Ссылки на главной библиотеки добавляют к адресу
+  // ?from=library — тогда кнопка возвращает в библиотеку. Адрес библиотеки
+  // берём из хлебных крошек страницы.
   function initBackLink() {
     if (new URLSearchParams(location.search).get("from") !== "library") return;
 
     var back = Array.prototype.find.call(document.querySelectorAll(".nav-next a"), function (a) {
       return a.textContent.trim().charAt(0) === "←";
     });
-    var library = Array.prototype.find.call(document.querySelectorAll(".breadcrumb a"), function (a) {
-      return a.textContent.trim() === "Библиотека";
+    var library = Array.prototype.find.call(document.querySelectorAll(".crumbs a"), function (a) {
+      return a.textContent.trim().toLowerCase() === "библиотека";
     });
     if (!back || !library) return;
 
     back.setAttribute("href", library.getAttribute("href"));
-    back.textContent = "← Библиотека";
+    back.textContent = "← библиотека";
   }
 
-  // ------------------------------------- появление плиток при прокрутке
-  // Плитки разделов и «Контакты» телефонной версии главной (data-reveal)
-  // проявляются, когда до них докручивают, — чуть выше нижней панели.
-  // Прячет их только класс reveal-ready (css/home.css), поэтому без
-  // IntersectionObserver и при prefers-reduced-motion они просто видны.
-  function initReveal() {
-    var items = document.querySelectorAll("[data-reveal]");
-    if (!items.length || !window.IntersectionObserver || !window.matchMedia) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // ------------------------------------- подсказка в поле на телефоне
+  // У поля поиска главной на телефоне подсказка короче, чем на компьютере:
+  // длинная в узкую строку не помещается. Короткий текст лежит в
+  // data-placeholder-phone; граница — та же, что у телефонной вёрстки.
+  function initPhonePlaceholders() {
+    var fields = document.querySelectorAll("[data-placeholder-phone]");
+    if (!fields.length || !window.matchMedia) return;
+    var phone = window.matchMedia("(max-width: 960px)");
 
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-shown");
-        observer.unobserve(entry.target);
+    function sync() {
+      Array.prototype.forEach.call(fields, function (field) {
+        if (!field.hasAttribute("data-placeholder-wide")) {
+          field.setAttribute("data-placeholder-wide", field.getAttribute("placeholder") || "");
+        }
+        field.setAttribute("placeholder", field.getAttribute(
+          phone.matches ? "data-placeholder-phone" : "data-placeholder-wide"));
       });
-    }, { rootMargin: "0px 0px -80px 0px" });
+    }
 
-    Array.prototype.forEach.call(items, function (item) {
-      observer.observe(item);
-    });
-    document.documentElement.classList.add("reveal-ready");
+    if (phone.addEventListener) phone.addEventListener("change", sync);
+    else phone.addListener(sync);
+    sync();
   }
 
   // ----------------------------------------------- Telegram Mini App
@@ -452,9 +362,8 @@
   }
 
   initCoverFallback();
-  initPreloader();
   initYandexFilms();
   initBackLink();
-  initReveal();
+  initPhonePlaceholders();
   initTelegramApp();
 })();

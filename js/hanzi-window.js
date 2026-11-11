@@ -45,14 +45,14 @@
   var SPEED_KEY = "strokes:speed";
   var PART_COLORS = 4;        // цветов частей в css/style.css: .is-p0 … .is-p3
   // Hanzi Writer рисует сам и CSS не читает — цвета те же, что в
-  // css/style.css (--color-chinese, --hz-p0, --hz-current).
+  // css/theme.css и css/style.css (--text, --hz-p0, --hanzi-pale, --accent).
   var WRITER_COLORS = {
-    strokeColor: "#f2d9a8",
-    radicalColor: "#e9b44c",
-    outlineColor: "rgba(242, 217, 168, 0.14)",
-    highlightColor: "#ff6a2b",
-    drawingColor: "#ff8a55",
-    highlightCompleteColor: "#74d6a2"
+    strokeColor: "#2F3441",
+    radicalColor: "#B3302A",
+    outlineColor: "#C3C9D5",
+    highlightColor: "#EE5A52",
+    drawingColor: "#555B6B",
+    highlightCompleteColor: "#2F3441"
   };
   var LAYOUTS = {
     "⿰": "слева направо",
@@ -1282,5 +1282,94 @@
 
   // gloss(статья, строк) — короткое значение; им пользуется и словарь
   // (строка «по словам»).
-  window.HanziWindow = { open: open, gloss: entryGloss };
+  // ------------------------------------------------ «написание» в словаре
+  // Блок «написание» для выдачи словаря (js/dictionary.js): порядок черт
+  // каждого иероглифа слова по шагам — те же рисунки, что в ленте шагов
+  // окна, в клетках 田字格 — и строки о ключе и составе. Возвращает
+  // Promise({ meta }): meta — строка «4 черты · ключ 水 «вода»» для
+  // карточки слова; null, если данных о чертах нет.
+  var WRITING_MAX = 4;        // для стольких иероглифов слова рисуется порядок черт
+
+  function radicalText(d) {
+    return d.radical ? '<span lang="zh-CN">' + attr(d.radical[0]) + "</span> «" + attr(d.radical[1]) + "»" : "";
+  }
+
+  function writing(host, word) {
+    var chars = [];
+    (String(word || "").match(CJK_CHAR) || []).forEach(function (ch) {
+      if (chars.indexOf(ch) === -1 && chars.length < WRITING_MAX) chars.push(ch);
+    });
+    if (!chars.length) return Promise.resolve(null);
+    return Promise.all(chars.map(function (ch) {
+      return charData(ch).catch(function () { return null; });
+    })).then(function (list) {
+      var known = [];
+      list.forEach(function (d, i) {
+        if (d) known.push({ ch: chars[i], d: d });
+      });
+      if (!known.length) return null;
+      var single = chars.length === 1;
+      var facts = el("dl", "hz-facts");
+
+      function fact(label, html, zh) {
+        var row = el("div", "hz-fact");
+        var dt = el("dt", null, label);
+        if (zh) dt.lang = "zh-CN";
+        var dd = el("dd");
+        dd.innerHTML = html;
+        row.appendChild(dt);
+        row.appendChild(dd);
+        facts.appendChild(row);
+      }
+
+      host.textContent = "";
+      var total = 0;
+      known.forEach(function (item) {
+        var d = item.d;
+        var n = d.strokes.length;
+        total += n;
+        var block = el("div", "hz-writing");
+        if (!single) {
+          var name = el("span", "hz-writing__char", item.ch);
+          name.lang = "zh-CN";
+          block.appendChild(name);
+        }
+        var cells = el("div", "hz-writing__cells");
+        cells.setAttribute("aria-hidden", "true");
+        for (var step = 0; step < n; step++) {
+          var cell = el("span", "hz-wcell");
+          cell.appendChild(miniSvg(d, step, step));
+          cells.appendChild(cell);
+        }
+        block.appendChild(cells);
+        host.appendChild(block);
+
+        var selfRadical = d.radical && d.radical[0] === item.ch;
+        if (!single) {
+          fact(item.ch, n + " " + strokesWord(n) + (d.radical ? " · ключ " + radicalText(d) : ""), true);
+        } else if (selfRadical && !(d.parts && d.parts.length)) {
+          fact("состав", "самостоятельный ключ — «" + attr(d.radical[1]) + "»");
+        } else {
+          if (d.radical) fact("ключ", radicalText(d));
+          if (d.parts && d.parts.length) {
+            fact("состав", (d.layout && LAYOUTS[d.layout] ? LAYOUTS[d.layout] + ": " : "") + d.parts.map(function (part) {
+              return (part[0] ? '<span lang="zh-CN">' + attr(part[0]) + "</span>" : "часть без своего знака") +
+                (part[2] ? " «" + attr(part[2]) + "»" : "");
+            }).join(" · "));
+          }
+        }
+      });
+      if (facts.firstChild) host.appendChild(facts);
+
+      var meta = total + " " + strokesWord(total);
+      if (single) {
+        if (known[0].d.radical) meta += " · ключ " + radicalText(known[0].d);
+      } else {
+        meta += " · " + known.length + " " + plural(known.length, ["иероглиф", "иероглифа", "иероглифов"]);
+      }
+      return { meta: meta };
+    });
+  }
+
+  window.HanziWindow = { open: open, gloss: entryGloss, writing: writing };
 })();
