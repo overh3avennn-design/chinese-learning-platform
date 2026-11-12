@@ -28,12 +28,14 @@
 }
 
 /* Первый экран внутренней страницы: панель, слева заголовок, абзац и
-   «солнце», справа список. Текст лежит над «солнцем». */
+   фигура — «солнце» или картинка .hero-icon из images/icons/ (облако,
+   инь-ян, монеты, веер; у словаря фигуры нет), справа список. Текст
+   лежит над фигурой. На телефоне фигур нет. */
 .panel--hero .panel__main {
   padding-bottom: 40px;
 }
 
-.panel--hero .panel__main > :not(.sun) {
+.panel--hero .panel__main > :not(.sun):not(.hero-icon) {
   position: relative;
   z-index: 1;
 }
@@ -329,11 +331,32 @@ a.side-row:hover {
   color: var(--accent-text);
 }
 
-.lib-hero .sun {
-  right: 48px;
-  bottom: -100px;
-  width: 180px;
-  height: 180px;
+/* Красные фигуры главной библиотеки — картинки из images/icons/ (поле
+   100×100, сами SVG не правятся): облако в первом экране вместо «солнца»
+   и цветок сливы в «материалах к занятиям». Обе стоят поверх ячейки и
+   её размер не меняют. Облако занимает в своём поле только полосу от 28
+   до 70 по высоте: картинка сдвинута вниз за край ячейки ровно настолько
+   (30% размера минус половина линии), чтобы ровное основание облака
+   легло на нижнюю линию ячейки. */
+.hero-icon,
+.lib-plum {
+  position: absolute;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+.lib-cloud {
+  right: 20px;
+  bottom: -49px;
+  width: 170px;
+  height: 170px;
+}
+
+/* Высоту первого экрана задаёт список справа — без пустой полосы под
+   его последней строкой. */
+.lib-hero .panel__main {
+  min-height: 0;
 }
 
 /* Кнопка «путь обучения» и подпись рядом с ней. */
@@ -531,6 +554,17 @@ a.side-row:hover {
   color: var(--text-2);
 }
 
+/* Цветок сливы — в правом нижнем углу ячейки, целиком внутри неё.
+   Лепестки занимают в поле 100×100 примерно 13–87 по ширине и 12–84 по
+   высоте, отступы картинки подобраны так, чтобы от лепестков до правой и
+   нижней линий было по 30px. */
+.lib-plum {
+  right: 15px;
+  bottom: 11px;
+  width: 120px;
+  height: 120px;
+}
+
 .lib-feature__rows {
   flex: 1 1 460px;
 }
@@ -600,7 +634,8 @@ a.side-row:hover {
     overflow: visible;
   }
 
-  .panel--hero .sun {
+  .panel--hero .sun,
+  .panel--hero .hero-icon {
     display: none;
   }
 
@@ -864,10 +899,12 @@ a.side-row:hover {
     border-bottom: 1px solid var(--line);
   }
 
-  .lib-feature .big-hanzi {
-    left: 12px;
-    bottom: -22px;
-    font-size: 96px;
+  /* На телефоне — от лепестков до линий по 16px, как поля ячейки. */
+  .lib-plum {
+    right: 7px;
+    bottom: 4px;
+    width: 72px;
+    height: 72px;
   }
 
   .lib-feature__text {
@@ -1108,22 +1145,52 @@ a.side-row:hover {
    кто я и кнопки, справа «коротко». Ниже плитки «могу помочь, если ты»,
    три сворачиваемых блока о занятиях (.fold на <details>) и обещание с
    кнопкой записи. */
+/* Иллюстрация (images/icons/portrait.svg, просветы в ней залиты цветом
+   ячейки --surface) стоит на нижней линии ячейки, справа от текста.
+   Рамка картинки занимает всё место от текста (40 + 430 + зазор 16) до
+   правого поля и 80% высоты ячейки; сама картинка вписана в неё целиком и
+   прижата вправо вниз — в узкой ячейке она сама становится меньше и на
+   текст не заходит. На телефоне её нет (как и остальных .hero-icon). */
+.ct-portrait {
+  left: 486px;
+  right: 20px;
+  bottom: 0;
+  height: 80%;
+}
+
+.ct-portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  object-position: right bottom;
+}
+
+/* Ячейка с текстом забирает всё свободное место (иллюстрации нужна
+   ширина), «коротко» остаётся узкой колонкой. Если двум ячейкам рядом
+   тесно (ячейке с текстом досталось бы меньше 656px и картинка стала бы
+   совсем мелкой), «коротко» уходит под неё. */
 .ct-hero .panel__main {
-  flex-basis: 560px;
+  flex: 100 1 656px;
   gap: 18px;
   min-height: 480px;
 }
 
+.ct-hero .panel__side {
+  flex: 1 1 340px;
+}
+
 .ct-lead {
   margin: 0;
-  max-width: 470px;
+  max-width: 430px;
   font-size: 18px;
   line-height: 1.5;
 }
 
 .ct-about {
   margin: 0;
-  max-width: 470px;
+  max-width: 430px;
   font-size: 16px;
   line-height: 1.55;
   color: var(--text-2);
@@ -1177,40 +1244,14 @@ a.side-row:hover {
   line-height: 1.4;
 }
 
+/* Кнопка Telegram под цифрами. */
 .ct-tg {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 20px;
-  align-items: center;
-  gap: 12px;
-  margin-top: auto;
   padding: 22px 28px;
-  color: var(--text);
-  text-decoration: none;
 }
 
-.ct-tg:hover {
-  color: var(--text);
-  background: var(--surface-2);
-}
-
-.ct-tg:hover .row__arrow {
-  color: var(--accent-text);
-}
-
-.ct-tg__body {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.ct-tg__body small {
-  font-size: 13px;
-  color: var(--text-2);
-}
-
-.ct-tg__body b {
-  font-size: 18px;
-  font-weight: 600;
+.ct-tg .btn--outline {
+  gap: 8px;
+  padding: 6px 20px;
 }
 
 /* «могу помочь, если ты»: четыре плитки с бледным иероглифом. */
@@ -1657,11 +1698,13 @@ a.side-row:hover {
   max-width: 440px;
 }
 
-.fc-hero .sun {
-  right: 40px;
-  bottom: -120px;
-  width: 220px;
-  height: 220px;
+/* Инь-ян на месте прежнего «солнца» и того же размера: круг занимает 88%
+   поля картинки, нижняя половина обрезана краем ячейки. */
+.fc-yinyang {
+  right: 25px;
+  bottom: -135px;
+  width: 250px;
+  height: 250px;
 }
 
 /* Демо-карточка: «← ещё раз | 学习 | знаю →». */
@@ -3365,10 +3408,12 @@ a.side-row:hover {
   max-width: 430px;
 }
 
-.ai-hero .sun {
-  bottom: -120px;
-  width: 220px;
-  height: 220px;
+/* Монеты — целиком, в правом нижнем углу ячейки. */
+.ai-coins {
+  right: 20px;
+  bottom: 12px;
+  width: 150px;
+  height: 150px;
 }
 
 /* «пока работает только с VPN» — метка со значком. */
@@ -4013,10 +4058,6 @@ a.side-row:hover {
    совпадение — крупная карточка .dict-main с блоком «написание»,
    остальные статьи — строки .dict-row в рамке. Разметку выдачи строит
    js/dictionary.js, блок «написание» — js/hanzi-window.js. */
-.dict-hero .sun {
-  bottom: -112px;
-}
-
 .dict-search {
   max-width: 580px;
   margin: 4px 0 0;

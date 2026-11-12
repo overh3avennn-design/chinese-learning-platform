@@ -37,15 +37,14 @@
           <div class="panel__main">
             <div class="title-row">
               <h1 class="page-title" id="ct-title">контакты</h1>
-              <p class="title-pinyin"><b lang="zh-Latn">liánxì</b><span lang="zh-CN">联系</span></p>
             </div>
             <p class="ct-lead">Я преподаватель китайского языка. Готов помочь с изучением языка или просто подсказать по любой теме — пиши.</p>
             <p class="ct-about wide-only">Я учу китайский с самого детства. Сейчас у меня HSK 4, 11 лет обучения в китайской школе и опыт жизни в Китае по программе обмена.</p>
             <div class="ct-actions">
               <a class="btn" href="https://t.me/easily_chinesly" target="_blank" rel="noopener">записаться на пробное занятие <span class="wide-only ct-actions__arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span></a>
-              <a class="btn btn--outline" href="https://t.me/easily_chinesly" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9z"/></svg>@easily_chinesly</a>
+              <a class="btn btn--outline phone-only" href="https://t.me/easily_chinesly" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9z"/></svg>@easily_chinesly</a>
             </div>
-            <span class="sun" aria-hidden="true"></span>
+            <div class="hero-icon ct-portrait"><img src="../images/icons/portrait.svg" alt=""></div>
           </div>
           <div class="panel__side ct-short">
             <h2 class="panel__head wide-only">коротко</h2>
@@ -61,10 +60,11 @@
               <span class="ct-stat__num"><b>10+</b><small class="wide-only">отзывов</small></span>
               <span class="ct-stat__text">довольных учеников</span>
             </div>
-            <a class="ct-tg wide-only" href="https://t.me/easily_chinesly" target="_blank" rel="noopener">
-              <span class="ct-tg__body"><small>написать в Telegram</small><b>@easily_chinesly</b></span>
-              <svg class="row__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-            </a>
+            <!-- Кнопка Telegram на компьютере стоит здесь, под цифрами; на
+                 телефоне — вторая кнопка в .ct-actions. -->
+            <div class="ct-tg wide-only">
+              <a class="btn btn--outline" href="https://t.me/easily_chinesly" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9z"/></svg>@easily_chinesly</a>
+            </div>
           </div>
         </section>
 
