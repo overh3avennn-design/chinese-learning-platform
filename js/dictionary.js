@@ -29,6 +29,8 @@
   var FORMS_MAX = 300;      // сколько форм русского слова (дом → дома, домашний…) брать
   var FETCH_TIMEOUT = 10000; // запрос, молчащий дольше, обрывается и повторяется
   var FETCH_TRIES = 3;      // всего попыток на файл
+  var PARSE_MAX = 10;       // самое длинное слово (в знаках) при разборе предложения
+  var TILE_GLOSS = 30;      // до стольких знаков обрезается перевод на плашке
 
   var VLQ = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
   var CJK = /[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]|[\ud840-\ud8bf][\udc00-\udfff]/;
@@ -148,7 +150,8 @@
     return { keys: keys, fields: fields };
   }
 
-  function shard(kind, q) {
+  // Номер файла индекса, где должен лежать ключ q.
+  function shardNo(kind, q) {
     var firsts = meta[kind];
     var lo = 0, hi = firsts.length - 1, n = 0;
     while (lo <= hi) {
@@ -160,7 +163,11 @@
         hi = mid - 1;
       }
     }
-    return load(kind + "/" + n + ".json", parseShard);
+    return n;
+  }
+
+  function shard(kind, q) {
+    return load(kind + "/" + shardNo(kind, q) + ".json", parseShard);
   }
 
   // Первый индекс, где keys[i] >= q.
@@ -299,6 +306,38 @@
     return text.split(/[,;\/]/).map(pinyinKey).filter(Boolean);
   }
 
+  // ------------------------------------------------------ дополнения сайта
+
+  // Свои статьи сверх БКРС (js/dict-extra.js): слово → статья с пометкой
+  // x в дополнениях (e[3]) и ключи её пиньиня. Их мало, поэтому ищутся
+  // простым перебором и идут первыми среди точных совпадений.
+  var extras = (window.DictExtra || []).map(function (e) {
+    var item = [e[0], e[1], e[2], { x: 1 }];
+    return { entry: item, keys: entryPinyinKeys(e[1]), len: Array.from(e[0]).length };
+  });
+
+  function extraByWord(word) {
+    for (var i = 0; i < extras.length; i++) {
+      if (extras[i].entry[0] === word) return extras[i].entry;
+    }
+    return null;
+  }
+
+  // Кандидаты из дополнений впереди найденных в словаре: fit(дополнение)
+  // → 0 (точное), 1 (частичное) или −1 (не подходит).
+  function withExtras(list, fit) {
+    var exact = [], partial = [];
+    extras.forEach(function (x) {
+      var g = fit(x);
+      if (g === 0) exact.push({ entry: x.entry, group: 0 });
+      else if (g === 1) partial.push({ entry: x.entry, group: 1 });
+    });
+    if (!exact.length && !partial.length) return list;
+    var n = 0;
+    while (n < list.length && list[n].group === 0) n++;
+    return exact.concat(list.slice(0, n), partial, list.slice(n));
+  }
+
   // ------------------------------------------------------------------ поиск
 
   // Каждый поиск отдаёт список кандидатов по порядку показа: { id, group }
@@ -322,7 +361,9 @@
       // Слова, которые начинаются с запроса, стоят в индексе подряд.
       var starts = [];
       for (; i < s.keys.length && s.keys[i].indexOf(q) === 0; i++) starts.push(decode(s.fields[i][0])[0]);
-      return candidates(exact, merge([inside, starts], exact));
+      return withExtras(candidates(exact, merge([inside, starts], exact)), function (x) {
+        return x.entry[0] === q ? 0 : x.entry[0].indexOf(q) >= 0 ? 1 : -1;
+      });
     });
   }
 
@@ -377,7 +418,16 @@
           };
         });
       }
-      return list;
+      // Дополнения: то же чтение — точное, начинается так же — частичное.
+      return withExtras(list, function (x) {
+        var g = -1;
+        x.keys.forEach(function (k) {
+          if (plain(k).indexOf(base) !== 0 || (toned && !tonesFit(queryTones, k))) return;
+          if (plain(k) === base) g = 0;
+          else if (g < 0) g = 1;
+        });
+        return g;
+      });
     });
   }
 
@@ -448,8 +498,135 @@
     });
   }
 
+  // -------------------------------------------------- разбор предложения
+
+  // Словарь не лежит в памяти целиком (3,4 млн статей), поэтому вместо
+  // одного большого Map — те же файлы индекса zh/: заголовки в них
+  // отсортированы, слово ищется двоичным поиском, а каждый файл грузится
+  // и разбирается один раз (load) и дальше берётся из памяти.
+
+  // Самое длинное слово словаря, которое начинается со знака chars[i] и
+  // не выходит за end: { len, ids, all } или null; all — номера статей
+  // и более коротких слов с этого места, по длине. Перебор длин 1, 2, 3…
+  // обрывается, как только в индексе нет ни одного заголовка с таким
+  // началом, — обычно хватает одного-двух файлов на знак.
+  function longestAt(chars, i, end) {
+    var best = null, all = {};
+    function step(len) {
+      if (i + len > end || len > PARSE_MAX) return Promise.resolve(best);
+      var word = chars.slice(i, i + len).join("");
+      var no = shardNo("zh", word);
+      return load("zh/" + no + ".json", parseShard).then(function (s) {
+        var k = lowerBound(s.keys, word);
+        if (s.keys[k] === word) {
+          var ids = decode(s.fields[k][0]);
+          if (ids.length) {
+            all[len] = ids;
+            best = { len: len, ids: ids, all: all };
+          }
+          k++;
+        }
+        // Следующий заголовок по алфавиту (он может быть первым в
+        // следующем файле) — начинается ли он с этого же слова?
+        var next = k < s.keys.length ? s.keys[k] : meta.zh[no + 1];
+        if (!next || next.indexOf(word) !== 0) return best;
+        return step(len + 1);
+      });
+    }
+    return step(1).then(function (found) {
+      // Слово из дополнений сайта, если оно не короче найденного в словаре.
+      extras.forEach(function (x) {
+        if (i + x.len > end || (found && found.len > x.len)) return;
+        if (chars.slice(i, i + x.len).join("") !== x.entry[0]) return;
+        all[x.len] = [0];
+        found = { len: x.len, ids: [0], all: all, entry: x.entry };
+      });
+      return found;
+    });
+  }
+
+  // Жадная разбивка слева направо: на каждом месте — самое длинное слово
+  // словаря, нет такого — один иероглиф отдельным куском. Знаки
+  // препинания, цифры, латиница и пробелы в словаре не ищутся.
+  // Одна поправка к жадности: если последний знак слова начинает другое
+  // слово, которое важнее (номер статьи меньше), а слово без этого знака
+  // тоже есть в словаре, знак отдаётся следующему слову:
+  // 图书馆学|习 → 图书馆|学习, 很有|意思 → 很|有意思.
+  // → Promise([{ text, ids }]): ids — номера статей слова, [] — иероглифа
+  // нет в словаре, null — не иероглифы (выводятся как есть).
+  function segment(text) {
+    var chars = Array.from(text);
+    var han = chars.map(function (ch) { return CJK_START.test(ch); });
+    // Конец сплошного ряда иероглифов для каждого места.
+    var ends = [], end = chars.length;
+    for (var i = chars.length - 1; i >= 0; i--) {
+      if (!han[i]) end = i;
+      ends[i] = end;
+    }
+    // Все места ищутся сразу: файлы индекса грузятся параллельно.
+    return Promise.all(chars.map(function (ch, j) {
+      return han[j] ? longestAt(chars, j, ends[j]) : null;
+    })).then(function (found) {
+      var parts = [], pos = 0;
+      while (pos < chars.length) {
+        if (!han[pos]) {
+          var from = pos;
+          while (pos < chars.length && !han[pos]) pos++;
+          parts.push({ text: chars.slice(from, pos).join(""), ids: null });
+        } else if (found[pos]) {
+          var w = found[pos], len = w.len, ids = w.ids;
+          var next = len > 1 ? found[pos + len - 1] : null;
+          if (next && next.len > 1 && next.ids[0] < ids[0] && w.all[len - 1]) {
+            len--;
+            ids = w.all[len];
+          }
+          var text = chars.slice(pos, pos + len).join("");
+          parts.push({ text: text, ids: ids, entry: extraByWord(text) });
+          pos += len;
+        } else {
+          parts.push({ text: chars[pos], ids: [] });
+          pos++;
+        }
+      }
+      return parts;
+    });
+  }
+
+  // Разбивка и статьи её слов (у слова с несколькими статьями — самая
+  // важная). В консоль — сама разбивка: «我 | 今天 | 去 | …».
+  function parseSentence(text) {
+    return segment(text).then(function (parts) {
+      if (window.console) {
+        console.log("Разбор по словам: " + parts.map(function (p) {
+          return p.ids && !p.ids.length ? p.text + " (нет в словаре)" : p.text.trim();
+        }).filter(Boolean).join(" | "));
+      }
+      return Promise.all(parts.map(function (p) {
+        return p.entry || (p.ids && p.ids.length ? entry(p.ids[0]) : null);
+      })).then(function (entries) {
+        parts.forEach(function (p, i) { p.entry = entries[i] || null; });
+        return { text: text, parts: parts };
+      });
+    });
+  }
+
+  function hanziCount(text) {
+    return Array.from(text).filter(function (ch) { return CJK_START.test(ch); }).length;
+  }
+
   function search(q) {
-    if (CJK.test(q)) return searchHanzi(q);
+    // Иероглифы: целиком есть в словаре — обычная статья. Нет, а знаков
+    // больше одного — разбор предложения по словам (list.parse); слова,
+    // которые начинаются с запроса, остаются ниже «частичными».
+    if (CJK.test(q)) {
+      return searchHanzi(q).then(function (list) {
+        if ((list.length && list[0].group === 0) || hanziCount(q) < 2) return list;
+        return parseSentence(q).then(function (parse) {
+          list.parse = parse;
+          return list;
+        });
+      });
+    }
     if (CYRILLIC.test(q)) return searchRussian(q);
     return searchPinyin(q);
   }
@@ -459,6 +636,7 @@
   var run = 0;            // номер текущего поиска: ответы старых отбрасываются
   var queue = [];         // кандидаты, которые ещё не показаны
   var groups = [];        // [{ section, list }] — «Точные» и «Частичные»
+  var parseShown = false; // на странице разбор предложения
   var shownQuery = null;
   var typeTimer = null;
   var statusTimer = null;
@@ -549,7 +727,8 @@
     var len = Math.min(Array.from(e[0]).length, 9);
     var hanzi = '<span class="dict-hanzi is-len-' + len + '" lang="zh-CN">' + esc(e[0]) + "</span>";
     var pinyin = '<span class="dict-pinyin' + (extra.a ? ' is-auto" title="' + AUTO_PINYIN : "") + '">' +
-      (e[1] ? markup(e[1]) + (extra.a ? '<span class="dict-auto">авто</span>' : "") : "") + "</span>";
+      (e[1] ? markup(e[1]) + (extra.a ? '<span class="dict-auto">авто</span>' : "") : "") + "</span>" +
+      (extra.x && main ? '<span class="dict-tag" title="Статьи нет в БКРС — её добавил сайт">дополнение сайта</span>' : "");
     var article = lines.map(function (t, i) { return line(t, collapsed && i >= LINES_SHOWN); }).join("");
     var html;
 
@@ -631,6 +810,93 @@
     });
   }
 
+  // Первое чтение статьи без пометок: «hǎo, hào» → «hǎo».
+  function firstPinyin(pinyin) {
+    return (pinyin || "").replace(/\[(p|i)\][\s\S]*?\[\/\1\]/g, " ").replace(/\([^()]*\)/g, " ")
+      .split(/[,;\/]/)[0].replace(/\s+/g, " ").trim();
+  }
+
+  // Перевод для плашки: первое значение статьи, не длиннее TILE_GLOSS.
+  function tileGloss(e) {
+    var g = window.HanziWindow ? window.HanziWindow.gloss(e, 3) : (e[2] || "").split("\n")[0];
+    // Первое значение с русским текстом: у 他 статья начинается с «I, tā».
+    var items = g.split(";").map(function (t) { return t.trim(); }).filter(Boolean);
+    g = items.filter(function (t) { return CYRILLIC.test(t); })[0] || items[0] || "";
+    if (g.length > TILE_GLOSS) g = g.slice(0, TILE_GLOSS - 1).replace(/[\s,;.:(\-—–]+$/, "") + "…";
+    return g;
+  }
+
+  // Разбор предложения: исходный текст, ряд плашек (пиньинь, слово,
+  // короткий перевод) и место под статью. Нажатие на плашку раскрывает
+  // под рядом полную статью слова — ту же карточку, что у точного
+  // совпадения. Кнопка перевода пока выключена: позже к ней подключится
+  // нейросеть.
+  function showParse(parse) {
+    var section = document.createElement("section");
+    section.className = "dict-parse";
+    section.setAttribute("aria-label", "Разбор предложения по словам");
+    section.innerHTML =
+      '<div class="dict-parse__head">' +
+        '<p class="dict-parse__source" lang="zh-CN">' + esc(parse.text) + "</p>" +
+        '<p class="dict-parse__note">Разбор по словам (автоматический, может ошибаться)</p>' +
+      "</div>" +
+      '<div class="dict-parse__tiles"></div>' +
+      '<div class="dict-parse__entry" hidden></div>' +
+      '<div class="dict-parse__foot">' +
+        '<button class="btn btn--outline" type="button" disabled>перевести предложение целиком</button>' +
+        '<span class="tag">скоро</span>' +
+      "</div>";
+    var tiles = section.querySelector(".dict-parse__tiles");
+    parse.parts.forEach(function (p) {
+      var tile;
+      if (!p.ids) {
+        // Знаки препинания, цифры, латиница — как есть; пробелы не нужны.
+        if (!p.text.trim()) return;
+        tile = document.createElement("span");
+        tile.className = "dict-parse__plain";
+        tile.textContent = p.text.trim();
+      } else if (!p.entry) {
+        tile = document.createElement("div");
+        tile.className = "dict-tile is-unknown";
+        tile.innerHTML = '<span class="dict-tile__py">&nbsp;</span>' +
+          '<span class="dict-tile__zh" lang="zh-CN">' + esc(p.text) + "</span>" +
+          '<span class="dict-tile__ru">нет в словаре</span>';
+      } else {
+        tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "dict-tile";
+        tile.setAttribute("aria-expanded", "false");
+        tile.dictEntry = p.entry;
+        tile.innerHTML = '<span class="dict-tile__py" lang="zh-Latn">' + (esc(firstPinyin(p.entry[1])) || "&nbsp;") + "</span>" +
+          '<span class="dict-tile__zh" lang="zh-CN">' + esc(p.text) + "</span>" +
+          '<span class="dict-tile__ru">' + (esc(tileGloss(p.entry)) || "—") + "</span>";
+      }
+      tiles.appendChild(tile);
+    });
+    resultsEl.appendChild(section);
+    parseShown = true;
+  }
+
+  // Нажатие на плашку: статья слова под рядом плашек; повторное — убрать.
+  function toggleTile(tile) {
+    var section = tile.closest(".dict-parse");
+    var slot = section.querySelector(".dict-parse__entry");
+    var wasOpen = tile.classList.contains("is-open");
+    Array.prototype.forEach.call(section.querySelectorAll(".dict-tile.is-open"), function (t) {
+      t.classList.remove("is-open");
+      t.setAttribute("aria-expanded", "false");
+    });
+    slot.textContent = "";
+    slot.hidden = wasOpen;
+    if (wasOpen) return;
+    tile.classList.add("is-open");
+    tile.setAttribute("aria-expanded", "true");
+    var card = renderEntry(tile.dictEntry, true);
+    slot.appendChild(card);
+    fillWriting(card, tile.dictEntry);
+    slot.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
   // Группа выдачи: 0 — точные совпадения, 1 — частичные. У точных первое
   // идёт крупной карточкой (main), остальные — строками в рамке «ещё
   // точные совпадения»; частичные — строками в рамке «частичные
@@ -669,7 +935,7 @@
   function showNext(count, token) {
     var batch = queue.splice(0, count);
     moreBtn.hidden = true;
-    return Promise.all(batch.map(function (c) { return entry(c.id); })).catch(function (err) {
+    return Promise.all(batch.map(function (c) { return c.entry || entry(c.id); })).catch(function (err) {
       // Не загрузилось — кандидаты возвращаются в очередь, и «Показать
       // ещё» попробует снова.
       if (token === run) {
@@ -699,7 +965,7 @@
       });
       if (shown < count && queue.length) return showNext(count - shown, token);
       moreBtn.hidden = !queue.length;
-      if (!groups[0] && !groups[1]) {
+      if (!groups[0] && !groups[1] && !parseShown) {
         setStatus("Ничего не нашлось. Попробуйте пиньинь без тонов, другую форму русского слова или меньше иероглифов.");
       }
     });
@@ -713,6 +979,7 @@
     var token = ++run;
     queue = [];
     groups = [];
+    parseShown = false;
     resultsEl.innerHTML = "";
     moreBtn.hidden = true;
     var url = q ? "?q=" + encodeURIComponent(q) : location.pathname;
@@ -729,14 +996,18 @@
       .then(function (list) {
         if (token !== run) return;
         queue = list;
+        if (list.parse) {
+          showParse(list.parse);
+          setStatus("");
+        }
         // Сначала статьи первых результатов, потом остальных: по
         // медленному интернету первые появляются заметно раньше.
         return showNext(FIRST_BATCH, token).then(function () {
           if (token !== run || !queue.length) return;
-          if (groups[0] || groups[1]) setStatus("");
+          if (groups[0] || groups[1] || parseShown) setStatus("");
           return showNext(FIRST_PAGE - FIRST_BATCH, token);
         }).then(function () {
-          if (token === run && (groups[0] || groups[1])) setStatus("");
+          if (token === run && (groups[0] || groups[1] || parseShown)) setStatus("");
         });
       })
       .catch(function (err) {
@@ -746,7 +1017,7 @@
         if (err && err.status === 404 && !fresh) return start(q, true);
         // Тот же запрос можно отправить ещё раз кнопкой «найти».
         shownQuery = null;
-        if (groups[0] || groups[1]) {
+        if (groups[0] || groups[1] || parseShown) {
           setStatus("Часть результатов не загрузилась — нажмите «показать ещё», чтобы попробовать снова.", true);
         } else {
           setStatus("Не получилось загрузить словарь. Проверьте интернет и попробуйте ещё раз.", true);
@@ -780,6 +1051,11 @@
   });
 
   resultsEl.addEventListener("click", function (e) {
+    var tile = e.target.closest("button.dict-tile");
+    if (tile) {
+      toggleTile(tile);
+      return;
+    }
     var toggle = e.target.closest(".dict-toggle");
     if (toggle) {
       var entryEl = toggle.closest(".dict-entry");
@@ -827,6 +1103,8 @@
   // Статья, у которой заголовок — ровно эти иероглифы (самая важная из
   // нескольких), или null. Для значений иероглифов и их частей в окне слова.
   function lookupWord(word) {
+    var own = extraByWord(word);
+    if (own) return Promise.resolve(own);
     return loadMeta()
       .then(function () { return shard("zh", word); })
       .then(function (s) {

@@ -4688,6 +4688,208 @@ button.dict-row__more:hover {
   }
 }
 
+/* ------------------------------------------- разбор предложения */
+
+/* Текста целиком в словаре нет — он разбит на слова (js/dictionary.js,
+   showParse): исходное предложение, ряд плашек «пиньинь / слово /
+   перевод», под ним статья выбранного слова и кнопка перевода. */
+.dict-parse {
+  padding: 28px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.dict-parse + .dict-group {
+  margin-top: 24px;
+}
+
+.dict-parse__source {
+  margin: 0;
+  font-family: var(--font-zh);
+  font-size: 24px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.dict-parse__note {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+/* Плашки переносятся на новые строки и не шире экрана. */
+.dict-parse__tiles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.dict-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  min-width: 60px;
+  max-width: min(100%, 168px);
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  text-align: center;
+}
+
+button.dict-tile {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dict-tile__py {
+  font-size: 13px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+.dict-tile__zh {
+  font-family: var(--font-zh);
+  font-size: 28px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.dict-tile__ru {
+  font-size: 12px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+.dict-tile.is-open {
+  border-color: var(--text);
+  background: var(--bg);
+}
+
+button.dict-tile:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+/* Иероглифа нет в словаре — плашка приглушена. */
+.dict-tile.is-unknown {
+  border-style: dashed;
+  background: none;
+}
+
+.dict-tile.is-unknown .dict-tile__zh {
+  color: var(--text-2);
+}
+
+/* Знаки препинания, цифры, латиница — без рамки, по высоте иероглифов. */
+.dict-parse__plain {
+  align-self: center;
+  max-width: 100%;
+  padding: 0 2px;
+  font-family: var(--font-zh);
+  font-size: 24px;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+/* Статья выбранного слова — та же карточка, что у точного совпадения. */
+.dict-parse__entry {
+  margin-top: 16px;
+}
+
+.dict-parse__entry[hidden] {
+  display: none;
+}
+
+.dict-parse__entry .dict-main {
+  background: var(--surface-2);
+}
+
+.dict-parse__entry .dict-main__top .tag {
+  display: none;
+}
+
+.dict-parse__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+@media (hover: hover) {
+  button.dict-tile:hover {
+    border-color: var(--text);
+  }
+}
+
+@media (max-width: 960px) {
+  .dict-parse {
+    padding: 16px;
+  }
+
+  .dict-parse__source {
+    font-size: 20px;
+  }
+
+  .dict-parse__note {
+    font-size: 13px;
+  }
+
+  .dict-parse__tiles {
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .dict-tile {
+    min-width: 52px;
+    max-width: min(100%, 132px);
+    padding: 6px 8px;
+  }
+
+  .dict-tile__py {
+    font-size: 12px;
+  }
+
+  .dict-tile__zh {
+    font-size: 24px;
+  }
+
+  .dict-tile__ru {
+    font-size: 11px;
+  }
+
+  .dict-parse__plain {
+    font-size: 20px;
+  }
+
+  .dict-parse__entry {
+    margin-top: 12px;
+  }
+
+  .dict-parse__foot {
+    margin-top: 16px;
+    padding-top: 14px;
+  }
+
+  .dict-parse__foot .btn {
+    min-height: 44px;
+    padding: 4px 14px;
+    font-size: 14px;
+  }
+}
+
 .dict-more {
   margin-top: 24px;
 }
