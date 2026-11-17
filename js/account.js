@@ -25,6 +25,7 @@
 
   var enabled = !!API_URL;
   var listeners = [];
+  var relogins = 0;
 
   function readSession() {
     try {
@@ -79,7 +80,12 @@
     }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         if (res.ok) return data;
-        if (res.status === 401 && token && session && token === session.token) writeSession(null);
+        if (res.status === 401 && token && session && token === session.token) {
+          writeSession(null);
+          // В Telegram входим заново сами (например, аккаунт слили с другим
+          // при привязке) — не больше двух раз за страницу, без зацикливания.
+          if (isMiniApp() && relogins++ < 2) setTimeout(function () { miniAppLogin(true); }, 0);
+        }
         throw new ApiError(res.status, data && data.error);
       });
     }, function () {
