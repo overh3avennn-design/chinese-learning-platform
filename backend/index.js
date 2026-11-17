@@ -16,6 +16,7 @@
 const { Driver, TokenAuthService } = require("ydb-sdk");
 const { createApp } = require("./src/app");
 const { createYdbStore } = require("./src/store-ydb");
+const { parseYdbEndpoint } = require("./src/ydb-endpoint");
 
 class ContextTokenAuth extends TokenAuthService {
   setToken(token) {
@@ -29,7 +30,7 @@ let driver = null;
 async function getDriver() {
   if (!auth.token) throw new Error("No IAM token in context: the function version has no service account");
   if (!driver) {
-    const d = new Driver({ connectionString: process.env.YDB_ENDPOINT, authService: auth });
+    const d = new Driver(Object.assign(parseYdbEndpoint(process.env.YDB_ENDPOINT), { authService: auth }));
     if (!(await d.ready(8000))) {
       await d.destroy().catch(() => {});
       throw new Error("YDB driver is not ready");

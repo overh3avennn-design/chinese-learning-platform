@@ -8,6 +8,7 @@
 const fs = require("fs");
 const path = require("path");
 const { Driver, getCredentialsFromEnv } = require("ydb-sdk");
+const { parseYdbEndpoint } = require("../src/ydb-endpoint");
 
 async function main() {
   const endpoint = process.env.YDB_ENDPOINT;
@@ -32,7 +33,7 @@ async function migrate(endpoint) {
     .split("\n").filter((l) => !/^\s*--/.test(l)).join("\n");
   const statements = sql.split(/;\s*(?:\n|$)/).map((s) => s.trim()).filter(Boolean);
 
-  const driver = new Driver({ connectionString: endpoint, authService: getCredentialsFromEnv() });
+  const driver = new Driver(Object.assign(parseYdbEndpoint(endpoint), { authService: getCredentialsFromEnv() }));
   try {
     if (!(await driver.ready(20000))) throw new Error("YDB driver is not ready");
     for (const text of statements) {
