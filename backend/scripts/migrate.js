@@ -36,8 +36,22 @@ async function migrate(endpoint) {
   const driver = new Driver(Object.assign(parseYdbEndpoint(endpoint), { authService: getCredentialsFromEnv() }));
   try {
     if (!(await driver.ready(20000))) throw new Error("YDB driver is not ready");
+    // Для уже существующей таблицы с индексами YDB serverless иногда отвечает
+    // на CREATE TABLE IF NOT EXISTS «Query compilation timed out», поэтому
+    // сначала смотрим, какие таблицы уже есть, и создаём только недостающие.
+    let existing = null;
+    try {
+      const list = await driver.schemeClient.listDirectory("");
+      existing = new Set((list.children || []).map((c) => c.name));
+    } catch (e) {
+      console.log("список таблиц не получен (" + String(e && e.message ? e.message : e).slice(0, 80) + ") — создаю с IF NOT EXISTS");
+    }
     for (const text of statements) {
       const name = (/CREATE TABLE IF NOT EXISTS (\w+)/.exec(text) || [])[1] || text.slice(0, 40);
+      if (existing && existing.has(name)) {
+        console.log("table exists:", name);
+        continue;
+      }
       await driver.queryClient.do({
         fn: async (session) => {
           const res = await session.execute({ text });
