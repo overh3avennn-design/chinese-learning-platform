@@ -16,8 +16,12 @@ desktop.ini
 __pycache__/
 *.pyc
 
-# Локальные секреты скриптов: токен Яндекс Диска (YANDEX_DISK_TOKEN).
+# Локальные секреты скриптов: токен Яндекс Диска (YANDEX_DISK_TOKEN), токен
+# бота, Google Client ID.
 .env
+
+# Ключ сервисного аккаунта Yandex Cloud — только в секретах GitHub (YC_SA_KEY).
+yc-key.json
 
 # Исходные файлы источников (кэш scripts/fetch_data.py) — только локально,
 # в git идёт нормализованный data/vocab/.

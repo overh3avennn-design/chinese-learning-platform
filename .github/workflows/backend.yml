@@ -1,0 +1,205 @@
+# Выкладка API (backend/) в Yandex Cloud: YDB serverless + таблицы, Cloud
+# Function, API Gateway. Запускается при пуше в main с изменениями в backend/
+# или в этом файле и вручную (Actions → backend → Run workflow).
+#
+# Всё идемпотентно: что уже есть — обновляется, чего нет — создаётся.
+# Секреты — в Settings → Secrets → Actions: YC_SA_KEY (ключ сервисного
+# аккаунта github-deployer), YC_CLOUD_ID, YC_FOLDER_ID, TELEGRAM_BOT_TOKEN,
+# GOOGLE_CLIENT_ID, JWT_SECRET. В лог они не выводятся.
+
+name: backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: backend-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  DB_NAME: chinese-db
+  FUNCTION_NAME: chinese-api
+  GATEWAY_NAME: chinese-api
+  # Сайты, которым можно обращаться к API (через |).
+  ALLOWED_ORIGINS: "https://overh3avennn-design.github.io|http://localhost:8765|http://127.0.0.1:8765|http://localhost"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Тесты API
+        working-directory: backend
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+
+      - name: Установка yc
+        run: |
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -i "$HOME/yc" -n
+          echo "$HOME/yc/bin" >> "$GITHUB_PATH"
+
+      - name: Вход в Yandex Cloud
+        env:
+          YC_SA_KEY: ${{ secrets.YC_SA_KEY }}
+          YC_CLOUD_ID: ${{ secrets.YC_CLOUD_ID }}
+          YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$YC_SA_KEY" > "$RUNNER_TEMP/sa-key.json"
+          yc config profile create ci >/dev/null
+          yc config set service-account-key "$RUNNER_TEMP/sa-key.json"
+          yc config set cloud-id "$YC_CLOUD_ID"
+          yc config set folder-id "$YC_FOLDER_ID"
+          SA_ID=$(jq -r .service_account_id "$RUNNER_TEMP/sa-key.json")
+          echo "SA_ID=$SA_ID" >> "$GITHUB_ENV"
+          yc --version
+
+      - name: База YDB
+        run: |
+          set -euo pipefail
+          if ! yc ydb database get "$DB_NAME" >/dev/null 2>&1; then
+            echo "Создаю serverless-базу $DB_NAME"
+            # Потолок 1 ГБ данных и 20 RU/с — чтобы счёт не мог вырасти.
+            yc ydb database create "$DB_NAME" --serverless \
+              --sls-storage-size 1GB \
+              --sls-throttling-rcu 20 \
+              --sls-enable-throttling-rcu=true \
+              --async >/dev/null
+          fi
+          for i in $(seq 1 60); do
+            STATUS=$(yc ydb database get "$DB_NAME" --format json | jq -r .status)
+            [ "$STATUS" = "RUNNING" ] && break
+            echo "база: $STATUS, жду…"
+            sleep 10
+          done
+          [ "$STATUS" = "RUNNING" ] || { echo "База не запустилась: $STATUS"; exit 1; }
+          YDB_ENDPOINT=$(yc ydb database get "$DB_NAME" --format json | jq -r .endpoint)
+          echo "YDB_ENDPOINT=$YDB_ENDPOINT" >> "$GITHUB_ENV"
+          echo "База: $YDB_ENDPOINT"
+
+      - name: Таблицы
+        working-directory: backend
+        env:
+          YDB_SERVICE_ACCOUNT_KEY_FILE_CREDENTIALS: ${{ runner.temp }}/sa-key.json
+        run: node scripts/migrate.js
+
+      - name: Функция
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          set -euo pipefail
+          for name in TELEGRAM_BOT_TOKEN GOOGLE_CLIENT_ID JWT_SECRET; do
+            [ -n "${!name}" ] || { echo "Секрет $name пуст"; exit 1; }
+          done
+          if ! yc serverless function get "$FUNCTION_NAME" >/dev/null 2>&1; then
+            echo "Создаю функцию $FUNCTION_NAME"
+            yc serverless function create "$FUNCTION_NAME" >/dev/null
+          fi
+          FUNCTION_ID=$(yc serverless function get "$FUNCTION_NAME" --format json | jq -r .id)
+          echo "FUNCTION_ID=$FUNCTION_ID" >> "$GITHUB_ENV"
+
+          # Зависимости платформа ставит сама по package-lock.json.
+          (cd backend && zip -qr "$RUNNER_TEMP/function.zip" index.js src package.json package-lock.json)
+          echo "Архив: $(du -h "$RUNNER_TEMP/function.zip" | cut -f1)"
+
+          # Ответ yc содержит переменные окружения — в лог не выводим.
+          yc serverless function version create \
+            --function-id "$FUNCTION_ID" \
+            --runtime nodejs22 \
+            --entrypoint index.handler \
+            --memory 256MB \
+            --execution-timeout 15s \
+            --concurrency 1 \
+            --service-account-id "$SA_ID" \
+            --source-path "$RUNNER_TEMP/function.zip" \
+            --environment "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN,GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,JWT_SECRET=$JWT_SECRET,YDB_ENDPOINT=$YDB_ENDPOINT,ALLOWED_ORIGINS=$ALLOWED_ORIGINS" \
+            --format json > /dev/null
+          echo "Новая версия функции готова"
+
+          # Не больше 2 экземпляров и 10 одновременных запросов в зоне —
+          # предохранитель от потока запросов и неожиданного счёта.
+          yc serverless function set-scaling-policy --id "$FUNCTION_ID" --tag '$latest' \
+            --zone-instances-limit 2 --zone-requests-limit 10 >/dev/null
+          echo "Лимиты масштабирования заданы"
+
+      - name: API Gateway
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/gateway.yaml" <<EOF
+          openapi: 3.0.0
+          info:
+            title: chinese-api
+            version: 1.0.0
+          paths:
+            /{proxy+}:
+              x-yc-apigateway-any-method:
+                parameters:
+                  - name: proxy
+                    in: path
+                    required: false
+                    explode: false
+                    style: simple
+                    schema:
+                      type: string
+                      default: '-'
+                x-yc-apigateway-integration:
+                  type: cloud_functions
+                  function_id: ${FUNCTION_ID}
+                  tag: "\$latest"
+                  service_account_id: ${SA_ID}
+                  payload_format_version: "1.0"
+          EOF
+          if yc serverless api-gateway get "$GATEWAY_NAME" >/dev/null 2>&1; then
+            yc serverless api-gateway update "$GATEWAY_NAME" --spec "$RUNNER_TEMP/gateway.yaml" >/dev/null
+          else
+            echo "Создаю API Gateway $GATEWAY_NAME"
+            yc serverless api-gateway create "$GATEWAY_NAME" --spec "$RUNNER_TEMP/gateway.yaml" >/dev/null
+          fi
+          DOMAIN=$(yc serverless api-gateway get "$GATEWAY_NAME" --format json | jq -r .domain)
+          echo "API_URL=https://$DOMAIN" >> "$GITHUB_ENV"
+
+      - name: Проверка API после выкладки
+        working-directory: backend
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: node scripts/smoke.js
+
+      - name: Логи функции (при ошибке)
+        if: failure() && env.FUNCTION_ID != ''
+        run: yc serverless function logs "$FUNCTION_NAME" --since 15m --limit 80 || true
+
+      - name: Итог
+        if: success()
+        run: |
+          {
+            echo "## API выложено"
+            echo ""
+            echo "- Адрес API: **$API_URL**"
+            echo "- Функция: $FUNCTION_NAME ($FUNCTION_ID), среда nodejs22"
+            echo "- База: $DB_NAME"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "================================================"
+          echo " API: $API_URL"
+          echo "================================================"
+
+      - name: Убрать ключ
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa-key.json"
