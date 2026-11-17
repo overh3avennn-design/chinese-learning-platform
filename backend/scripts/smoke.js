@@ -47,8 +47,24 @@ const login = (id) => call("POST", "/auth/telegram-miniapp", {
   initData: signInitData({ query_id: "smoke", user: { id, first_name: "Smoke", last_name: "Test " + id }, auth_date: String(now()) }, TOKEN)
 });
 
+// Новый шлюз отвечает не сразу (имя ещё не разошлось по DNS) — ждём до 2 минут.
+async function waitReachable() {
+  for (let i = 1; i <= 24; i++) {
+    try {
+      const res = await fetch(API + "/me");
+      console.log("шлюз отвечает (HTTP " + res.status + ")");
+      return;
+    } catch (e) {
+      console.log("шлюз ещё не отвечает (" + (e.cause && e.cause.code ? e.cause.code : e.message) + "), жду 5 с…");
+      await new Promise((r) => setTimeout(r, 5000));
+    }
+  }
+  throw new Error("API gateway is not reachable");
+}
+
 async function main() {
   console.log("API: " + API);
+  await waitReachable();
 
   const pre = await fetch(API + "/cards", { method: "OPTIONS", headers: { Origin: ORIGIN, "Access-Control-Request-Method": "PUT", "Access-Control-Request-Headers": "authorization,content-type" } });
   check("CORS: preflight для сайта разрешён", pre.status === 204 && pre.headers.get("access-control-allow-origin") === ORIGIN, "status " + pre.status);
