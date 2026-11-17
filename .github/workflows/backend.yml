@@ -89,9 +89,9 @@ jobs:
             sleep 10
           done
           [ "$STATUS" = "RUNNING" ] || { echo "База не запустилась: $STATUS"; exit 1; }
-          YDB_ENDPOINT=$(yc ydb database get "$DB_NAME" --format json | jq -r .endpoint)
-          echo "YDB_ENDPOINT=$YDB_ENDPOINT" >> "$GITHUB_ENV"
-          echo "База: $YDB_ENDPOINT"
+          YDB_CONNECTION=$(yc ydb database get "$DB_NAME" --format json | jq -r .endpoint)
+          echo "YDB_CONNECTION=$YDB_CONNECTION" >> "$GITHUB_ENV"
+          echo "База: $YDB_CONNECTION"
 
       - name: Таблицы
         working-directory: backend
@@ -130,7 +130,7 @@ jobs:
             --concurrency 1 \
             --service-account-id "$SA_ID" \
             --source-path "$RUNNER_TEMP/function.zip" \
-            --environment "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN,GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,JWT_SECRET=$JWT_SECRET,YDB_ENDPOINT=$YDB_ENDPOINT,ALLOWED_ORIGINS=$ALLOWED_ORIGINS" \
+            --environment "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN,GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,JWT_SECRET=$JWT_SECRET,YDB_CONNECTION=$YDB_CONNECTION,ALLOWED_ORIGINS=$ALLOWED_ORIGINS" \
             --format json > /dev/null
           echo "Новая версия функции готова"
 

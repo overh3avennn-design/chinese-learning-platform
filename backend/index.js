@@ -7,7 +7,7 @@
 //
 // Переменные окружения (их ставит .github/workflows/backend.yml):
 //   TELEGRAM_BOT_TOKEN, GOOGLE_CLIENT_ID, JWT_SECRET — секреты;
-//   YDB_ENDPOINT — grpcs://…/?database=… из `yc ydb database get`;
+//   YDB_CONNECTION — grpcs://…/?database=… из `yc ydb database get`;
 //   ALLOWED_ORIGINS — сайты, которым можно обращаться к API (через запятую).
 //
 // К YDB функция ходит с IAM-токеном своего сервисного аккаунта: платформа
@@ -30,7 +30,7 @@ let driver = null;
 async function getDriver() {
   if (!auth.token) throw new Error("No IAM token in context: the function version has no service account");
   if (!driver) {
-    const d = new Driver(Object.assign(parseYdbEndpoint(process.env.YDB_ENDPOINT), { authService: auth }));
+    const d = new Driver(Object.assign(parseYdbEndpoint(process.env.YDB_CONNECTION), { authService: auth }));
     if (!(await d.ready(8000))) {
       await d.destroy().catch(() => {});
       throw new Error("YDB driver is not ready");

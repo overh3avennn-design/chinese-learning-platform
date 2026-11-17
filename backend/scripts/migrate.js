@@ -1,7 +1,7 @@
 "use strict";
 
 // Создаёт таблицы из schema.sql (если их ещё нет). Запускается в GitHub
-// Actions: YDB_ENDPOINT — строка подключения, YDB_SERVICE_ACCOUNT_KEY_FILE_CREDENTIALS
+// Actions: YDB_CONNECTION — строка подключения, YDB_SERVICE_ACCOUNT_KEY_FILE_CREDENTIALS
 // — путь к ключу сервисного аккаунта.
 //   node scripts/migrate.js
 
@@ -11,10 +11,10 @@ const { Driver, getCredentialsFromEnv } = require("ydb-sdk");
 const { parseYdbEndpoint } = require("../src/ydb-endpoint");
 
 async function main() {
-  const endpoint = process.env.YDB_ENDPOINT;
-  if (!endpoint) throw new Error("YDB_ENDPOINT is not set");
-  // Только что созданная база несколько минут отвечает «Database not found»,
-  // хотя её статус уже RUNNING, — повторяем.
+  const endpoint = process.env.YDB_CONNECTION;
+  if (!endpoint) throw new Error("YDB_CONNECTION is not set");
+  // Только что созданная база может недолго быть недоступна, хотя её статус
+  // уже RUNNING, — повторяем несколько раз.
   for (let attempt = 1; ; attempt++) {
     try {
       await migrate(endpoint);
