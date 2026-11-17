@@ -78,14 +78,20 @@
       keepalive: !!opts.keepalive,
       cache: "no-store"
     };
-    // Сорвалось соединение — ещё две попытки (кроме запроса при закрытии
-    // страницы). Повтор безопасен: вход ничего не портит, а запись карточек
-    // решает по времени правки.
+    // Сорвалось соединение или сервер ответил ошибкой 5xx — ещё две попытки
+    // (кроме запроса при закрытии страницы). Повтор безопасен: вход ничего
+    // не портит, а запись карточек решает по времени правки.
     var tries = opts.keepalive ? 1 : 3;
+    function later(n) {
+      return new Promise(function (resolve) { setTimeout(resolve, 1000 * n); });
+    }
     function attempt(n) {
-      return fetch(API_URL + path, init).catch(function (err) {
+      return fetch(API_URL + path, init).then(function (res) {
+        if (res.status >= 500 && n < tries) return later(n).then(function () { return attempt(n + 1); });
+        return res;
+      }, function (err) {
         if (n >= tries) throw err;
-        return new Promise(function (resolve) { setTimeout(resolve, 800 * n); }).then(function () { return attempt(n + 1); });
+        return later(n).then(function () { return attempt(n + 1); });
       });
     }
     return attempt(1).then(function (res) {
