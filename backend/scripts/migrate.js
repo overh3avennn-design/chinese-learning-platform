@@ -21,7 +21,7 @@ async function main() {
       return;
     } catch (err) {
       const msg = String(err && err.message ? err.message : err);
-      if (attempt >= 15 ||!/Database not found|UNAVAILABLE|not ready|DEADLINE/i.test(msg)) throw err;
+      if (attempt >= 6 || !/Database not found|UNAVAILABLE|not ready|DEADLINE|timed out|Timeout|OVERLOADED/i.test(msg)) throw err;
       console.log("база ещё не готова (" + msg.slice(0, 80) + "), попытка " + attempt + ", жду 20 с…");
       await new Promise((r) => setTimeout(r, 20000));
     }
