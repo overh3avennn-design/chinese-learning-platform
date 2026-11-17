@@ -1,6 +1,7 @@
 # Выкладка API (backend/) в Yandex Cloud: YDB serverless + таблицы, Cloud
 # Function, API Gateway. Запускается при пуше в main с изменениями в backend/
-# или в этом файле и вручную (Actions → backend → Run workflow).
+# или в этом файле и вручную (Actions → backend → Run workflow; галочка
+# «Только проверить API» — без выкладки, около двух минут).
 #
 # Всё идемпотентно: что уже есть — обновляется, чего нет — создаётся.
 # Секреты — в Settings → Secrets → Actions: YC_SA_KEY (ключ сервисного
@@ -16,6 +17,11 @@ on:
       - "backend/**"
       - ".github/workflows/backend.yml"
   workflow_dispatch:
+    inputs:
+      only_check:
+        description: "Только проверить API, без выкладки"
+        type: boolean
+        default: false
 
 concurrency:
   group: backend-deploy
@@ -43,6 +49,7 @@ jobs:
           node-version: 22
 
       - name: Тесты API
+        if: ${{ !inputs.only_check }}
         working-directory: backend
         run: |
           npm ci --no-audit --no-fund
@@ -70,7 +77,18 @@ jobs:
           echo "SA_ID=$SA_ID" >> "$GITHUB_ENV"
           yc --version
 
+      # Режим «только проверить»: адреса уже выложенных функции и шлюза.
+      - name: Адреса API (только проверка)
+        if: ${{ inputs.only_check }}
+        run: |
+          set -euo pipefail
+          FUNCTION_ID=$(yc serverless function get "$FUNCTION_NAME" --format json | jq -r .id)
+          DOMAIN=$(yc serverless api-gateway get "$GATEWAY_NAME" --format json | jq -r .domain)
+          echo "FUNCTION_ID=$FUNCTION_ID" >> "$GITHUB_ENV"
+          echo "API_URL=https://$DOMAIN" >> "$GITHUB_ENV"
+
       - name: База YDB
+        if: ${{ !inputs.only_check }}
         run: |
           set -euo pipefail
           if ! yc ydb database get "$DB_NAME" >/dev/null 2>&1; then
@@ -94,12 +112,14 @@ jobs:
           echo "База: $YDB_CONNECTION"
 
       - name: Таблицы
+        if: ${{ !inputs.only_check }}
         working-directory: backend
         env:
           YDB_SERVICE_ACCOUNT_KEY_FILE_CREDENTIALS: ${{ runner.temp }}/sa-key.json
         run: node scripts/migrate.js
 
       - name: Функция
+        if: ${{ !inputs.only_check }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -153,6 +173,7 @@ jobs:
           echo "Лимиты масштабирования заданы"
 
       - name: API Gateway
+        if: ${{ !inputs.only_check }}
         run: |
           set -euo pipefail
           cat > "$RUNNER_TEMP/gateway.yaml" <<EOF
