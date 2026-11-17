@@ -20,7 +20,7 @@ async function main() {
       return;
     } catch (err) {
       const msg = String(err && err.message ? err.message : err);
-      if (attempt >= 12 || !/Database not found|UNAVAILABLE|not ready|DEADLINE/i.test(msg)) throw err;
+      if (attempt >= 15 ||!/Database not found|UNAVAILABLE|not ready|DEADLINE/i.test(msg)) throw err;
       console.log("база ещё не готова (" + msg.slice(0, 80) + "), попытка " + attempt + ", жду 20 с…");
       await new Promise((r) => setTimeout(r, 20000));
     }
@@ -33,8 +33,8 @@ async function migrate(endpoint) {
   const statements = sql.split(/;\s*(?:\n|$)/).map((s) => s.trim()).filter(Boolean);
 
   const driver = new Driver({ connectionString: endpoint, authService: getCredentialsFromEnv() });
-  if (!(await driver.ready(20000))) throw new Error("YDB driver is not ready");
   try {
+    if (!(await driver.ready(20000))) throw new Error("YDB driver is not ready");
     for (const text of statements) {
       const name = (/CREATE TABLE IF NOT EXISTS (\w+)/.exec(text) || [])[1] || text.slice(0, 40);
       await driver.queryClient.do({
@@ -46,9 +46,15 @@ async function migrate(endpoint) {
       console.log("table ok:", name);
     }
   } finally {
-    await driver.destroy();
+    await driver.destroy().catch(() => {});
   }
 }
+
+// Драйвер, не дождавшийся базы, ещё какое-то время бросает фоновые ошибки
+// поиска узлов — они не должны обрывать повторные попытки.
+process.on("unhandledRejection", (err) => {
+  console.log("(фоновая ошибка драйвера: " + String(err && err.message ? err.message : err).slice(0, 100) + ")");
+});
 
 main().then(() => process.exit(0), (err) => {
   console.error("Migration failed:", err && err.message ? err.message : err);
