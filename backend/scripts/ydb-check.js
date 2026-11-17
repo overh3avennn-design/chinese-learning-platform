@@ -1,8 +1,12 @@
 "use strict";
 
-// Диагностика базы из GitHub Actions: простые запросы через Query Service и
-// Table Service с замером времени. Ничего не меняет в данных.
+// Ручная диагностика базы: простые запросы через Query Service и Table
+// Service с замером времени, схема таблиц, проба на временной таблице.
 //   YDB_CONNECTION=… YDB_SERVICE_ACCOUNT_KEY_FILE_CREDENTIALS=… node scripts/ydb-check.js
+//
+// В выкладку не входит: из сети GitHub (за рубежом) запросы к таблицам то
+// проходят, то зависают «during compilation», хотя из функции в облаке база
+// отвечает за доли секунды, — по этой проверке о базе судить нельзя.
 
 const { Driver, getCredentialsFromEnv, TypedValues } = require("ydb-sdk");
 const { parseYdbEndpoint } = require("../src/ydb-endpoint");

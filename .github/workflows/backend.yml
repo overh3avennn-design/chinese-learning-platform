@@ -99,17 +99,6 @@ jobs:
           YDB_SERVICE_ACCOUNT_KEY_FILE_CREDENTIALS: ${{ runner.temp }}/sa-key.json
         run: node scripts/migrate.js
 
-      - name: База отвечает на запросы (диагностика)
-        working-directory: backend
-        continue-on-error: true
-        timeout-minutes: 4
-        env:
-          YDB_SERVICE_ACCOUNT_KEY_FILE_CREDENTIALS: ${{ runner.temp }}/sa-key.json
-        run: |
-          echo "Параметры базы:"
-          yc ydb database get "$DB_NAME" --format json | jq -c '{status, location_id, created_at, serverless_database, storage_config, backup_config: (.backup_config != null)}' || true
-          node scripts/ydb-check.js
-
       - name: Функция
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
