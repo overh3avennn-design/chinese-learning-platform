@@ -8,10 +8,15 @@
 // карточки и проверяют, что не видят и не меняют чужие. В конце свои
 // тестовые колоды удаляют.
 
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { execFile } = require("child_process");
 const { signInitData, signWidget } = require("../test/sign");
 
 const API = (process.env.API_URL || "").replace(/\/+$/, "");
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const FUNCTION_NAME = process.env.FUNCTION_NAME || "";
 const ORIGIN = process.env.SMOKE_ORIGIN || "https://overh3avennn-design.github.io";
 if (!API || !TOKEN) {
   console.error("API_URL and TELEGRAM_BOT_TOKEN are required");
@@ -24,21 +29,65 @@ function check(name, ok, detail) {
   if (!ok) failed += 1;
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Как доходят запросы: "gateway" — через API Gateway, как из браузера;
+// "invoke" — прямо в функцию через `yc serverless function invoke` (событие
+// в том же формате, что присылает шлюз), если шлюз не отвечает из сети GitHub.
+let transport = "gateway";
+
+function ycInvoke(event) {
+  const file = path.join(os.tmpdir(), "smoke-event-" + process.pid + ".json");
+  fs.writeFileSync(file, JSON.stringify(event), { mode: 0o600 });
+  return new Promise((resolve, reject) => {
+    execFile("yc", ["serverless", "function", "invoke", FUNCTION_NAME, "--data-file", file], { maxBuffer: 8 << 20 }, (err, stdout, stderr) => {
+      fs.rmSync(file, { force: true });
+      if (err) return reject(new Error("yc invoke failed: " + String(stderr || err.message).slice(0, 300)));
+      try {
+        resolve(JSON.parse(stdout));
+      } catch (e) {
+        reject(new Error("yc invoke: not JSON: " + String(stdout).slice(0, 200)));
+      }
+    });
+  });
+}
+
+// Один запрос к API. Возвращает { status, header(name), text }.
+async function send(method, pathAndQuery, headers, bodyText) {
+  if (transport === "gateway") {
+    const res = await fetch(API + pathAndQuery, { method, headers, body: bodyText });
+    return { status: res.status, header: (n) => res.headers.get(n), text: await res.text() };
+  }
+  const [p, qs] = pathAndQuery.split("?");
+  const out = await ycInvoke({
+    httpMethod: method,
+    path: p,
+    headers,
+    multiValueHeaders: {},
+    queryStringParameters: Object.fromEntries(new URLSearchParams(qs || "")),
+    body: bodyText || "",
+    isBase64Encoded: false,
+    requestContext: { identity: { sourceIp: "198.51.100.7" } }
+  });
+  const h = {};
+  for (const [k, v] of Object.entries(out.headers || {})) h[k.toLowerCase()] = v;
+  return { status: out.statusCode, header: (n) => h[n.toLowerCase()] || null, text: out.body || "" };
+}
+
 async function call(method, path, body, token) {
   const headers = { Origin: ORIGIN };
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (token) headers.Authorization = "Bearer " + token;
   for (let attempt = 0; ; attempt++) {
-    const res = await fetch(API + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
-    const text = await res.text();
+    const res = await send(method, path, headers, body === undefined ? undefined : JSON.stringify(body));
     // Первый вызов после выкладки — холодный старт; 5xx повторяем пару раз.
     if (res.status >= 500 && attempt < 2) {
-      await new Promise((r) => setTimeout(r, 3000));
+      await sleep(3000);
       continue;
     }
     let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch (e) { data = { raw: text.slice(0, 200) }; }
-    return { status: res.status, headers: res.headers, data };
+    try { data = res.text ? JSON.parse(res.text) : null; } catch (e) { data = { raw: res.text.slice(0, 200) }; }
+    return { status: res.status, header: res.header, data };
   }
 }
 
@@ -47,27 +96,33 @@ const login = (id) => call("POST", "/auth/telegram-miniapp", {
   initData: signInitData({ query_id: "smoke", user: { id, first_name: "Smoke", last_name: "Test " + id }, auth_date: String(now()) }, TOKEN)
 });
 
-// Новый шлюз отвечает не сразу (имя ещё не разошлось по DNS) — ждём до 2 минут.
-async function waitReachable() {
-  for (let i = 1; i <= 24; i++) {
+// Отвечает ли шлюз из сети GitHub (до 45 секунд).
+async function gatewayReachable() {
+  for (let i = 1; i <= 9; i++) {
     try {
-      const res = await fetch(API + "/me");
+      const res = await fetch(API + "/me", { signal: AbortSignal.timeout(10000) });
       console.log("шлюз отвечает (HTTP " + res.status + ")");
-      return;
+      return true;
     } catch (e) {
-      console.log("шлюз ещё не отвечает (" + (e.cause && e.cause.code ? e.cause.code : e.message) + "), жду 5 с…");
-      await new Promise((r) => setTimeout(r, 5000));
+      const why = (e.cause && (e.cause.code || e.cause.message)) || e.name || e.message;
+      console.log("шлюз не отвечает (" + why + "), попытка " + i);
+      await sleep(5000);
     }
   }
-  throw new Error("API gateway is not reachable");
+  return false;
 }
 
 async function main() {
   console.log("API: " + API);
-  await waitReachable();
+  if (!(await gatewayReachable())) {
+    if (!FUNCTION_NAME) throw new Error("API gateway is not reachable and FUNCTION_NAME is not set");
+    transport = "invoke";
+    console.log("\nВНИМАНИЕ: шлюз не отвечает из сети GitHub — проверяю функцию напрямую (yc serverless function invoke).\n");
+    if (process.env.GITHUB_ENV) fs.appendFileSync(process.env.GITHUB_ENV, "SMOKE_TRANSPORT=invoke\n");
+  }
 
-  const pre = await fetch(API + "/cards", { method: "OPTIONS", headers: { Origin: ORIGIN, "Access-Control-Request-Method": "PUT", "Access-Control-Request-Headers": "authorization,content-type" } });
-  check("CORS: preflight для сайта разрешён", pre.status === 204 && pre.headers.get("access-control-allow-origin") === ORIGIN, "status " + pre.status);
+  const pre = await send("OPTIONS", "/cards", { Origin: ORIGIN, "Access-Control-Request-Method": "PUT", "Access-Control-Request-Headers": "authorization,content-type" });
+  check("CORS: preflight для сайта разрешён", pre.status === 204 && pre.header("access-control-allow-origin") === ORIGIN, "status " + pre.status);
 
   check("GET /cards без пропуска → 401", (await call("GET", "/cards")).status === 401);
   check("PUT /cards без пропуска → 401", (await call("PUT", "/cards", { items: [] })).status === 401);

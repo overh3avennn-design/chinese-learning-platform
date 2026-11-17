@@ -176,6 +176,24 @@ jobs:
           DOMAIN=$(yc serverless api-gateway get "$GATEWAY_NAME" --format json | jq -r .domain)
           echo "API_URL=https://$DOMAIN" >> "$GITHUB_ENV"
 
+      # Из сети GitHub (за рубежом) шлюз может не отвечать, хотя из России он
+      # доступен: тогда smoke.js проверяет функцию напрямую через yc. Здесь —
+      # для сравнения, что отвечает, а что нет.
+      - name: Сеть до API (диагностика)
+        continue-on-error: true
+        run: |
+          set +e
+          DOMAIN="${API_URL#https://}"
+          echo "DNS $DOMAIN:"
+          getent ahosts "$DOMAIN" | awk '{print "  " $1}' | sort -u
+          for target in "$API_URL/me" "https://functions.yandexcloud.net/" "https://storage.yandexcloud.net/"; do
+            for fam in -4 -6; do
+              curl $fam -sS -o /dev/null --connect-timeout 8 --max-time 15 \
+                -w "  curl $fam $target → HTTP %{http_code}, ip %{remote_ip}, connect %{time_connect}s\n" "$target" 2>&1 | tail -1
+            done
+          done
+          true
+
       - name: Проверка API после выкладки
         working-directory: backend
         env:
@@ -195,9 +213,13 @@ jobs:
             echo "- Адрес API: **$API_URL**"
             echo "- Функция: $FUNCTION_NAME ($FUNCTION_ID), среда nodejs22"
             echo "- База: $DB_NAME"
+            if [ "${SMOKE_TRANSPORT:-}" = "invoke" ]; then
+              echo "- Шлюз не ответил из сети GitHub: функция проверена напрямую (yc invoke). Доступ к шлюзу проверить из России."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
           echo "================================================"
           echo " API: $API_URL"
+          [ "${SMOKE_TRANSPORT:-}" = "invoke" ] && echo " (шлюз не отвечает из сети GitHub — проверено через yc invoke)"
           echo "================================================"
 
       - name: Убрать ключ
