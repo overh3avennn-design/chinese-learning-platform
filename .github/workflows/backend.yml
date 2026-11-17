@@ -99,6 +99,14 @@ jobs:
           YDB_SERVICE_ACCOUNT_KEY_FILE_CREDENTIALS: ${{ runner.temp }}/sa-key.json
         run: node scripts/migrate.js
 
+      - name: База отвечает на запросы (диагностика)
+        working-directory: backend
+        continue-on-error: true
+        timeout-minutes: 4
+        env:
+          YDB_SERVICE_ACCOUNT_KEY_FILE_CREDENTIALS: ${{ runner.temp }}/sa-key.json
+        run: node scripts/ydb-check.js
+
       - name: Функция
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -116,6 +124,14 @@ jobs:
           FUNCTION_ID=$(yc serverless function get "$FUNCTION_NAME" --format json | jq -r .id)
           echo "FUNCTION_ID=$FUNCTION_ID" >> "$GITHUB_ENV"
 
+          # Логи функции — в своей группе (группы «default» в каталоге нет),
+          # хранятся 3 дня. Секреты в логи не пишутся.
+          if ! yc logging group get "$FUNCTION_NAME" >/dev/null 2>&1; then
+            echo "Создаю группу логов $FUNCTION_NAME"
+            yc logging group create --name "$FUNCTION_NAME" --retention-period 72h >/dev/null
+          fi
+          LOG_GROUP_ID=$(yc logging group get "$FUNCTION_NAME" --format json | jq -r .id)
+
           # Зависимости платформа ставит сама по package-lock.json.
           (cd backend && zip -qr "$RUNNER_TEMP/function.zip" index.js src package.json package-lock.json)
           echo "Архив: $(du -h "$RUNNER_TEMP/function.zip" | cut -f1)"
@@ -126,9 +142,10 @@ jobs:
             --runtime nodejs22 \
             --entrypoint index.handler \
             --memory 256MB \
-            --execution-timeout 15s \
+            --execution-timeout 25s \
             --concurrency 1 \
             --service-account-id "$SA_ID" \
+            --log-group-id "$LOG_GROUP_ID" \
             --source-path "$RUNNER_TEMP/function.zip" \
             --environment "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN,GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,JWT_SECRET=$JWT_SECRET,YDB_CONNECTION=$YDB_CONNECTION,ALLOWED_ORIGINS=$ALLOWED_ORIGINS" \
             --format json > /dev/null
@@ -202,7 +219,9 @@ jobs:
 
       - name: Логи функции (при ошибке)
         if: failure() && env.FUNCTION_ID != ''
-        run: yc serverless function logs "$FUNCTION_NAME" --since 15m --limit 80 || true
+        run: |
+          sleep 15   # логи доходят с задержкой
+          yc logging read --group-name "$FUNCTION_NAME" --since 20m --limit 120 || true
 
       - name: Итог
         if: success()

@@ -30,11 +30,15 @@ let driver = null;
 async function getDriver() {
   if (!auth.token) throw new Error("No IAM token in context: the function version has no service account");
   if (!driver) {
-    const d = new Driver(Object.assign(parseYdbEndpoint(process.env.YDB_CONNECTION), { authService: auth }));
+    const target = parseYdbEndpoint(process.env.YDB_CONNECTION);
+    const started = Date.now();
+    const d = new Driver(Object.assign({}, target, { authService: auth }));
     if (!(await d.ready(8000))) {
+      console.error("ydb: driver not ready after " + (Date.now() - started) + " ms (" + target.endpoint + ")");
       await d.destroy().catch(() => {});
       throw new Error("YDB driver is not ready");
     }
+    console.log("ydb: driver ready in " + (Date.now() - started) + " ms");
     driver = d;
   }
   return driver;

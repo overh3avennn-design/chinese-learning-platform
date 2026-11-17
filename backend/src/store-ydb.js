@@ -75,10 +75,25 @@ async function run(session, text, parameters) {
   return sets;
 }
 
+// Предел одной транзакции: SDK повторяет временные ошибки сам, но ответ
+// должен успеть до предела функции — иначе платформа оборвёт её без лога.
+const TX_TIMEOUT = 9000;
+
 function createYdbStore(getDriver) {
-  async function tx(settings, fn) {
+  async function tx(label, settings, fn) {
     const driver = await getDriver();
-    return driver.queryClient.do({ txSettings: settings, fn });
+    const started = Date.now();
+    try {
+      const result = await driver.queryClient.do({ txSettings: settings, fn, timeout: TX_TIMEOUT });
+      const ms = Date.now() - started;
+      if (ms > 1500) console.log("ydb " + label + ": slow, " + ms + " ms");
+      return result;
+    } catch (err) {
+      if (!(err && err.status && err.code)) {
+        console.error("ydb " + label + ": failed after " + (Date.now() - started) + " ms:", err && err.message ? err.message.slice(0, 500) : err);
+      }
+      throw err;
+    }
   }
 
   async function readUser(session, userId) {
@@ -107,7 +122,7 @@ function createYdbStore(getDriver) {
 
   return {
     async login(identity, now) {
-      return tx(RW, async (session) => {
+      return tx("login", RW, async (session) => {
         const p = identity.provider;
         let user = await findOwner(session, identity);
         const params = {
@@ -135,11 +150,11 @@ function createYdbStore(getDriver) {
     },
 
     async getUser(id) {
-      return tx(RO, (session) => readUser(session, id));
+      return tx("getUser", RO, (session) => readUser(session, id));
     },
 
     async link(userId, identity, limits, now) {
-      return tx(RW, async (session) => {
+      return tx("link", RW, async (session) => {
         const current = await readUser(session, userId);
         if (!current) throw unauthorized("user_gone");
         const owner = await findOwner(session, identity);
@@ -177,7 +192,7 @@ function createYdbStore(getDriver) {
     },
 
     async pull(userId, cursor, limits) {
-      return tx(RO, async (session) => {
+      return tx("pull", RO, async (session) => {
         const user = await readUser(session, userId);
         if (!user) throw unauthorized("user_gone");
         if (isCaughtUp(user.rev, cursor)) return { items: [], cursor, more: false };
@@ -209,7 +224,7 @@ function createYdbStore(getDriver) {
     },
 
     async push(userId, items, limits, now) {
-      return tx(RW, async (session) => {
+      return tx("push", RW, async (session) => {
         const user = await readUser(session, userId);
         if (!user) throw unauthorized("user_gone");
         const [rows] = await run(session,
