@@ -100,6 +100,8 @@
         '<span class="site-header__name">chineasy.</span>' +
       "</a>" +
       '<nav class="site-header__nav" aria-label="Основное меню">' + links + "</nav>" +
+      // Вход и меню аккаунта — js/account.js (пока API не настроено, ячейки нет).
+      '<div class="site-header__account account" data-account hidden></div>' +
       '<a class="site-header__icon" href="' + TELEGRAM_URL + '" target="_blank" rel="noopener" aria-label="Написать в Telegram">' +
         ICON_TELEGRAM +
       "</a>" +
@@ -109,4 +111,14 @@
     '<nav class="site-tabbar" aria-label="Разделы сайта">' + tabs + "</nav>";
 
   script.insertAdjacentHTML("afterend", html);
+
+  // Аккаунт и синхронизация карточек — на всех страницах, по порядку:
+  // cloud-sync.js, потом account.js (он запускает синхронизацию).
+  window.SITE_ROOT = prefix;
+  ["js/cloud-sync.js", "js/account.js"].forEach(function (src) {
+    var s = document.createElement("script");
+    s.src = prefix + src;
+    s.async = false;
+    document.head.appendChild(s);
+  });
 })();

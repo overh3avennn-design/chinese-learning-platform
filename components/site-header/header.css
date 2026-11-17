@@ -149,6 +149,245 @@
   }
 }
 
+/* ------------------------------------------------------- аккаунт */
+
+/* Ячейка «войти» / аватар с именем перед иконкой Telegram и меню под ней.
+   Разметку строит js/account.js; пока API не настроено, ячейка скрыта
+   атрибутом hidden. Меню — колонка блоков с линиями 1px, без теней. */
+.site-header .site-header__account {
+  position: relative;
+  flex: none;
+  display: flex;
+  border-left: 1px solid var(--line, #B8BECB);
+}
+
+.site-header .site-header__account[hidden] {
+  display: none;
+}
+
+.site-header .account__button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--header-h, 64px);
+  margin: 0;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text, #2F3441);
+  font: 500 15px/1.2 var(--font, system-ui, sans-serif);
+  cursor: pointer;
+}
+
+.site-header .account__button:hover,
+.site-header .account__button[aria-expanded="true"] {
+  background: var(--surface, #E1E5ED);
+  color: var(--accent-text, #B3302A);
+}
+
+.site-header .account__button:focus-visible,
+.site-header .account__panel a:focus-visible,
+.site-header .account__action:focus-visible {
+  outline: 2px solid var(--text, #2F3441);
+  outline-offset: -3px;
+}
+
+.site-header .account__name {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Аватар: фото профиля или первая буква имени, если фото нет. */
+.site-header .account__avatar {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--surface, #E1E5ED);
+  border: 1px solid var(--line, #B8BECB);
+  box-sizing: border-box;
+  color: var(--text, #2F3441);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.site-header .account__avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.site-header .account__avatar--big {
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+}
+
+.site-header .account__panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 950;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 320px;
+  margin-top: 1px;
+  padding: 20px;
+  border: 1px solid var(--line, #B8BECB);
+  background: var(--bg, #D6DBE6);
+  color: var(--text, #2F3441);
+  font-size: 14px;
+  line-height: 1.45;
+  text-transform: none;
+}
+
+.site-header .account__panel[hidden] {
+  display: none;
+}
+
+.site-header .account__panel p {
+  margin: 0;
+}
+
+.site-header .account__title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.site-header .account__subtitle {
+  padding-top: 12px;
+  border-top: 1px solid var(--line, #B8BECB);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.site-header .account__text {
+  color: var(--text, #2F3441);
+}
+
+.site-header .account__text--muted,
+.site-header .account__who-ways {
+  color: var(--text-2, #555B6B);
+}
+
+.site-header .account__providers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.site-header .account__provider:empty {
+  display: none;
+}
+
+.site-header .account__provider iframe {
+  display: block;
+  max-width: 100%;
+}
+
+.site-header .account__legal {
+  color: var(--text-2, #555B6B);
+  font-size: 12px;
+}
+
+.site-header .account__legal a {
+  color: var(--text, #2F3441);
+  text-decoration: underline;
+}
+
+.site-header .account__legal a:hover {
+  color: var(--accent-text, #B3302A);
+}
+
+.site-header .account__who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line, #B8BECB);
+}
+
+.site-header .account__who-text {
+  min-width: 0;
+}
+
+.site-header .account__who-name {
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Состояние синхронизации — строка с точкой: серая — всё хорошо, красная —
+   что-то не сохранилось. */
+.site-header .account__status {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--text-2, #555B6B);
+  font-size: 13px;
+}
+
+.site-header .account__status::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-2, #555B6B);
+  transform: translateY(-1px);
+}
+
+.site-header .account__status--offline::before,
+.site-header .account__status--quota::before,
+.site-header .account__status--error::before {
+  background: var(--accent, #EE5A52);
+}
+
+.site-header .account__action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid var(--line, #B8BECB);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text, #2F3441);
+  font: 500 15px/1.2 var(--font, system-ui, sans-serif);
+  cursor: pointer;
+}
+
+.site-header .account__action:hover {
+  background: var(--surface, #E1E5ED);
+}
+
+.site-header .account__error {
+  color: var(--accent-text, #B3302A);
+}
+
+.site-header .account--busy .account__panel {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 /* ------------------------------------------- нижнее меню телефона */
 
 /* Разделы сайта внизу окна — только на телефоне, на всех страницах одни и
@@ -201,6 +440,43 @@
     width: 24px;
     height: 24px;
     font-size: 14px;
+  }
+
+  /* Аккаунт: кнопка 44px в рамке левее Telegram, у входа — слово «войти»,
+     после входа — только аватар. Меню — во всю ширину под шапкой. */
+  .site-header .site-header__account {
+    margin-right: 8px;
+    border: 1px solid var(--line, #B8BECB);
+    position: static;
+  }
+
+  .site-header .account__button {
+    min-width: 44px;
+    height: 42px;
+    padding: 0 12px;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .site-header .account--in .account__button {
+    padding: 0;
+  }
+
+  .site-header .account__name {
+    display: none;
+  }
+
+  .site-header .account__panel {
+    position: fixed;
+    top: calc(56px + env(safe-area-inset-top, 0px));
+    right: 0;
+    left: 0;
+    width: auto;
+    max-height: calc(100vh - 56px - env(safe-area-inset-top, 0px) - var(--site-tabbar-space, 72px));
+    margin-top: 0;
+    overflow: auto;
+    border-right: 0;
+    border-left: 0;
   }
 
   /* Telegram — квадратная кнопка 44px в рамке. */

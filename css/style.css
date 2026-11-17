@@ -6638,3 +6638,55 @@ button.hz-ai-word:hover {
     --fc-hanzi-size: 1.25rem;
   }
 }
+
+/* ------------------------------------- конфиденциальность и условия */
+
+/* support/privacy.html и support/terms.html: обычный текст под панелью,
+   секции с подписью-линией, как на других страницах. */
+.legal {
+  max-width: 720px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.legal .section {
+  margin-top: 56px;
+}
+
+.legal p,
+.legal ul {
+  margin: 0 0 12px;
+}
+
+.legal ul {
+  padding-left: 20px;
+}
+
+.legal li + li {
+  margin-top: 6px;
+}
+
+.legal a {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.legal a:hover {
+  color: var(--accent-text);
+}
+
+.legal .legal__date {
+  margin-top: 56px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+@media (max-width: 960px) {
+  .legal .section {
+    margin-top: 40px;
+  }
+
+  .legal .legal__date {
+    margin-top: 40px;
+  }
+}

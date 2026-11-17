@@ -135,6 +135,7 @@
     memory[deckId] = progress;
     try {
       window.localStorage.setItem(STORAGE_PREFIX + deckId, JSON.stringify(progress));
+      cloudChanged();
     } catch (e) {
       storageFailed();
     }
@@ -144,9 +145,16 @@
     delete memory[deckId];
     try {
       window.localStorage.removeItem(STORAGE_PREFIX + deckId);
+      cloudChanged();
     } catch (e) {
       storageFailed();
     }
+  }
+
+  // После входа в аккаунт карточки и прогресс уходят в облако
+  // (js/cloud-sync.js) — пачкой, через несколько секунд после правок.
+  function cloudChanged() {
+    if (window.CloudSync) window.CloudSync.changed();
   }
 
   // Слово узнаётся по иероглифу и пиньиню: перевод можно поправить, не
@@ -374,6 +382,7 @@
   function saveUser() {
     try {
       window.localStorage.setItem(USER_KEY, JSON.stringify(userData));
+      cloudChanged();
       return true;
     } catch (e) {
       storageFailed();
@@ -556,6 +565,10 @@
       folderById[folder.id] = folder;
       folders.push(folder);
     });
+    collectOwnFolders();
+  }
+
+  function collectOwnFolders() {
     loadUser().folders.forEach(function (raw) {
       var folder = cleanFolder(raw);
       if (!folder || folderById[folder.id]) return;
@@ -1606,7 +1619,50 @@
     link.setAttribute("href", back || "#");
   }
 
+  // ------------------------------------- карточки с другого устройства
+  // js/cloud-sync.js записал в localStorage карточки из аккаунта: собираем
+  // свои колоды и папки заново. Во время изучения, в редакторе и при
+  // проверке слов с фото экран не трогаем — данные обновятся при следующем
+  // переходе (route), чтобы не сбить человека посреди дела.
+  var decksReady = false;
+  var reloadPending = false;
+
+  function busyScreen() {
+    return session !== null || /^#(?:new-|photo)|&(?:learn|edit)/.test(routedHash || "");
+  }
+
+  function reloadUser() {
+    reloadPending = false;
+    userData = null;
+    memory = {};
+    decks = decks.filter(function (d) { return !d.own; });
+    deckById = {};
+    decks.forEach(function (d) {
+      if (d.fileWords) {
+        d.words = d.fileWords;
+        delete d.fileWords;
+      }
+      d.extra = 0;
+      deckById[d.id] = d;
+    });
+    folders = folders.filter(function (f) { return !f.own; });
+    folderById = {};
+    folders.forEach(function (f) { folderById[f.id] = f; });
+    collectOwnDecks();
+    collectOwnFolders();
+  }
+
+  function reloadFromStorage() {
+    userData = null;          // сохранения сразу пойдут поверх свежих данных
+    if (!decksReady) return;  // колоды ещё грузятся — соберутся из свежих данных
+    reloadPending = true;
+    if (busyScreen()) return;
+    reloadUser();
+    route();
+  }
+
   function route() {
+    if (reloadPending) reloadUser();
     routedHash = window.location.hash;
     var match = /^#(deck|folder)=([^&]+)(?:&(learn|edit)(?:=(\w+))?)?$/.exec(routedHash);
     var id = null;
@@ -1723,13 +1779,16 @@
       savedNote = note || null;
       if (back) goBack(deckHash(id));
       else navigate(deckHash(id), true);
-    }
+    },
+    // Для js/cloud-sync.js: карточки в localStorage поменялись.
+    reload: reloadFromStorage
   };
 
   loadDecks(function (files) {
     collectDecks(files);
     collectOwnDecks();
     collectFolders();
+    decksReady = true;
     route();
   });
 })();
