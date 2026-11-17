@@ -52,11 +52,30 @@ function ycInvoke(event) {
   });
 }
 
+function useInvoke(reason) {
+  if (transport === "invoke") return;
+  if (!FUNCTION_NAME) throw new Error("API gateway is not reachable and FUNCTION_NAME is not set");
+  transport = "invoke";
+  console.log("\nВНИМАНИЕ: " + reason + " — дальше проверяю функцию напрямую (yc serverless function invoke).\n");
+  if (process.env.GITHUB_ENV) fs.appendFileSync(process.env.GITHUB_ENV, "SMOKE_TRANSPORT=invoke\n");
+}
+
 // Один запрос к API. Возвращает { status, header(name), text }.
 async function send(method, pathAndQuery, headers, bodyText) {
   if (transport === "gateway") {
-    const res = await fetch(API + pathAndQuery, { method, headers, body: bodyText });
-    return { status: res.status, header: (n) => res.headers.get(n), text: await res.text() };
+    // Из сети GitHub соединение со шлюзом иногда срывается (до части его
+    // адресов не достучаться) — сетевую ошибку повторяем, потом идём в обход.
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      try {
+        const res = await fetch(API + pathAndQuery, { method, headers, body: bodyText, signal: AbortSignal.timeout(15000) });
+        return { status: res.status, header: (n) => res.headers.get(n), text: await res.text() };
+      } catch (e) {
+        const why = (e.cause && (e.cause.code || e.cause.message)) || e.name || e.message;
+        console.log("  (сеть до шлюза: " + why + ", попытка " + attempt + ")");
+        await sleep(2000);
+      }
+    }
+    useInvoke("соединение со шлюзом из сети GitHub срывается");
   }
   const [p, qs] = pathAndQuery.split("?");
   const out = await ycInvoke({
@@ -114,12 +133,7 @@ async function gatewayReachable() {
 
 async function main() {
   console.log("API: " + API);
-  if (!(await gatewayReachable())) {
-    if (!FUNCTION_NAME) throw new Error("API gateway is not reachable and FUNCTION_NAME is not set");
-    transport = "invoke";
-    console.log("\nВНИМАНИЕ: шлюз не отвечает из сети GitHub — проверяю функцию напрямую (yc serverless function invoke).\n");
-    if (process.env.GITHUB_ENV) fs.appendFileSync(process.env.GITHUB_ENV, "SMOKE_TRANSPORT=invoke\n");
-  }
+  if (!(await gatewayReachable())) useInvoke("шлюз не отвечает из сети GitHub");
 
   const pre = await send("OPTIONS", "/cards", { Origin: ORIGIN, "Access-Control-Request-Method": "PUT", "Access-Control-Request-Headers": "authorization,content-type" });
   check("CORS: preflight для сайта разрешён", pre.status === 204 && pre.header("access-control-allow-origin") === ORIGIN, "status " + pre.status);
