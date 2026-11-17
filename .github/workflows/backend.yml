@@ -105,7 +105,10 @@ jobs:
         timeout-minutes: 4
         env:
           YDB_SERVICE_ACCOUNT_KEY_FILE_CREDENTIALS: ${{ runner.temp }}/sa-key.json
-        run: node scripts/ydb-check.js
+        run: |
+          echo "Параметры базы:"
+          yc ydb database get "$DB_NAME" --format json | jq -c '{status, location_id, created_at, serverless_database, storage_config, backup_config: (.backup_config != null)}' || true
+          node scripts/ydb-check.js
 
       - name: Функция
         env:
@@ -126,11 +129,14 @@ jobs:
 
           # Логи функции — в своей группе (группы «default» в каталоге нет),
           # хранятся 3 дня. Секреты в логи не пишутся.
+          LOG_ARGS=()
           if ! yc logging group get "$FUNCTION_NAME" >/dev/null 2>&1; then
             echo "Создаю группу логов $FUNCTION_NAME"
-            yc logging group create --name "$FUNCTION_NAME" --retention-period 72h >/dev/null
+            yc logging group create --name "$FUNCTION_NAME" --retention-period 72h >/dev/null 2>&1 \
+              || echo "Группу логов создать не удалось (сервис логов ответил ошибкой) — выкладываю без логов"
           fi
-          LOG_GROUP_ID=$(yc logging group get "$FUNCTION_NAME" --format json | jq -r .id)
+          LOG_GROUP_ID=$(yc logging group get "$FUNCTION_NAME" --format json 2>/dev/null | jq -r '.id // empty' || true)
+          [ -n "$LOG_GROUP_ID" ] && LOG_ARGS=(--log-group-id "$LOG_GROUP_ID")
 
           # Зависимости платформа ставит сама по package-lock.json.
           (cd backend && zip -qr "$RUNNER_TEMP/function.zip" index.js src package.json package-lock.json)
@@ -145,7 +151,7 @@ jobs:
             --execution-timeout 25s \
             --concurrency 1 \
             --service-account-id "$SA_ID" \
-            --log-group-id "$LOG_GROUP_ID" \
+            "${LOG_ARGS[@]}" \
             --source-path "$RUNNER_TEMP/function.zip" \
             --environment "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN,GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,JWT_SECRET=$JWT_SECRET,YDB_CONNECTION=$YDB_CONNECTION,ALLOWED_ORIGINS=$ALLOWED_ORIGINS" \
             --format json > /dev/null

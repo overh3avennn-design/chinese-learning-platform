@@ -52,6 +52,31 @@ async function main() {
     for (const [label, text, parameters] of QUERIES) {
       await timed(label, () => driver.tableClient.withSession((session) => session.executeQuery(text, parameters), 15000));
     }
+
+    console.log("Схема таблиц:");
+    for (const name of ["users", "cards"]) {
+      await timed("describeTable " + name, async () => {
+        const d = await driver.tableClient.withSession((session) => session.describeTable(name), 15000);
+        const idx = (d.indexes || []).map((i) => i.name + ":" + (i.status === 1 ? "READY" : i.status === 2 ? "BUILDING" : "status " + i.status));
+        console.log("    колонок " + (d.columns || []).length + ", партиций " + ((d.tableStats && d.tableStats.partitions) || "?") +
+          ", индексы: " + (idx.join(", ") || "нет"));
+      });
+    }
+
+    // Новая пустая таблица: если запрос к ней тоже зависает на компиляции —
+    // беда во всей базе, если нет — только в наших таблицах.
+    console.log("Проба на новой таблице diag_probe:");
+    const run = (text) => driver.queryClient.do({
+      timeout: 20000,
+      fn: async (session) => {
+        const res = await session.execute({ text });
+        for await (const rs of res.resultSets) for await (const row of rs.rows) void row;
+        await res.opFinished;
+      }
+    });
+    await timed("CREATE TABLE diag_probe", () => run("CREATE TABLE diag_probe (id Utf8 NOT NULL, PRIMARY KEY (id));"));
+    await timed("SELECT COUNT(*) FROM diag_probe", () => run("SELECT COUNT(*) AS n FROM diag_probe;"));
+    await timed("DROP TABLE diag_probe", () => run("DROP TABLE diag_probe;"));
   } finally {
     await driver.destroy().catch(() => {});
   }
