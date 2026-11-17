@@ -12,6 +12,22 @@ const { Driver, getCredentialsFromEnv } = require("ydb-sdk");
 async function main() {
   const endpoint = process.env.YDB_ENDPOINT;
   if (!endpoint) throw new Error("YDB_ENDPOINT is not set");
+  // Только что созданная база несколько минут отвечает «Database not found»,
+  // хотя её статус уже RUNNING, — повторяем.
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await migrate(endpoint);
+      return;
+    } catch (err) {
+      const msg = String(err && err.message ? err.message : err);
+      if (attempt >= 12 || !/Database not found|UNAVAILABLE|not ready|DEADLINE/i.test(msg)) throw err;
+      console.log("база ещё не готова (" + msg.slice(0, 80) + "), попытка " + attempt + ", жду 20 с…");
+      await new Promise((r) => setTimeout(r, 20000));
+    }
+  }
+}
+
+async function migrate(endpoint) {
   const sql = fs.readFileSync(path.join(__dirname, "schema.sql"), "utf8")
     .split("\n").filter((l) => !/^\s*--/.test(l)).join("\n");
   const statements = sql.split(/;\s*(?:\n|$)/).map((s) => s.trim()).filter(Boolean);
