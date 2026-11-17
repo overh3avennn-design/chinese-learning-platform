@@ -17,7 +17,7 @@
   "use strict";
 
   // Адрес API (Yandex API Gateway) — из итога workflow backend.yml.
-  var API_URL = "";
+  var API_URL = "https://d5dlojoir0qf2hbi5trr.bixf7e87.apigw.yandexcloud.net";
   var GOOGLE_CLIENT_ID = "254577720957-qpip2qlvvvkkb8hdfmci5bunatcaq9o2.apps.googleusercontent.com";
   var BOT_USERNAME = "chinese_free_bot";
   var KEY = "account";
@@ -71,13 +71,24 @@
     if (body !== undefined) headers["Content-Type"] = "application/json";
     var token = opts.token !== undefined ? opts.token : session && session.token;
     if (token) headers.Authorization = "Bearer " + token;
-    return fetch(API_URL + path, {
+    var init = {
       method: method,
       headers: headers,
       body: body === undefined ? undefined : JSON.stringify(body),
       keepalive: !!opts.keepalive,
       cache: "no-store"
-    }).then(function (res) {
+    };
+    // Сорвалось соединение — ещё две попытки (кроме запроса при закрытии
+    // страницы). Повтор безопасен: вход ничего не портит, а запись карточек
+    // решает по времени правки.
+    var tries = opts.keepalive ? 1 : 3;
+    function attempt(n) {
+      return fetch(API_URL + path, init).catch(function (err) {
+        if (n >= tries) throw err;
+        return new Promise(function (resolve) { setTimeout(resolve, 800 * n); }).then(function () { return attempt(n + 1); });
+      });
+    }
+    return attempt(1).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         if (res.ok) return data;
         if (res.status === 401 && token && session && token === session.token) {
