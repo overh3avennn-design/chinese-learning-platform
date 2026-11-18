@@ -1,9 +1,9 @@
 "use strict";
 
 // Точка входа Yandex Cloud Function (среда nodejs22, entrypoint index.handler).
-// Вызывается через API Gateway (payload_format_version "1.0": path — путь
-// запроса, httpMethod, headers, queryStringParameters, body,
-// requestContext.identity.sourceIp).
+// Сайт вызывает функцию напрямую (https://functions.yandexcloud.net/<id>),
+// можно и через API Gateway — как событие превращается в запрос, см.
+// src/event.js.
 //
 // Переменные окружения (их ставит .github/workflows/backend.yml):
 //   TELEGRAM_BOT_TOKEN, GOOGLE_CLIENT_ID, JWT_SECRET — секреты;
@@ -17,6 +17,7 @@ const { Driver, TokenAuthService } = require("ydb-sdk");
 const { createApp } = require("./src/app");
 const { createYdbStore } = require("./src/store-ydb");
 const { parseYdbEndpoint } = require("./src/ydb-endpoint");
+const { requestFromEvent } = require("./src/event");
 
 class ContextTokenAuth extends TokenAuthService {
   setToken(token) {
@@ -54,26 +55,8 @@ const app = createApp({
   }
 });
 
-function lowerKeys(obj) {
-  const out = {};
-  for (const [k, v] of Object.entries(obj || {})) out[k.toLowerCase()] = Array.isArray(v) ? v[0] : v;
-  return out;
-}
-
 module.exports.handler = async function (event, context) {
   if (context && context.token && context.token.access_token) auth.setToken(context.token.access_token);
-  const headers = lowerKeys(Object.assign({}, event.multiValueHeaders, event.headers));
-  let body = event.body || "";
-  if (event.isBase64Encoded && body) body = Buffer.from(body, "base64").toString("utf8");
-  const identity = (event.requestContext && event.requestContext.identity) || {};
-  const ip = identity.sourceIp || String(headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
-  const res = await app({
-    method: String(event.httpMethod || "GET").toUpperCase(),
-    path: event.path || event.url || "/",
-    query: event.queryStringParameters || {},
-    headers,
-    body,
-    ip
-  });
+  const res = await app(requestFromEvent(event));
   return { statusCode: res.status, headers: res.headers, body: res.body, isBase64Encoded: false };
 };
