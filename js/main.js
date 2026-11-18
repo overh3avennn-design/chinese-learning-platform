@@ -297,29 +297,58 @@
   // системная кнопка «Назад», а внешние ссылки (Яндекс Диск, t.me)
   // открываются средствами Telegram: target="_blank" во встроенном
   // браузере Telegram работает не везде.
+  // Параметры из адреса «#tgWebAppData=…&tgWebAppVersion=…» — так же, как
+  // их разбирает библиотека Telegram (+ — пробел, значения закодированы).
+  function hashParams(hash) {
+    var out = {};
+    hash.replace(/^#/, "").split("&").forEach(function (pair) {
+      var i = pair.indexOf("=");
+      if (i < 1) return;
+      try {
+        out[pair.slice(0, i)] = decodeURIComponent(pair.slice(i + 1).replace(/\+/g, "%20"));
+      } catch (e) {}
+    });
+    return out;
+  }
+
   function initTelegramApp() {
     var FLAG = "tg-mini-app";
     var START = "tg-mini-app-start";
+    var DATA = "tg-init-data";      // данные запуска — для входа (js/account.js)
+    var VERSION = "tg-version";
     var here = location.href.replace(/#.*$/, "");
     var launched = /[#&]tgWebApp(Data|Version|Platform)=/.test(location.hash);
     var inApp = launched;
     var start = here;
+    var version = "6.0";
     try {
       if (launched) {
+        var params = hashParams(location.hash);
         sessionStorage.setItem(FLAG, "1");
         sessionStorage.setItem(START, here);
+        if (params.tgWebAppData) sessionStorage.setItem(DATA, params.tgWebAppData);
+        if (params.tgWebAppVersion) sessionStorage.setItem(VERSION, params.tgWebAppVersion);
       }
       inApp = sessionStorage.getItem(FLAG) === "1";
       start = sessionStorage.getItem(START) || here;
+      version = sessionStorage.getItem(VERSION) || version;
     } catch (e) {}
     if (!inApp) return;
 
+    // Библиотека Telegram — с telegram.org, а он бывает недоступен или
+    // медленный. Не загрузилась за 4 секунды — настраиваем то же самое
+    // напрямую через мост Telegram (без библиотеки).
+    var done = false;
     var sdk = document.createElement("script");
     sdk.src = "https://telegram.org/js/telegram-web-app.js";
     sdk.onload = function () {
       var app = window.Telegram && window.Telegram.WebApp;
-      if (app && app.platform !== "unknown") setup(app);
+      if (done || !app || app.platform === "unknown") return;
+      done = true;
+      setup(app);
     };
+    sdk.onerror = function () { setupWithoutSdk(); };
+    setTimeout(setupWithoutSdk, 4000);
     document.head.appendChild(sdk);
 
     // "rgb(11, 21, 36)" -> "#0b1524": Telegram принимает цвет только так.
@@ -358,6 +387,66 @@
           }
         });
       }
+    }
+
+    // То же без библиотеки: события Telegram (web_app_*) — через мост
+    // TelegramWebviewProxy (iOS, Android) или postMessage (Telegram Web),
+    // нажатие «Назад» Telegram присылает в Telegram.WebView.receiveEvent.
+    function post(type, data) {
+      var payload = data === undefined ? "" : data;
+      try {
+        if (window.TelegramWebviewProxy) {
+          window.TelegramWebviewProxy.postEvent(type, JSON.stringify(payload));
+        } else if (window.parent && window.parent !== window) {
+          window.parent.postMessage(JSON.stringify({ eventType: type, eventData: payload }), "*");
+        }
+      } catch (e) {}
+    }
+
+    function atLeast(v) {
+      var a = String(version).split(".");
+      var b = String(v).split(".");
+      for (var i = 0; i < Math.max(a.length, b.length); i++) {
+        var x = parseInt(a[i] || "0", 10);
+        var y = parseInt(b[i] || "0", 10);
+        if (x !== y) return x > y;
+      }
+      return true;
+    }
+
+    function setupWithoutSdk() {
+      if (done) return;
+      done = true;
+      post("web_app_ready");
+      post("web_app_expand");
+      if (atLeast("7.7")) post("web_app_setup_swipe_behavior", { allow_vertical_swipe: false });
+
+      var bg = hex(getComputedStyle(document.body).backgroundColor);
+      if (bg && atLeast("6.9")) post("web_app_set_header_color", { color: bg });
+      if (bg && atLeast("6.1")) post("web_app_set_background_color", { color: bg });
+
+      if (!atLeast("6.1")) return;
+      window.Telegram = window.Telegram || {};
+      if (!window.Telegram.WebView) {
+        window.Telegram.WebView = {
+          receiveEvent: function (type) {
+            if (type === "back_button_pressed") history.back();
+          }
+        };
+      }
+      if (here !== start) post("web_app_setup_back_button", { is_visible: true });
+
+      document.addEventListener("click", function (e) {
+        var link = e.target.closest && e.target.closest("a[href]");
+        if (!link || e.defaultPrevented || !/^https?:$/.test(link.protocol)) return;
+        if (link.hostname === "t.me") {
+          e.preventDefault();
+          post("web_app_open_tg_link", { path_full: link.pathname + link.search });
+        } else if (link.origin !== location.origin) {
+          e.preventDefault();
+          post("web_app_open_link", { url: link.href });
+        }
+      });
     }
   }
 

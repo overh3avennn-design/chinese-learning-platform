@@ -16,8 +16,9 @@
 (function () {
   "use strict";
 
-  // Адрес API (Yandex API Gateway) — из итога workflow backend.yml.
-  var API_URL = "https://d5dlojoir0qf2hbi5trr.bixf7e87.apigw.yandexcloud.net";
+  // Адрес API — функция chinese-api в Yandex Cloud, вызов напрямую (шлюз
+  // API Gateway из сети не отвечал). Из итога workflow backend.yml.
+  var API_URL = "https://functions.yandexcloud.net/d4e5l7ms6jgosooeo1be";
   var GOOGLE_CLIENT_ID = "254577720957-qpip2qlvvvkkb8hdfmci5bunatcaq9o2.apps.googleusercontent.com";
   var BOT_USERNAME = "chinese_free_bot";
   var KEY = "account";
@@ -63,18 +64,28 @@
     this.message = code || "HTTP " + status;
   }
 
-  // Запрос к API. Пропуск отклонён (истёк, аккаунт слит с другим) —
-  // выходим без удаления карточек: при следующем входе они сольются.
+  // Наши ответы «пропуск недействителен» — только на них выходим из аккаунта
+  // (401/403 самой платформы функций — не повод).
+  var TOKEN_REJECTED = /^(no_token|bad_token|token_expired|user_gone)$/;
+
+  // Запрос к API — «простой» POST на адрес функции (см. backend/src/event.js):
+  // маршрут и настоящий метод — в адресе (?r=/cards&m=PUT), пропуск — в теле
+  // (_token). Без своих заголовков браузер не делает CORS-предзапрос, а
+  // заголовок Authorization платформа функций всё равно вырезает.
+  // Пропуск отклонён (истёк, аккаунт слит с другим) — выходим без удаления
+  // карточек: при следующем входе они сольются.
   function api(method, path, body, opts) {
     opts = opts || {};
-    var headers = {};
-    if (body !== undefined) headers["Content-Type"] = "application/json";
     var token = opts.token !== undefined ? opts.token : session && session.token;
-    if (token) headers.Authorization = "Bearer " + token;
+    var parts = path.split("?");
+    var url = API_URL + "?r=" + encodeURIComponent(parts[0]) +
+      (method !== "POST" ? "&m=" + method : "") + (parts[1] ? "&" + parts[1] : "");
+    var payload = Object.assign({}, body);
+    if (token) payload._token = token;
     var init = {
-      method: method,
-      headers: headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify(payload),
       keepalive: !!opts.keepalive,
       cache: "no-store"
     };
@@ -86,7 +97,7 @@
       return new Promise(function (resolve) { setTimeout(resolve, 1000 * n); });
     }
     function attempt(n) {
-      return fetch(API_URL + path, init).then(function (res) {
+      return fetch(url, init).then(function (res) {
         if (res.status >= 500 && n < tries) return later(n).then(function () { return attempt(n + 1); });
         return res;
       }, function (err) {
@@ -97,7 +108,7 @@
     return attempt(1).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         if (res.ok) return data;
-        if (res.status === 401 && token && session && token === session.token) {
+        if (res.status === 401 && TOKEN_REJECTED.test(data && data.error) && token && session && token === session.token) {
           writeSession(null);
           // В Telegram входим заново сами (например, аккаунт слили с другим
           // при привязке) — не больше двух раз за страницу, без зацикливания.
@@ -130,12 +141,27 @@
   }
 
   // ------------------------------------------------------- Mini App
-  // Библиотеку Telegram подгружает js/main.js — ждём её до 6 секунд.
-  function waitTelegram(done) {
+  // Данные запуска (initData) Telegram кладёт в адрес первой страницы;
+  // js/main.js сохраняет их в sessionStorage "tg-init-data" — так вход не
+  // зависит от библиотеки telegram-web-app.js (telegram.org бывает
+  // недоступен). Если сохранённых данных нет — ждём библиотеку до 6 секунд.
+  function userIdOf(initData) {
+    try {
+      var user = JSON.parse(new URLSearchParams(initData).get("user") || "null");
+      return user && user.id;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function launchData(done) {
+    var saved = null;
+    try { saved = window.sessionStorage.getItem("tg-init-data"); } catch (e) {}
+    if (saved) return done({ initData: saved, userId: userIdOf(saved) });
     var tries = 0;
     (function check() {
       var app = window.Telegram && window.Telegram.WebApp;
-      if (app && app.initData) return done(app);
+      if (app && app.initData) return done({ initData: app.initData, userId: userIdOf(app.initData) });
       if (++tries > 60) return done(null);
       setTimeout(check, 100);
     })();
@@ -147,14 +173,13 @@
     if (!enabled || !isMiniApp() || miniAppState === "pending") return;
     miniAppState = "pending";
     render();
-    waitTelegram(function (app) {
+    launchData(function (app) {
       if (!app) {
         miniAppState = "failed";
         render();
         return;
       }
-      var tgUser = app.initDataUnsafe && app.initDataUnsafe.user;
-      var tgId = tgUser && tgUser.id;
+      var tgId = app.userId;
       var fresh = session && session.expiresAt - Date.now() > RENEW_BEFORE;
       // Тот же человек и пропуск ещё долго действует — ничего не делаем.
       if (!force && fresh && (!session.tg || session.tg === tgId)) {
