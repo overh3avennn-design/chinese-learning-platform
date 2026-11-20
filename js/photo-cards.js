@@ -5,6 +5,12 @@
    проверяет таблицу → слова уходят в новую или готовую колоду через
    window.Flashcards (js/flashcards.js).
 
+   Выбрали сразу несколько фото (или добавили кнопкой «+ Ещё фото») — они
+   распознаются очередью, по BATCH_PARALLEL одновременно, у каждого фото
+   своё состояние и «Повторить» при ошибке, а слова со всех фото
+   собираются в одну таблицу и сохраняются в одну колоду. Одно выбранное
+   фото идёт прежним путём (start).
+
    Пометки в таблице: «?» — прочитано неуверенно или нейросеть нашла
    ошибку, «ИИ» — на фото этого не было, дописала нейросеть, «БКРС» —
    взято из словаря. Поправили поле — пометка снимается. Замечание
@@ -89,16 +95,26 @@
   }
 
   // ------------------------------------------------------------- фото
-  function choose(kind) {
+  // add — фото по кнопке «+ Ещё фото»: добавить к словам, что уже есть.
+  var adding = false;
+
+  function choose(kind, add) {
+    adding = !!add;
     (inputs[kind] || inputs.pick).click();
   }
 
   // Поле сразу очищается: то же фото, выбранное снова, — тоже событие change.
+  // Несколько фото или «+ Ещё фото» — очередь фото (startBatch), одно — как
+  // раньше.
   Object.keys(inputs).forEach(function (kind) {
     inputs[kind].addEventListener("change", function () {
-      var file = inputs[kind].files && inputs[kind].files[0];
+      var files = Array.prototype.slice.call(inputs[kind].files || []);
+      var add = adding;
+      adding = false;
       inputs[kind].value = "";
-      if (file) start(file);
+      if (!files.length) return;
+      if (add || files.length > 1) startBatch(files, add);
+      else if (files[0]) start(files[0]);
     });
   });
 
@@ -114,9 +130,11 @@
   function start(file) {
     stopRequest();
     clearJob();
+    clearBatch();
     var token = {};
     job = { token: token, url: URL.createObjectURL(file), image: null, busy: false };
     active = true;
+    zoomBtn.hidden = false;
     img.src = job.url;
     setZoom(false);
     setState("loading", "Открываю фото…");
@@ -138,6 +156,18 @@
   // Что происходит: в первый раз — скачивание распознавателя с процентами,
   // потом поиск строк, чтение строк по одной и сверка со словарём.
   function onStatus(s) {
+    // Ждёт очереди к нейросети (лимит запросов в минуту), а дождался —
+    // снова прежняя надпись.
+    if (s.stage === "ai-wait") {
+      if (!s.waiting) {
+        if (lastStatus) onStatus(lastStatus);
+        return;
+      }
+      $("[data-loading-text]").textContent = "Жду очереди к нейросети…";
+      $("[data-loading-hint]").textContent = "Нейросеть принимает не больше 20 запросов в минуту — фото пойдёт, как только освободится место.";
+      return;
+    }
+    lastStatus = s;
     var text = STAGES[s.stage] || "Распознаю слова…";
     var hint = LOADING_HINT;
     if (s.stage === "download" && s.total) {
@@ -158,11 +188,13 @@
   }
 
   var readPct = 0;
+  var lastStatus = null;
 
   function recognize() {
     var token = job.token;
     job.busy = true;
     readPct = 0;
+    lastStatus = null;
     setState("loading", "Распознаю слова…");
     engine().read(job.image, {
       onStatus: function (s) {
@@ -172,6 +204,8 @@
       if (!job || job.token !== token) return;
       job.busy = false;
       var found = result && Array.isArray(result.words) ? result.words : [];
+      // Для «+ Ещё фото»: эти слова станут первым фото очереди.
+      job.result = { words: found, checked: !result || result.checked !== false, via: (result && result.via) || "local" };
       if (found.length) showReview(found, false, false, result.checked !== false, result.via || "local");
       else setState("empty");
     }, function (err) {
@@ -202,7 +236,12 @@
   // Ушли с экрана (кнопкой «Назад»), пока шло распознавание, — оно
   // останавливается, а вернувшись, можно начать заново.
   function onLeave() {
-    if (window.location.hash === "#photo" || !job || !job.busy) return;
+    if (window.location.hash === "#photo") return;
+    if (batch) {
+      stopBatch();
+      return;
+    }
+    if (!job || !job.busy) return;
     stopRequest();
     showError("Распознавание остановлено. Нажмите «Попробовать ещё раз», чтобы начать снова.");
   }
@@ -248,16 +287,7 @@
     found.forEach(function (w) { addRow(w); });
     if (!found.length) addRow({});
     renumber();
-    [["unsure", "unsure"], ["added", "added"], ["ai", "aiAdded"]].forEach(function (pair) {
-      root.querySelector('[data-legend="' + pair[0] + '"]').hidden = !found.some(function (w) {
-        return Array.isArray(w[pair[1]]) && w[pair[1]].length;
-      });
-    });
-    var offline = root.querySelector('[data-legend="offline"]');
-    offline.hidden = manual || checked !== false;
-    offline.textContent = via && via !== "local"
-      ? "Нейросеть не успела проверить слова — проверьте их внимательнее."
-      : "Словарь не загрузился — всё взято только с фото, без проверки. Проверьте слова внимательнее.";
+    legend(found, !manual && checked === false, via);
     var notes = found.filter(function (w) { return w.note; }).length;
     $("[data-review-text]").textContent = manual
       ? "Впишите слова: иероглифы, пиньинь и перевод."
@@ -269,6 +299,21 @@
     saveError.hidden = true;
     setState("review");
     updateCount();
+  }
+
+  // Пояснения пометок, которые есть в словах; unchecked — слова не
+  // проверены (via — кто читал фото: от этого зависит, почему).
+  function legend(found, unchecked, via) {
+    [["unsure", "unsure"], ["added", "added"], ["ai", "aiAdded"]].forEach(function (pair) {
+      root.querySelector('[data-legend="' + pair[0] + '"]').hidden = !found.some(function (w) {
+        return Array.isArray(w[pair[1]]) && w[pair[1]].length;
+      });
+    });
+    var offline = root.querySelector('[data-legend="offline"]');
+    offline.hidden = !unchecked;
+    offline.textContent = via && via !== "local"
+      ? "Нейросеть не успела проверить слова — проверьте их внимательнее."
+      : "Словарь не загрузился — всё взято только с фото, без проверки. Проверьте слова внимательнее.";
   }
 
   function addRow(w) {
@@ -387,9 +432,12 @@
     }).length;
   }
 
+  // Пока фото в очереди распознаются, сохранять рано: их слова ещё не в таблице.
   function updateCount() {
     var n = filledCount();
-    saveBtn.textContent = n ? "Сохранить " + words(n) : "Сохранить";
+    var wait = batchBusy();
+    saveBtn.disabled = wait;
+    saveBtn.textContent = wait ? "Распознаются фото…" : n ? "Сохранить " + words(n) : "Сохранить";
   }
 
   // Колоды для «Добавить в колоду»; новая колода по умолчанию называется
@@ -429,6 +477,7 @@
   }
 
   function save() {
+    if (batchBusy()) return;
     var found = [];
     var missing = 0;
     rows().forEach(function (row) {
@@ -465,6 +514,7 @@
     if (!res.stored) note += " Браузер не дал сохранить надолго — слова пропадут, когда вы закроете страницу.";
     stopRequest();
     clearJob();
+    clearBatch();
     active = false;
     window.Flashcards.openDeck(res.id, note);
   }
@@ -472,6 +522,363 @@
   function showSaveError(text) {
     saveError.textContent = text;
     saveError.hidden = false;
+  }
+
+  // ------------------------------------------------------ несколько фото
+  // Фото ждут очереди и распознаются по BATCH_PARALLEL одновременно: одно
+  // фото — это уже 3–7 запросов к нейросети, а у воркера предел 20 в минуту
+  // (js/ai-cards.js сам держит запросы в этом пределе). Без js/ai-cards.js
+  // распознаватель в браузере умеет только одно фото за раз.
+  var BATCH_PARALLEL = window.AICards ? 2 : 1;
+  var MAX_BATCH = 20;              // больше фото за раз телефон может не потянуть по памяти
+  var PREVIEW_SIDE = 1200;         // миниатюра — уменьшенная копия: полные фото держать в памяти дорого
+  var BATCH_STATE = { queued: "в очереди", work: "распознаётся…", done: "готово", error: "ошибка" };
+  var batchBox = $("[data-batch]");
+  var batchList = $("[data-batch-list]");
+  // { items: [{ n, url, preview, state, words, checked, via, error, detail, waiting, ctrl, node }],
+  //   seq, skipped, decks } — decks: выбор колоды уже заполнен.
+  var batch = null;
+  var previews = Promise.resolve();   // миниатюры делаются по одной
+
+  function photos(n) {
+    return n + " фото";
+  }
+
+  function startBatch(files, add) {
+    if (!add) {
+      stopRequest();
+      clearJob();
+      clearBatch();
+      list.textContent = "";
+    }
+    if (!batch) {
+      batch = { items: [], seq: 0, skipped: 0, decks: false };
+      fromSingle();
+    }
+    var room = Math.max(0, MAX_BATCH - batch.items.length);
+    files.slice(0, room).forEach(function (file) {
+      var item = newItem(URL.createObjectURL(file));
+      queuePreview(item);
+    });
+    batch.skipped = Math.max(0, files.length - room);
+    active = true;
+    zoomBtn.hidden = true;
+    batchBox.hidden = false;
+    $$(".fc-photo-state").forEach(function (box) {
+      if (box.getAttribute("data-state") !== "review") box.hidden = true;
+    });
+    window.Flashcards.openPhoto();
+    pump();
+  }
+
+  // «+ Ещё фото» после одного фото: его слова, что уже в таблице, — фото 1.
+  function fromSingle() {
+    if (!job) return;
+    stopRequest();
+    var item = newItem(job.url);
+    job.url = null;                  // адрес фото теперь у очереди
+    if (job.result) {
+      item.state = "done";
+      item.words = job.result.words;
+      item.checked = job.result.checked;
+      item.via = job.result.via;
+      rows().forEach(function (row) { row.setAttribute("data-src", String(item.n)); });
+      batch.decks = !editBox.hidden;  // колоду уже выбирали — не сбрасывать
+    } else {
+      item.state = "error";
+      item.error = "не распознано";
+    }
+    if (job.image) setPreview(item, job.image);
+    else queuePreview(item);
+    renderItem(item);
+    clearJob();
+  }
+
+  function newItem(url) {
+    var item = {
+      n: ++batch.seq, url: url, preview: "", state: "queued", words: [], checked: true, via: "",
+      error: "", detail: "", waiting: false, ctrl: null, node: null
+    };
+    batch.items.push(item);
+    batchList.appendChild(itemNode(item));
+    renderItem(item);
+    return item;
+  }
+
+  function itemNode(item) {
+    var li = el("li", "fc-batch-item");
+    li.setAttribute("data-batch-item", String(item.n));
+    var thumb = el("button", "fc-photo-thumb fc-batch-thumb");
+    thumb.type = "button";
+    thumb.disabled = true;
+    thumb.setAttribute("data-batch-zoom", "");
+    thumb.setAttribute("aria-pressed", "false");
+    thumb.setAttribute("aria-label", "Фото " + item.n + " — показать крупнее");
+    var pic = el("img");
+    pic.alt = "";
+    pic.hidden = true;
+    thumb.appendChild(pic);
+    var info = el("div", "fc-batch-info");
+    info.appendChild(el("span", "fc-batch-name", "Фото " + item.n));
+    info.appendChild(el("span", "fc-batch-state"));
+    var retry = el("button", "btn btn--outline btn--sm fc-batch-retry", "Повторить");
+    retry.type = "button";
+    retry.hidden = true;
+    retry.setAttribute("data-batch-retry", "");
+    retry.setAttribute("aria-label", "Повторить фото " + item.n);
+    li.appendChild(thumb);
+    li.appendChild(info);
+    li.appendChild(retry);
+    item.node = li;
+    return li;
+  }
+
+  function renderItem(item) {
+    var node = item.node;
+    var state = node.querySelector(".fc-batch-state");
+    var waiting = item.state === "work" && item.waiting;
+    var text = waiting ? BATCH_STATE.queued : BATCH_STATE[item.state];
+    if (item.state === "work" && !waiting && item.detail) text = item.detail;
+    if (item.state === "done") text += " · " + (item.words.length ? words(item.words.length) : "слов не нашлось");
+    if (item.state === "error" && item.error) text += ": " + item.error;
+    state.textContent = "";
+    state.className = "fc-batch-state is-" + item.state;
+    if (item.state === "work" && !waiting) {
+      var spin = el("span", "fc-spinner");
+      spin.setAttribute("aria-hidden", "true");
+      state.appendChild(spin);
+    }
+    state.appendChild(el("span", null, text));
+    node.querySelector("[data-batch-retry]").hidden = item.state !== "error";
+    var thumb = node.querySelector("[data-batch-zoom]");
+    var pic = thumb.querySelector("img");
+    if (item.preview && !pic.getAttribute("src")) {
+      pic.src = item.preview;
+      pic.hidden = false;
+      thumb.disabled = false;
+    }
+  }
+
+  // Уменьшенная копия фото для миниатюры (и для сверки слов при увеличении).
+  function setPreview(item, image) {
+    if (item.preview) return;
+    var w0 = image.naturalWidth || image.width;
+    var h0 = image.naturalHeight || image.height;
+    if (!w0 || !h0) return;
+    var k = Math.min(1, PREVIEW_SIDE / Math.max(w0, h0));
+    var canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(w0 * k));
+    canvas.height = Math.max(1, Math.round(h0 * k));
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    try {
+      item.preview = canvas.toDataURL("image/jpeg", 0.8);
+    } catch (e) {}
+    canvas.width = canvas.height = 0;
+    renderItem(item);
+  }
+
+  // Миниатюры — сразу, не дожидаясь очереди распознавания, но по одной.
+  function queuePreview(item) {
+    var mine = batch;
+    previews = previews.then(function () {
+      if (batch !== mine || item.preview || !item.url) return null;
+      return loadImage(item.url).then(function (image) {
+        if (batch === mine) setPreview(item, image);
+      }, function () {});
+    });
+  }
+
+  // «ошибка: нет связи…» — сообщение после двоеточия со строчной буквы.
+  function lower(text) {
+    text = String(text).replace(/\.$/, "");
+    return /^[А-ЯЁA-Z][а-яёa-z]/.test(text) ? text.charAt(0).toLowerCase() + text.slice(1) : text;
+  }
+
+  function findItem(n) {
+    return batch ? batch.items.filter(function (i) { return i.n === n; })[0] || null : null;
+  }
+
+  // Запустить следующие фото из очереди, пока заняты не все места.
+  function pump() {
+    if (!batch) return;
+    var working = batch.items.filter(function (i) { return i.state === "work"; }).length;
+    batch.items.forEach(function (item) {
+      if (working < BATCH_PARALLEL && item.state === "queued") {
+        working++;
+        work(item);
+      }
+    });
+    updateBatch();
+  }
+
+  function work(item) {
+    var mine = batch;
+    item.state = "work";
+    item.error = item.detail = "";
+    item.waiting = false;
+    item.ctrl = window.AbortController ? new AbortController() : null;
+    renderItem(item);
+    function current() {
+      return batch === mine && item.state === "work";
+    }
+    loadImage(item.url).then(function (image) {
+      if (!current()) return null;
+      setPreview(item, image);
+      return engine().read(image, {
+        parallel: true,
+        signal: item.ctrl ? item.ctrl.signal : undefined,
+        onStatus: function (s) {
+          if (current()) onItemStatus(item, s);
+        }
+      });
+    }, function () {
+      var err = new Error("не получилось открыть фото — нужен JPEG или PNG");
+      err.code = "image";
+      throw err;
+    }).then(function (result) {
+      if (!current() || !result) return;
+      item.words = Array.isArray(result.words) ? result.words : [];
+      item.checked = result.checked !== false;
+      item.via = result.via || "local";
+      item.state = "done";
+      appendWords(item);
+    }, function (err) {
+      if (!current()) return;
+      item.state = "error";
+      item.error = err && err.code === "aborted" ? "распознавание остановлено" : lower((err && err.message) || "не получилось распознать");
+    }).then(function () {
+      if (batch !== mine) return;
+      item.ctrl = null;
+      renderItem(item);
+      pump();
+    });
+  }
+
+  // «в очереди», пока фото ждёт распознавателя в браузере (он занят другим
+  // фото) или очереди к нейросети, и проценты, пока скачивается сам
+  // распознаватель.
+  function onItemStatus(item, s) {
+    var waiting = s.stage === "local-wait" || (s.stage === "ai-wait" && !!s.waiting);
+    var detail = "";
+    if (s.stage === "download" && s.total) {
+      detail = "скачиваю распознаватель — " + Math.min(99, Math.floor(100 * s.loaded / s.total)) + "%";
+    }
+    if (waiting === item.waiting && detail === item.detail) return;
+    item.waiting = waiting;
+    item.detail = detail;
+    renderItem(item);
+  }
+
+  // Слова фото — в таблицу в порядке фото (фото распознаются вразнобой):
+  // перед первой строкой фото с бо́льшим номером. Строки, дописанные
+  // вручную, — без номера фото, они остаются в конце.
+  function appendWords(item) {
+    var before = null;
+    rows().some(function (row) {
+      var src = row.getAttribute("data-src");
+      if (src === null || Number(src) > item.n) {
+        before = row;
+        return true;
+      }
+      return false;
+    });
+    item.words.forEach(function (w) {
+      var row = addRow(w);
+      row.setAttribute("data-src", String(item.n));
+      if (before) list.insertBefore(row, before);
+    });
+    renumber();
+  }
+
+  function batchBusy() {
+    return !!batch && batch.items.some(function (i) { return i.state === "queued" || i.state === "work"; });
+  }
+
+  // Итог очереди над списком фото, таблица слов и её подписи.
+  function updateBatch() {
+    if (!batch) return;
+    var count = { queued: 0, work: 0, done: 0, error: 0 };
+    var found = [];
+    batch.items.forEach(function (i) {
+      count[i.state]++;
+      if (i.state === "done") found = found.concat(i.words);
+    });
+    var total = batch.items.length;
+    var busy = count.queued + count.work > 0;
+    $("[data-batch-text]").textContent = busy
+      ? "Распознаю фото: готово " + count.done + " из " + total + "."
+      : count.error
+        ? "Распознано " + count.done + " из " + photos(total) + "."
+        : total > 1 ? "Все " + photos(total) + " распознаны." : "Фото распознано.";
+    var hint = busy
+      ? "Фото распознаются по очереди, по " + BATCH_PARALLEL + " сразу. Слова со всех фото собираются в одну таблицу ниже."
+      : count.error
+        ? "Для фото с ошибкой нажмите «Повторить» — или допишите его слова в таблицу сами."
+        : "Слова со всех фото — в одной таблице ниже.";
+    if (batch.skipped) hint += " За один раз — не больше " + photos(MAX_BATCH) + ", лишние (" + batch.skipped + ") не добавлены.";
+    $("[data-batch-hint]").textContent = hint;
+
+    var show = found.length > 0 || !busy;
+    if (show && !batch.decks) {
+      batch.decks = true;
+      fillDecks();
+      saveError.hidden = true;
+    }
+    if (show && !busy && !rows().length) {
+      addRow({});
+      renumber();
+    }
+    editBox.hidden = !show;
+    $('[data-state="review"]').hidden = !show;
+    if (show) {
+      var unchecked = batch.items.filter(function (i) { return i.state === "done" && !i.checked; });
+      legend(found, unchecked.length > 0, unchecked.some(function (i) { return i.via !== "local"; }) ? "ai" : "local");
+      var notes = found.filter(function (w) { return w.note; }).length;
+      var ai = batch.items.some(function (i) { return i.state === "done" && (i.via === "ai" || i.via === "mixed"); });
+      $("[data-review-text]").textContent = !found.length
+        ? count.error
+          ? "Слов пока нет: нажмите «Повторить» у фото с ошибкой или впишите слова сами."
+          : "На фото не нашлось китайских слов — впишите их сами или выберите другие фото."
+        : "Найдено: " + words(found.length) + " на " + photos(count.done) + "." +
+          (ai ? " Нейросеть прочитала и проверила их" + (notes ? " — посмотрите замечания под словами." : ".") : "") +
+          " Исправьте ошибки, удалите лишнее, добавьте пропущенное." +
+          (busy ? " Слова остальных фото добавятся, когда они распознаются." : "") +
+          (count.done > 1 ? " Одинаковые слова сохранятся в колоду один раз." : "");
+    }
+    updateCount();
+  }
+
+  // Ушли с экрана — распознавание останавливается; вернувшись, фото можно
+  // повторить.
+  function stopBatch() {
+    if (!batch) return;
+    var mine = batch;
+    batch.items.forEach(function (item) {
+      if (item.state !== "queued" && item.state !== "work") return;
+      if (item.ctrl) item.ctrl.abort();
+      item.ctrl = null;
+      item.state = "error";
+      item.error = "распознавание остановлено";
+      renderItem(item);
+    });
+    if (!window.AICards) engine().cancel();
+    if (batch === mine) updateBatch();
+  }
+
+  function clearBatch() {
+    if (!batch) return;
+    var busy = batch.items.some(function (i) { return i.state === "work"; });
+    batch.items.forEach(function (item) {
+      if (item.ctrl) item.ctrl.abort();
+      if (item.url) URL.revokeObjectURL(item.url);
+    });
+    batch = null;
+    if (busy && !window.AICards) engine().cancel();
+    batchList.textContent = "";
+    batchBox.hidden = true;
   }
 
   // ------------------------------------------------------------- события
@@ -482,6 +889,28 @@
     }
     if (e.target.closest("[data-photo-pick]")) {
       choose("pick");
+      return;
+    }
+    if (e.target.closest("[data-photo-add]")) {
+      choose("pick", true);
+      return;
+    }
+    var again = e.target.closest("[data-batch-retry]");
+    if (again) {
+      var item = findItem(Number(again.closest("[data-batch-item]").getAttribute("data-batch-item")));
+      if (item && item.state === "error") {
+        item.state = "queued";
+        item.error = "";
+        renderItem(item);
+        pump();
+      }
+      return;
+    }
+    var thumb = e.target.closest("[data-batch-zoom]");
+    if (thumb) {
+      var on = !thumb.classList.contains("is-zoomed");
+      thumb.classList.toggle("is-zoomed", on);
+      thumb.setAttribute("aria-pressed", on ? "true" : "false");
       return;
     }
     if (e.target.closest("[data-photo-cancel]")) {

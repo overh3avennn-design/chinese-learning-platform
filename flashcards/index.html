@@ -66,7 +66,8 @@
             <div class="panel__side">
               <!-- Карточки по фото тетради: «сфотографировать» открывает камеру
                    (на компьютере, где камеры в выборе файла нет, кнопка спрятана),
-                   «выбрать фото» — галерею или файл. Дальше — экран #photo. -->
+                   «выбрать фото» — галерею или файл, можно сразу несколько фото.
+                   Дальше — экран #photo. -->
               <section class="fc-photo-cta" aria-labelledby="fc-photo-cta-title">
                 <div class="fc-photo-cta__head">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
@@ -79,7 +80,7 @@
                   <span class="fc-photo-note wide-only">без VPN слова распознаются прямо на устройстве</span>
                 </div>
                 <input class="fc-file" type="file" accept="image/*" capture="environment" data-photo-input="camera" tabindex="-1" aria-hidden="true">
-                <input class="fc-file" type="file" accept="image/*" data-photo-input="pick" tabindex="-1" aria-hidden="true">
+                <input class="fc-file" type="file" accept="image/*" multiple data-photo-input="pick" tabindex="-1" aria-hidden="true">
               </section>
 
               <section class="fc-info wide-only" aria-labelledby="fc-info-title">
@@ -408,6 +409,16 @@
               <img data-photo-img alt="Фото страницы тетради">
             </button>
 
+            <!-- Несколько фото: строка на каждое — миниатюра (нажатие
+                 увеличивает), состояние и «Повторить» при ошибке. Слова со
+                 всех фото — в общей таблице ниже. Строки строит
+                 js/photo-cards.js. -->
+            <div class="fc-batch" data-batch hidden>
+              <p class="fc-photo-msg" data-batch-text aria-live="polite"></p>
+              <p class="fc-photo-hint" data-batch-hint></p>
+              <ol class="fc-batch-list" data-batch-list></ol>
+            </div>
+
             <div class="fc-photo-state" data-state="loading" aria-live="polite">
               <p class="fc-photo-msg"><span class="fc-spinner" aria-hidden="true"></span><span data-loading-text>Распознаю слова…</span></p>
               <p class="fc-photo-hint" data-loading-hint>Обычно это занимает от 10 секунд до минуты — зависит от телефона и числа строк.</p>
@@ -475,6 +486,7 @@
             <p class="fc-save-error" data-save-error role="alert" hidden></p>
             <div class="fc-photo-buttons">
               <button class="btn fc-save-btn" type="button" data-save>Сохранить</button>
+              <button class="btn btn--outline" type="button" data-photo-add>+ Ещё фото</button>
               <button class="btn btn--outline" type="button" data-photo-pick>Другое фото</button>
             </div>
           </section>

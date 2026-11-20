@@ -13,7 +13,9 @@
      нейросетью (или, без неё, словарём).
      onStatus({ stage, done, total }) — "ai-read" (полосы), "ai-check",
      и стадии js/notebook-ocr.js при распознавании в браузере;
-     "local-wait" — ждёт распознавателя в браузере (он занят другим фото).
+     "local-wait" — ждёт распознавателя в браузере (он занят другим фото);
+     "ai-wait" с waiting: true/false — запрос ждёт очереди к нейросети
+     (лимит запросов в минуту) / дождался.
      Новый read() останавливает предыдущий. С { parallel: true } — нет:
      несколько фото читаются одновременно (js/photo-cards.js, очередь фото),
      и такой read останавливает свой { signal } (AbortSignal).
@@ -265,6 +267,7 @@
   // и не раньше конца паузы после «слишком много запросов». Ожидание
   // проверяет остановку раз в секунду.
   function pace(me) {
+    var waited = false;
     return new Promise(function (resolve, reject) {
       (function attempt() {
         if (me.stopped) {
@@ -276,9 +279,12 @@
         var wait = Math.max(pausedUntil - now, sentAt.length >= RATE_MAX ? sentAt[0] + RATE_WINDOW - now : 0);
         if (wait <= 0) {
           sentAt.push(now);
+          if (waited) me.status({ stage: "ai-wait", waiting: false });
           resolve();
           return;
         }
+        if (!waited) me.status({ stage: "ai-wait", waiting: true });
+        waited = true;
         setTimeout(attempt, Math.min(wait, 1000));
       })();
     });
@@ -500,7 +506,7 @@
     opts = opts || {};
     var status = typeof opts.onStatus === "function" ? opts.onStatus : function () {};
     if (!opts.parallel) cancel();
-    var me = { ctrl: window.AbortController ? new AbortController() : null, stopped: false };
+    var me = { ctrl: window.AbortController ? new AbortController() : null, stopped: false, status: status };
     runs.push(me);
     var signal = opts.signal;
     function onAbort() {

@@ -2948,6 +2948,85 @@ a.side-row:hover {
   display: none;
 }
 
+/* Несколько фото (#photo, js/photo-cards.js): строка на фото — миниатюра,
+   номер и состояние, при ошибке — «Повторить». Увеличенная миниатюра
+   встаёт во всю ширину под строкой. */
+.fc-batch {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.fc-batch-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.fc-batch-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.9rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Два класса — чтобы не перебивала ширина миниатюры одного фото на
+   телефоне (.fc-photo-thumb в @media ниже). */
+.fc-photo-thumb.fc-batch-thumb {
+  width: 56px;
+  height: 56px;
+}
+
+.fc-batch-thumb:not(.is-zoomed) img {
+  height: 56px;
+  max-height: none;
+}
+
+.fc-photo-thumb.fc-batch-thumb.is-zoomed {
+  order: 1;
+  width: 100%;
+  height: auto;
+}
+
+.fc-batch-thumb:disabled {
+  cursor: default;
+}
+
+.fc-batch-info {
+  display: flex;
+  flex: 1 1 10rem;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.fc-batch-name {
+  font-weight: 600;
+}
+
+.fc-batch-state {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.fc-batch-state.is-error {
+  color: var(--accent-text);
+}
+
+.fc-batch-state .fc-spinner {
+  width: 14px;
+  height: 14px;
+}
+
+.fc-batch-retry[hidden] {
+  display: none;
+}
+
 .fc-spinner {
   flex: none;
   width: 18px;
