@@ -126,8 +126,11 @@
     }
     if (id === "folders") {
       if (!Array.isArray(data)) return null;
+      // public — отметка «общая» (папку издателя видят все, GET /public).
       var folders = data.filter(function (f) { return f && str(f.id); }).map(function (f) {
-        return { id: str(f.id), title: str(f.title), decks: (Array.isArray(f.decks) ? f.decks : []).map(String) };
+        var out = { id: str(f.id), title: str(f.title), decks: (Array.isArray(f.decks) ? f.decks : []).map(String) };
+        if (f.public === true) out.public = true;
+        return out;
       });
       return folders.length ? folders : null;
     }
@@ -234,7 +237,11 @@
     if (id.indexOf("deck:") === 0) return { title: remote.title, words: unionWords(remote.words, local.words) };
     if (id.indexOf("extra:") === 0) return unionWords(remote, local);
     if (id === "folders") {
-      var out = remote.map(function (f) { return { id: f.id, title: f.title, decks: f.decks.slice() }; });
+      var out = remote.map(function (f) {
+        var copy = { id: f.id, title: f.title, decks: f.decks.slice() };
+        if (f.public) copy.public = true;
+        return copy;
+      });
       local.forEach(function (f) {
         var same = out.filter(function (o) { return o.id === f.id; })[0];
         if (!same) out.push(f);

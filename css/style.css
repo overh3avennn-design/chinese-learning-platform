@@ -3407,6 +3407,53 @@ a.side-row:hover {
   min-width: 0;
 }
 
+/* «Общая папка» в редакторе папки — только у издателя (js/flashcards.js).
+   Тот же вид, что у строки колоды в списке выбора. */
+.fc-folder-public {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.fc-folder-public[hidden] {
+  display: none;
+}
+
+.fc-folder-public input {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0.1rem 0 0;
+  accent-color: var(--text);
+}
+
+/* Перенос колод сайта в аккаунт издателя (список колод, один раз). */
+.fc-move {
+  margin: 24px 0 0;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.fc-move[hidden],
+.fc-move [hidden] {
+  display: none;
+}
+
+.fc-move__text {
+  margin: 0 0 0.75rem;
+  font-size: 15px;
+}
+
+.fc-move__text:last-child {
+  margin-bottom: 0;
+}
+
 .fc-pick-title {
   display: block;
   font-weight: 600;

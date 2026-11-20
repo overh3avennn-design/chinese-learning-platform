@@ -94,6 +94,17 @@
             </div>
           </section>
 
+          <!-- Только преподавателю (издателю), один раз: колоды-файлы сайта —
+               в его аккаунт, чтобы их файлы можно было убрать с сайта.
+               Текст и показ — js/flashcards.js (renderMove). -->
+          <section class="fc-move" data-move hidden aria-label="Колоды сайта — в ваш аккаунт">
+            <p class="fc-move__text" data-move-text></p>
+            <div class="fc-photo-buttons" data-move-actions>
+              <button class="btn btn--sm btn--outline" type="button" data-move-backup>скачать резервную копию</button>
+              <button class="btn btn--sm" type="button" data-move-run>перенести в мой аккаунт</button>
+            </div>
+          </section>
+
           <!-- Папки: свои и папки сайта, последней — строка «новая папка».
                Колоды из папок остаются и в общем списке ниже. Строки строит
                js/flashcards.js. -->
@@ -242,6 +253,12 @@
               <p class="fc-status" data-pick-empty hidden>Колод пока нет.</p>
               <ul class="fc-pick-list" data-pick-list></ul>
             </fieldset>
+
+            <!-- Только у издателя: папку с отметкой и её колоды видят все. -->
+            <label class="fc-folder-public" data-folder-public-line hidden>
+              <input type="checkbox" data-folder-public>
+              <span>Общая папка — её и её колоды видят все, даже без входа. Остальные ваши папки и колоды видите только вы.</span>
+            </label>
 
             <p class="fc-save-error" data-folder-error role="alert" hidden></p>
             <div class="fc-photo-buttons">

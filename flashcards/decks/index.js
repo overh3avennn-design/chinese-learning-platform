@@ -33,3 +33,10 @@ window.DECK_FILES = [
    общем списке колод. */
 window.DECK_FOLDERS = [
 ];
+
+/* Общие папки — свои папки преподавателя с отметкой «общая» (её ставят в
+   редакторе папки). Их и колоды из них видят все посетители, даже без
+   входа; остальные его папки и колоды видит только он. Отдаёт их API
+   (backend/, маршрут GET /public): кто может делать папки общими, задаёт
+   PUBLISHER_TELEGRAM_IDS в настройках функции. */
+window.PUBLIC_DECKS_URL = "https://functions.yandexcloud.net/d4e5l7ms6jgosooeo1be?r=/public";

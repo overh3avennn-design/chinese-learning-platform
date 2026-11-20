@@ -24,6 +24,13 @@
    вперемешку, а ответ записывается в прогресс самих колод — отдельного
    прогресса у папки нет.
 
+   Общие папки — свои папки преподавателя (издателя) с отметкой «общая»:
+   их и колоды из них отдаёт всем API (GET /public, адрес — window.
+   PUBLIC_DECKS_URL в decks/index.js), даже без входа. Для посетителей они
+   как папки и колоды сайта (pub), а у самого издателя его колоды и папки
+   остаются своими — он их меняет как обычно. Последний ответ API хранится
+   в localStorage (flashcards-public), чтобы список открывался сразу.
+
    Прогресс — три статуса слова: новое, изучается, выучено. «Знаю» —
    слово выучено, «Не знаю» — изучается и уходит в конец текущей сессии,
    пока его не узнают. «Учить карточки» берёт только невыученные слова,
@@ -525,7 +532,7 @@
       if (d && ids.indexOf(d) === -1) ids.push(d);
     });
     var title = typeof raw.title === "string" ? raw.title.trim() : "";
-    return { id: id, title: title || "Папка", decks: ids };
+    return { id: id, title: title || "Папка", decks: ids, public: raw.public === true };
   }
 
   function folderDecks(folder) {
@@ -566,6 +573,7 @@
       folders.push(folder);
     });
     collectOwnFolders();
+    collectPublicFolders();
   }
 
   function collectOwnFolders() {
@@ -581,13 +589,16 @@
   // Свои папки — в flashcards-user в порядке создания.
   function storeFolders() {
     loadUser().folders = folders.filter(function (f) { return f.own; }).map(function (f) {
-      return { id: f.id, title: f.title, decks: f.decks.slice() };
+      var out = { id: f.id, title: f.title, decks: f.decks.slice() };
+      if (f.public) out.public = true;
+      return out;
     });
     return saveUser();
   }
 
-  // folder — своя папка, которую меняют, или null — новая.
-  function saveFolder(folder, title, ids) {
+  // folder — своя папка, которую меняют, или null — новая. isPublic —
+  // отметка «общая» (undefined — не менять; ставит только издатель).
+  function saveFolder(folder, title, ids, isPublic) {
     if (!folder) {
       var id = "folder-" + Date.now().toString(36);
       while (folderById[id]) id += "x";
@@ -597,6 +608,7 @@
     }
     folder.title = title;
     folder.decks = ids;
+    if (isPublic !== undefined) folder.public = !!isPublic;
     return { folder: folder, stored: storeFolders() };
   }
 
@@ -604,6 +616,154 @@
     folders = folders.filter(function (f) { return f !== folder; });
     delete folderById[folder.id];
     storeFolders();
+  }
+
+  // ------------------------------------------------------ общие колоды
+  // Ответ GET /public: { folders: [{ id, title, decks }], decks: [{ id,
+  // title, words }] }. Колода и папка с тем же id, что у своих, —
+  // пропускаются: у издателя это его же колоды и папки, и меняет он свои.
+  var PUBLIC_KEY = "flashcards-public";
+  var PUBLIC_TIMEOUT = 8000;        // запрос к API
+  var PUBLIC_WAIT = 5000;           // столько список ждёт API при первом заходе
+  var publicData = readPublicCache();
+
+  function cleanPublic(data) {
+    if (!data || !Array.isArray(data.folders) || !Array.isArray(data.decks)) return null;
+    return { folders: data.folders, decks: data.decks };
+  }
+
+  function readPublicCache() {
+    try {
+      return cleanPublic(JSON.parse(window.localStorage.getItem(PUBLIC_KEY) || "null"));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Свежий ответ API → Promise(данные | null). Нет связи — null, и
+  // остаётся сохранённый ответ.
+  function fetchPublic() {
+    var url = window.PUBLIC_DECKS_URL;
+    if (!url || !window.fetch) return Promise.resolve(null);
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, PUBLIC_TIMEOUT);
+    return fetch(url, { signal: ctrl ? ctrl.signal : undefined }).then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    }).then(function (data) {
+      clearTimeout(timer);
+      data = cleanPublic(data);
+      if (data) {
+        try {
+          window.localStorage.setItem(PUBLIC_KEY, JSON.stringify(data));
+        } catch (e) {}
+      }
+      return data;
+    }, function () {
+      clearTimeout(timer);
+      return null;
+    });
+  }
+
+  function collectPublicDecks() {
+    if (!publicData) return;
+    var own = {};
+    loadUser().decks.forEach(function (d) {
+      if (d && typeof d.id === "string") own[d.id.trim()] = true;
+    });
+    publicData.decks.forEach(function (raw) {
+      if (!raw || typeof raw.id !== "string" || !raw.id.trim() || own[raw.id.trim()]) return;
+      var deck = cleanDeck(raw, "");
+      if (!deck || deckById[deck.id] || !deck.words.length) return;
+      deck.pub = true;
+      deckById[deck.id] = deck;
+      decks.push(deck);
+    });
+  }
+
+  function collectPublicFolders() {
+    if (!publicData) return;
+    publicData.folders.forEach(function (raw) {
+      var folder = cleanFolder(raw);
+      if (!folder || folderById[folder.id]) return;
+      folder.pub = true;
+      folderById[folder.id] = folder;
+      folders.push(folder);
+    });
+  }
+
+  // Может ли вошедший делать свои папки общими (поле publisher от API).
+  function isPublisher() {
+    var user = window.Account && window.Account.user && window.Account.user();
+    return !!(user && user.publisher);
+  }
+
+  // Перенос колод-файлов сайта в аккаунт издателя — один раз, перед тем как
+  // файлы уберут с сайта: каждая становится его своей колодой с тем же id
+  // (прогресс по ней сохраняется), вместе со словами, которые он добавлял
+  // в неё с фото. Пока файл на сайте, видна колода из файла; уберут файл —
+  // останется своя, и видеть её будет только он.
+  function decksToMove() {
+    if (!isPublisher()) return [];
+    var own = {};
+    loadUser().decks.forEach(function (d) {
+      if (d && typeof d.id === "string") own[d.id.trim()] = true;
+    });
+    return decks.filter(function (d) { return !d.own && !d.pub && d.file && !own[d.id]; });
+  }
+
+  function moveDecks() {
+    var list = decksToMove();
+    if (!list.length) return null;
+    var user = loadUser();
+    list.forEach(function (d) {
+      user.decks.push({ id: d.id, title: d.title, words: plainWords(d.words) });
+    });
+    return { count: list.length, stored: saveUser() };
+  }
+
+  // Резервная копия перед переносом: свои колоды, папки, прогресс и колоды
+  // сайта — файлом .json на устройство.
+  function downloadBackup() {
+    var progress = {};
+    try {
+      for (var i = 0; i < window.localStorage.length; i++) {
+        var key = window.localStorage.key(i);
+        if (key && key.indexOf(STORAGE_PREFIX) === 0) progress[key] = JSON.parse(window.localStorage.getItem(key) || "null");
+      }
+    } catch (e) {}
+    var data = {
+      savedAt: new Date().toISOString(),
+      user: loadUser(),
+      progress: progress,
+      siteDecks: decks.filter(function (d) { return !d.own && !d.pub; }).map(function (d) {
+        return { id: d.id, title: d.title, file: d.file, words: plainWords(d.fileWords || d.words) };
+      })
+    };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = "chineasy-cards-backup-" + data.savedAt.slice(0, 10) + ".json";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  var moveNote = "";
+
+  function renderMove() {
+    var box = $("[data-move]");
+    if (!box) return;
+    var list = decksToMove();
+    box.hidden = !list.length && !moveNote;
+    $("[data-move-actions]").hidden = !list.length;
+    $("[data-move-text]").textContent = list.length
+      ? "Колоды сайта (" + deckCount(list.length) + ": " + list.map(function (d) { return d.title; }).join(", ") +
+        ") лежат файлами и видны всем. Перенесите их в свой аккаунт — тогда их файлы можно будет убрать с сайта, " +
+        "а всем будут видны только колоды из папок с отметкой «общая». Сначала скачайте резервную копию."
+      : moveNote;
   }
 
   // Файл колоды для flashcards/decks/ — тот же вид, что у готовых колод.
@@ -719,9 +879,9 @@
     var body = el("span", "fc-folder-row__body");
     body.appendChild(el("span", "fc-folder-row__title", set.title));
     var meta = el("span", "fc-folder-row__meta");
-    meta.appendChild(el("span", null, set.decks.length
+    meta.appendChild(el("span", null, (folder.own && folder.public ? "общая · " : "") + (set.decks.length
       ? deckCount(set.decks.length) + " · " + words(set.words.length)
-      : "пока без колод"));
+      : "пока без колод")));
     if (set.decks.length) {
       meta.appendChild(el("span", "fc-folder-row__names",
         " · " + set.decks.map(function (d) { return d.title; }).join(", ")));
@@ -789,6 +949,7 @@
       errorBox.appendChild(el("p", null, text));
     });
     errorBox.hidden = !errors.length;
+    renderMove();
   }
 
   // ---------------------------------------------------------- озвучка
@@ -1039,6 +1200,9 @@
     view.querySelector("[data-folder-save]").textContent = folder ? "Сохранить" : "Создать папку";
     view.querySelector("[data-folder-delete-line]").hidden = !folder;
     editTitle.value = folder ? folder.title : "";
+    // «Общая» — только у издателя (его папки с отметкой видят все).
+    view.querySelector("[data-folder-public-line]").hidden = !isPublisher();
+    view.querySelector("[data-folder-public]").checked = !!(folder && folder.public);
 
     // Свои колоды (новые первыми) — сверху, как в списке.
     var own = decks.filter(function (d) { return d.own; }).reverse();
@@ -1078,7 +1242,7 @@
       });
     }
     var wasNew = !editing;
-    var res = saveFolder(editing, title, ids);
+    var res = saveFolder(editing, title, ids, isPublisher() ? views.edit.querySelector("[data-folder-public]").checked : undefined);
     savedNote = (wasNew ? "Папка создана." : "Папка сохранена.") + (res.stored ? ""
       : " Но браузер не даёт её запомнить — она пропадёт, когда закроете страницу.");
     editing = null;
@@ -1417,6 +1581,21 @@
 
   // ----------------------------------------------- кнопки и клавиатура
   root.addEventListener("click", function (e) {
+    // Перенос колод сайта в аккаунт издателя и резервная копия перед ним.
+    if (e.target.closest("[data-move-backup]")) {
+      downloadBackup();
+      return;
+    }
+    if (e.target.closest("[data-move-run]")) {
+      var moved = moveDecks();
+      if (moved) {
+        moveNote = moved.stored
+          ? "Готово: " + deckCount(moved.count) + " — в вашем аккаунте. Когда их файлы уберут с сайта, они будут в «моих колодах», и видеть их будете только вы."
+          : "Браузер не дал сохранить колоды — попробуйте ещё раз.";
+      }
+      renderList();
+      return;
+    }
     // Переходы внутри раздела. Клик с модификатором (новая вкладка и т. п.)
     // браузер обрабатывает сам.
     var plain = e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
@@ -1635,7 +1814,7 @@
     reloadPending = false;
     userData = null;
     memory = {};
-    decks = decks.filter(function (d) { return !d.own; });
+    decks = decks.filter(function (d) { return !d.own && !d.pub; });
     deckById = {};
     decks.forEach(function (d) {
       if (d.fileWords) {
@@ -1645,11 +1824,13 @@
       d.extra = 0;
       deckById[d.id] = d;
     });
-    folders = folders.filter(function (f) { return !f.own; });
+    folders = folders.filter(function (f) { return !f.own && !f.pub; });
     folderById = {};
     folders.forEach(function (f) { folderById[f.id] = f; });
+    collectPublicDecks();
     collectOwnDecks();
     collectOwnFolders();
+    collectPublicFolders();
   }
 
   function reloadFromStorage() {
@@ -1784,11 +1965,57 @@
     reload: reloadFromStorage
   };
 
+  // Колоды сайта и общие колоды грузятся одновременно. Есть сохранённый
+  // ответ API — список открывается сразу, а свежий ответ приходит следом;
+  // нет (первый раз) или в адресе колода, которой в нём нет, — ждём API,
+  // но не дольше PUBLIC_WAIT: опоздавший ответ добавится, когда придёт.
+  var publicFresh = fetchPublic();
+
+  function addressKnown() {
+    var match = /^#(deck|folder)=([^&]+)/.exec(window.location.hash);
+    if (!match) return true;
+    try {
+      var id = decodeURIComponent(match[2]);
+      return match[1] === "deck" ? !!deckById[id] : !!folderById[id];
+    } catch (e) {
+      return true;
+    }
+  }
+
   loadDecks(function (files) {
     collectDecks(files);
+    collectPublicDecks();
     collectOwnDecks();
     collectFolders();
-    decksReady = true;
-    route();
+    function start() {
+      if (decksReady) return;
+      decksReady = true;
+      route();
+    }
+    if (publicData && addressKnown()) start();
+    else setTimeout(start, PUBLIC_WAIT);
+    publicFresh.then(function (data) {
+      var changed = data && JSON.stringify(data) !== JSON.stringify(publicData);
+      if (changed) publicData = data;
+      if (!decksReady) {
+        if (changed) reloadUser();
+        start();
+      } else if (changed) {
+        reloadFromStorage();
+      }
+    });
   });
+
+  // Вошли, вышли или узнали, что вошедший — издатель: перерисовать (галочка
+  // «общая» и перенос колод видны только издателю). js/account.js
+  // подключается позже этого файла.
+  function hookAccount() {
+    if (!window.Account || !window.Account.onChange) return false;
+    window.Account.onChange(function () {
+      if (decksReady && !busyScreen()) route();
+    });
+    if (decksReady && !busyScreen()) route();
+    return true;
+  }
+  if (!hookAccount()) window.addEventListener("load", hookAccount);
 })();

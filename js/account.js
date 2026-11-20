@@ -504,6 +504,23 @@
     }
     render();
     miniAppLogin(false);
+    refreshPublisher();
+  }
+
+  // Поле publisher (может делать свои папки общими) появилось в ответах API
+  // позже: у пропуска, полученного раньше, его нет — узнаём через /me, не
+  // чаще раза за сеанс браузера.
+  function refreshPublisher() {
+    if (!session || !session.user || session.user.publisher !== undefined) return;
+    try {
+      if (window.sessionStorage.getItem("account-me") === "1") return;
+      window.sessionStorage.setItem("account-me", "1");
+    } catch (e) {}
+    api("GET", "/me").then(function (data) {
+      if (session && data && data.user && data.user.id === session.user.id) {
+        writeSession(Object.assign({}, session, { user: data.user }));
+      }
+    }, function () {});
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
