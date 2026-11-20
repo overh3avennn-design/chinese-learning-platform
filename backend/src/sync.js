@@ -201,19 +201,22 @@ function pageResult(items, cursor, more) {
 }
 
 // ------------------------------------------------------- общие папки
-// Папка с public: true в строке folders издателя (его Telegram id — в
-// PUBLISHER_TELEGRAM_IDS) видна всем, вместе с её колодами. Остальные
-// папки и колоды сервер не отдаёт никому, кроме владельца (GET /cards).
+// Папка с public: true в строке folders любого пользователя видна всем,
+// вместе с её колодами — но только колодами самого владельца папки.
+// Остальные папки и колоды сервер не отдаёт никому, кроме владельца
+// (GET /cards). Папки издателей (PUBLISHER_TELEGRAM_IDS) идут первыми.
 const DECK_ID_RE = /^[A-Za-z0-9_.-]{1,96}$/;
 
 const str = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
-// Текст строки folders → публичные папки [{ id, title, decks: [id, …] }].
-function publicFolders(text) {
+// Текст строки folders → публичные папки [{ id, title, decks: [id, …] }],
+// не больше max.
+function publicFolders(text, max) {
   const list = parse(text);
   if (!Array.isArray(list)) return [];
   const out = [];
   for (const f of list) {
+    if (max !== undefined && out.length >= max) break;
     if (!f || f.public !== true || !DECK_ID_RE.test(String(f.id || ""))) continue;
     const decks = Array.from(new Set((Array.isArray(f.decks) ? f.decks : []).filter((d) => typeof d === "string" && DECK_ID_RE.test(d))));
     out.push({ id: f.id, title: str(f.title, 60) || f.id, decks });
@@ -233,45 +236,59 @@ function publicDeck(id, text) {
   return words.length ? { id, title: str(d.title, 60) || id, words } : null;
 }
 
-// Папки и колоды нескольких издателей → ответ GET /public. sources —
+// Есть ли в строке folders хотя бы одна общая папка (для public_owners).
+function hasPublicFolder(text) {
+  return publicFolders(text, 1).length > 0;
+}
+
+// Папки и колоды нескольких владельцев → ответ GET /public. sources —
 // [{ folders: текст строки folders, decks: id → текст строки deck:<id> }].
-// Не больше limits.publicMaxDecks колод и limits.publicMaxBytes байт;
-// одинаковые id — первый издатель.
+// В папке остаются только колоды её владельца: чужой id (такой же у
+// колоды другого человека) в общую папку не попадёт. Не больше
+// limits.publicMaxDecks колод и limits.publicMaxBytes байт; одинаковые id
+// папок и колод — у первого владельца; папка без колод не показывается.
 function publicSet(sources, limits) {
   const folders = [];
   const decks = [];
   const seenFolder = new Set();
-  const seenDeck = new Set();
+  const deckOwner = new Map();        // id колоды → номер владельца
   let bytes = 0;
-  for (const src of sources) {
-    for (const f of publicFolders(src.folders)) {
+  sources.forEach((src, owner) => {
+    for (const f of publicFolders(src.folders, limits.publicMaxFoldersPerUser)) {
       if (seenFolder.has(f.id)) continue;
-      seenFolder.add(f.id);
-      folders.push(f);
+      const kept = [];
       for (const id of f.decks) {
-        if (seenDeck.has(id) || decks.length >= limits.publicMaxDecks) continue;
+        if (deckOwner.has(id)) {
+          if (deckOwner.get(id) === owner) kept.push(id);
+          continue;
+        }
+        if (decks.length >= limits.publicMaxDecks) continue;
         const text = src.decks.get(id);
         const deck = text ? publicDeck(id, text) : null;
         if (!deck) continue;
         const size = Buffer.byteLength(JSON.stringify(deck), "utf8");
         if (bytes + size > limits.publicMaxBytes) continue;
         bytes += size;
-        seenDeck.add(id);
+        deckOwner.set(id, owner);
         decks.push(deck);
+        kept.push(id);
       }
+      if (!kept.length) continue;
+      seenFolder.add(f.id);
+      folders.push({ id: f.id, title: f.title, decks: kept });
     }
-  }
+  });
   return { folders, decks };
 }
 
 // Какие строки deck:<id> прочитать для публичных папок (текст строки folders).
 function publicDeckIds(text, limits) {
   const ids = new Set();
-  for (const f of publicFolders(text)) for (const id of f.decks) ids.add(id);
+  for (const f of publicFolders(text, limits.publicMaxFoldersPerUser)) for (const id of f.decks) ids.add(id);
   return Array.from(ids).slice(0, limits.publicMaxDecks).map((id) => "deck:" + id);
 }
 
 module.exports = {
   ID_RE, FIELD, DONE, validateItems, planPush, planMerge, mergeData, decideLink, isCaughtUp, pageResult, utcDay,
-  publicFolders, publicDeck, publicSet, publicDeckIds
+  publicFolders, publicDeck, publicSet, publicDeckIds, hasPublicFolder
 };

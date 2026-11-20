@@ -12,8 +12,8 @@
 // Два тестовых пользователя Telegram с несуществующими id (9000000000001 и
 // …002): входят через Mini App подписью настоящим токеном бота, пишут
 // карточки и проверяют, что не видят и не меняют чужие, а в общий доступ
-// (GET /public) их папка с отметкой «общая» не попадает. В конце свои
-// тестовые колоды и папки удаляют.
+// (GET /public) не попадают их личная колода и общая папка без колод. В
+// конце свои тестовые колоды и папки удаляют.
 
 const fs = require("fs");
 const os = require("os");
@@ -176,7 +176,10 @@ async function main() {
   check("PUT /cards без пропуска → 401", (await call("PUT", "/cards", { items: [] })).status === 401);
   check("GET /cards с поддельным пропуском → 401", (await call("GET", "/cards", undefined, "eyJhbGciOiJIUzI1NiJ9.e30.AAAA")).status === 401);
 
-  const forged = signInitData({ user: { id: 9000000000001 }, auth_date: String(now()) }, TOKEN).replace(/hash=[0-9a-f]/, "hash=0");
+  // Первый знак подписи меняется на другой (не на тот же — иначе подпись
+  // осталась бы верной, раз в 16 запусков).
+  const forged = signInitData({ user: { id: 9000000000001 }, auth_date: String(now()) }, TOKEN)
+    .replace(/hash=([0-9a-f])/, (m, c) => "hash=" + (c === "0" ? "1" : "0"));
   check("Mini App с испорченной подписью → 401", (await call("POST", "/auth/telegram-miniapp", { initData: forged })).status === 401);
   const old = signInitData({ user: { id: 9000000000001 }, auth_date: String(now() - 90000) }, TOKEN);
   check("Mini App старше суток → 401", (await call("POST", "/auth/telegram-miniapp", { initData: old })).status === 401);
@@ -222,12 +225,19 @@ async function main() {
   check("GET /me → A", me.status === 200 && me.data.user.id === A.user.id && me.data.user.telegram === true);
   check("GET /me: тестовый пользователь — не издатель", me.data && me.data.user.publisher === false);
 
-  // Общие папки: без входа — 200; папки и колоды обычного пользователя туда
-  // не попадают, даже с отметкой «общая».
-  const pubPut = await call("PUT", "/cards", { items: [{ id: "folders", data: [{ id: "smoke-f", title: "smoke", decks: ["smoke-a"], public: true }], updatedAt: stamp }] }, A.token);
+  // Общие папки: без входа — 200. У A общая папка только с колодой, которой
+  // нет: сервер запишет его в public_owners, но папку без колод не покажет —
+  // на сайте тестовая папка не появится. Его колода smoke-a не в общей папке
+  // и не должна попасть в ответ.
+  const pubPut = await call("PUT", "/cards", { items: [{ id: "folders", data: [{ id: "smoke-f", title: "smoke", decks: ["smoke-missing"], public: true }], updatedAt: stamp }] }, A.token);
   const pub = await call("GET", "/public");
   check("GET /public без входа → 200", pub.status === 200 && pub.data && Array.isArray(pub.data.folders) && Array.isArray(pub.data.decks), "status " + pub.status);
-  check("в /public нет папок и колод обычного пользователя", pubPut.status === 200 && JSON.stringify(pub.data || {}).indexOf("smoke") === -1);
+  check("в /public нет тестовой папки без колод и личной колоды", pubPut.status === 200 && JSON.stringify(pub.data || {}).indexOf("smoke") === -1);
+  if (pub.data && Array.isArray(pub.data.folders)) {
+    console.log("  общие папки сейчас: " + (pub.data.folders.length
+      ? pub.data.folders.map((f) => "«" + f.title + "» — колод: " + f.decks.length).join("; ")
+      : "нет") + " (всего колод: " + pub.data.decks.length + ")");
+  }
 
   // уборка
   const delA = await call("PUT", "/cards", { items: [{ id: "deck:smoke-a", deleted: true, updatedAt: Date.now() }, { id: "folders", deleted: true, updatedAt: Date.now() }] }, A.token);

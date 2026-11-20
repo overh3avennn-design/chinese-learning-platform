@@ -13,10 +13,11 @@
 //   PUT  /cards                   { items: [...] }   → { rev, results }
 //   GET  /public  (без входа)                        → { folders, decks }
 //
-// /public — общие папки: папки с public: true у издателей (Telegram id из
-// config.publisherTelegramIds) и колоды из них. Больше ничего из чужих
-// карточек сервер не отдаёт. В user поле publisher — может ли человек
-// делать свои папки общими.
+// /public — общие папки: папки с public: true у любого пользователя и
+// колоды из них (только колоды владельца папки). Папки издателей (Telegram
+// id из config.publisherTelegramIds) — первыми. Больше ничего из чужих
+// карточек сервер не отдаёт. В user поле publisher — издатель ли человек
+// (ему сайт предлагает перенести колоды-файлы в аккаунт).
 
 const { HttpError, unauthorized, badRequest } = require("./errors");
 const { verifyMiniAppInitData, verifyLoginWidget } = require("./telegram");
@@ -155,7 +156,6 @@ function createApp(options) {
 
     if (path === "/public") {
       if (m !== "GET") throw new HttpError(405, "method_not_allowed");
-      if (!publishers.size) return { folders: [], decks: [] };
       if (publicCache && now() - publicCache.at < limits.publicCacheMs) return publicCache.data;
       const data = await store.publicCards(Array.from(publishers), limits);
       publicCache = { at: now(), data };

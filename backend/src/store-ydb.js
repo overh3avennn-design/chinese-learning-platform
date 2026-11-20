@@ -12,7 +12,7 @@
 const crypto = require("crypto");
 const { Types, TypedValues } = require("ydb-sdk");
 const { unauthorized } = require("./errors");
-const { FIELD, planPush, planMerge, decideLink, isCaughtUp, pageResult, publicSet, publicDeckIds } = require("./sync");
+const { FIELD, planPush, planMerge, decideLink, isCaughtUp, pageResult, publicSet, publicDeckIds, hasPublicFolder } = require("./sync");
 
 const RW = { serializableReadWrite: {} };
 const RO = { snapshotReadOnly: {} };
@@ -167,6 +167,11 @@ function createYdbStore(getDriver) {
           const target = await readAllRows(session, userId);
           const source = await readAllRows(session, owner.id);
           const plan = planMerge(target, source, limits, now, current.rev);
+          // public_owners: у слитого аккаунта строки больше нет, у текущего —
+          // по итоговой строке folders.
+          const folders = plan.upserts.find((r) => r.id === "folders") || target.find((r) => r.id === "folders");
+          const pub = !!folders && !folders.deleted && hasPublicFolder(folders.data);
+          if (pub) params.$pubAt = TypedValues.uint64(now);
           params.$owner = TypedValues.utf8(owner.id);
           params.$del = TypedValues.list(Types.struct({ user_id: Types.UTF8, id: Types.UTF8 }),
             source.map((r) => ({ user_id: owner.id, id: r.id })));
@@ -177,8 +182,12 @@ function createYdbStore(getDriver) {
           writes +=
             "DECLARE $owner AS Utf8; DECLARE $del AS List<Struct<user_id: Utf8, id: Utf8>>; DECLARE $rows AS " + ROW_DECL + ";\n" +
             "DECLARE $rev AS Uint64; DECLARE $nrows AS Uint32; DECLARE $nbytes AS Uint64;\n" +
+            (pub ? "DECLARE $pubAt AS Uint64;\n" : "") +
             "DELETE FROM cards ON SELECT user_id, id FROM AS_TABLE($del);\n" +
             "DELETE FROM users ON SELECT $owner AS id;\n" +
+            "DELETE FROM public_owners WHERE user_id = $owner;\n" +
+            (pub ? "UPSERT INTO public_owners (user_id, updated_at) VALUES ($uid, $pubAt);\n"
+              : "DELETE FROM public_owners WHERE user_id = $uid;\n") +
             "UPSERT INTO cards SELECT $uid AS user_id, id, data, deleted, updated_at, size, rev FROM AS_TABLE($rows);\n" +
             "UPSERT INTO users (id, " + COLUMN[p] + ", rev, rows_count, bytes_total) VALUES ($uid, $sub, $rev, $nrows, $nbytes);";
           Object.assign(current, { rev: plan.rev, rowsCount: plan.rowsCount, bytesTotal: plan.bytesTotal });
@@ -244,43 +253,80 @@ function createYdbStore(getDriver) {
         };
         let text = "DECLARE $uid AS Utf8; DECLARE $rev AS Uint64; DECLARE $nrows AS Uint32; DECLARE $nbytes AS Uint64;\n" +
           "DECLARE $qday AS Uint32; DECLARE $qwrites AS Uint32;\n";
+        // Записали папки — строка public_owners: есть общая папка или нет.
+        const folders = plan.upserts.find((r) => r.id === "folders");
+        let index = "";
+        if (folders && !folders.deleted && hasPublicFolder(folders.data)) {
+          params.$pubAt = TypedValues.uint64(now);
+          text += "DECLARE $pubAt AS Uint64;\n";
+          index = "UPSERT INTO public_owners (user_id, updated_at) VALUES ($uid, $pubAt);\n";
+        } else if (folders) {
+          index = "DELETE FROM public_owners WHERE user_id = $uid;\n";
+        }
         if (plan.upserts.length) {
           params.$rows = rowsParam(plan.upserts);
           text += "DECLARE $rows AS " + ROW_DECL + ";\n" +
             "UPSERT INTO cards SELECT $uid AS user_id, id, data, deleted, updated_at, size, rev FROM AS_TABLE($rows);\n";
         }
+        text += index;
         text += "UPSERT INTO users (id, rev, rows_count, bytes_total, quota_day, quota_writes) VALUES ($uid, $rev, $nrows, $nbytes, $qday, $qwrites);";
         await run(session, text, params);
         return { rev: plan.rev, results: plan.results };
       });
     },
 
-    // Общие папки издателей (Telegram id) и их колоды — для GET /public.
-    // Читаются только строка folders издателя и колоды из общих папок.
+    // Общие папки для GET /public: сначала издателей (Telegram id), потом
+    // тех, кто последним сохранял общие папки (public_owners). Читаются
+    // только строки folders этих людей и колоды из их общих папок —
+    // несколькими пакетными запросами.
     async publicCards(telegramIds, limits) {
       return tx("public", RO, async (session) => {
-        const sources = [];
+        const order = [];
+        const seen = new Set();
+        const add = (uid) => {
+          if (uid && !seen.has(uid)) {
+            seen.add(uid);
+            order.push(uid);
+          }
+        };
         for (const tg of telegramIds) {
           const user = await findOwner(session, { provider: "telegram", subject: Number(tg) });
-          if (!user) continue;
-          const uid = TypedValues.utf8(user.id);
-          const [frows] = await run(session,
-            "DECLARE $uid AS Utf8; DECLARE $fid AS Utf8;\nSELECT data, deleted FROM cards WHERE user_id = $uid AND id = $fid;",
-            { $uid: uid, $fid: TypedValues.utf8("folders") });
-          const f = frows && frows[0];
-          if (!f || f.deleted || !f.data) continue;
-          const ids = publicDeckIds(f.data, limits);
-          const decks = new Map();
-          if (ids.length) {
-            const [drows] = await run(session,
-              "DECLARE $uid AS Utf8; DECLARE $ids AS List<Utf8>;\n" +
-              "SELECT id, data, deleted FROM cards WHERE user_id = $uid AND id IN $ids;",
-              { $uid: uid, $ids: TypedValues.list(Types.UTF8, ids) });
-            for (const r of drows || []) if (!r.deleted && r.data) decks.set(r.id.slice(5), r.data);
-          }
-          sources.push({ folders: f.data, decks });
+          if (user) add(user.id);
         }
-        return publicSet(sources, limits);
+        const [orows] = await run(session,
+          "DECLARE $lim AS Uint64;\nSELECT user_id AS uid FROM public_owners ORDER BY updated_at DESC LIMIT $lim;",
+          { $lim: TypedValues.uint64(limits.publicMaxOwners) });
+        for (const r of orows || []) add(r.uid);
+        if (!order.length) return publicSet([], limits);
+
+        const [frows] = await run(session,
+          "DECLARE $ids AS List<Utf8>; DECLARE $fid AS Utf8;\n" +
+          "SELECT user_id AS uid, data, deleted FROM cards WHERE user_id IN $ids AND id = $fid;",
+          { $ids: TypedValues.list(Types.UTF8, order), $fid: TypedValues.utf8("folders") });
+        const foldersOf = new Map();
+        for (const r of frows || []) if (!r.deleted && r.data) foldersOf.set(r.uid, r.data);
+
+        const keys = [];
+        for (const uid of order) {
+          if (foldersOf.has(uid)) for (const id of publicDeckIds(foldersOf.get(uid), limits)) keys.push({ user_id: uid, id });
+        }
+        const decksOf = new Map();
+        if (keys.length) {
+          const [drows] = await run(session,
+            "DECLARE $keys AS List<Struct<user_id: Utf8, id: Utf8>>;\n" +
+            "SELECT c.user_id AS uid, c.id AS id, c.data AS data, c.deleted AS deleted\n" +
+            "FROM AS_TABLE($keys) AS k INNER JOIN cards AS c ON c.user_id = k.user_id AND c.id = k.id;",
+            { $keys: TypedValues.list(Types.struct({ user_id: Types.UTF8, id: Types.UTF8 }), keys) });
+          for (const r of drows || []) {
+            if (r.deleted || !r.data) continue;
+            if (!decksOf.has(r.uid)) decksOf.set(r.uid, new Map());
+            decksOf.get(r.uid).set(r.id.slice(5), r.data);
+          }
+        }
+        return publicSet(order.filter((uid) => foldersOf.has(uid)).map((uid) => ({
+          folders: foldersOf.get(uid),
+          decks: decksOf.get(uid) || new Map()
+        })), limits);
       });
     }
   };

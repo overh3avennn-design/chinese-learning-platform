@@ -40,3 +40,12 @@ CREATE TABLE IF NOT EXISTS cards (
   rev Uint64,
   PRIMARY KEY (user_id, id)
 );
+
+-- Владельцы общих папок: строка есть, пока у пользователя есть хотя бы одна
+-- папка с отметкой «общая» (её пишет сервер, когда пользователь сохраняет
+-- папки). По ней GET /public находит общие папки, не перебирая все карточки.
+CREATE TABLE IF NOT EXISTS public_owners (
+  user_id Utf8 NOT NULL,
+  updated_at Uint64,
+  PRIMARY KEY (user_id)
+);

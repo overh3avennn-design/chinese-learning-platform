@@ -9,8 +9,8 @@
 //   TELEGRAM_BOT_TOKEN, GOOGLE_CLIENT_ID, JWT_SECRET — секреты;
 //   YDB_CONNECTION — grpcs://…/?database=… из `yc ydb database get`;
 //   ALLOWED_ORIGINS — сайты, которым можно обращаться к API (через запятую);
-//   PUBLISHER_TELEGRAM_IDS — Telegram id тех, чьи папки с отметкой «общая»
-//     видят все (GET /public), через запятую; пусто — общих папок нет.
+//   PUBLISHER_TELEGRAM_IDS — Telegram id издателей (преподавателя): их общие
+//     папки идут в GET /public первыми; через запятую или «|».
 //
 // К YDB функция ходит с IAM-токеном своего сервисного аккаунта: платформа
 // кладёт его в context.token при каждом вызове.

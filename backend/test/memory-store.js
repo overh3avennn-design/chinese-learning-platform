@@ -5,11 +5,18 @@
 
 const crypto = require("crypto");
 const { unauthorized } = require("../src/errors");
-const { FIELD, planPush, planMerge, decideLink, isCaughtUp, pageResult, publicSet, publicDeckIds } = require("../src/sync");
+const { FIELD, planPush, planMerge, decideLink, isCaughtUp, pageResult, publicSet, publicDeckIds, hasPublicFolder } = require("../src/sync");
 
 function createMemoryStore() {
   const users = new Map();            // id → user
   const cards = new Map();            // userId → Map(id → row)
+  const publicOwners = new Map();     // userId → updatedAt (таблица public_owners)
+
+  // Как в store-ydb.js: строка public_owners по строке folders.
+  function indexFolders(userId, row, now) {
+    if (row && !row.deleted && hasPublicFolder(row.data)) publicOwners.set(userId, now);
+    else publicOwners.delete(userId);
+  }
 
   function find(identity) {
     const field = FIELD[identity.provider];
@@ -24,6 +31,7 @@ function createMemoryStore() {
   return {
     users,
     cards,
+    publicOwners,
 
     async login(identity, now) {
       let u = find(identity);
@@ -60,6 +68,8 @@ function createMemoryStore() {
         cards.set(current.id, mine);
         cards.delete(owner.id);
         users.delete(owner.id);
+        publicOwners.delete(owner.id);
+        indexFolders(current.id, mine.get("folders"), now);
         Object.assign(current, { rev: plan.rev, rowsCount: plan.rowsCount, bytesTotal: plan.bytesTotal });
       }
       current[FIELD[identity.provider]] = identity.subject;
@@ -92,15 +102,23 @@ function createMemoryStore() {
       const plan = planPush(counters(u), existing, items, limits, now);
       for (const r of plan.upserts) mine.set(r.id, r);
       cards.set(userId, mine);
+      const folders = plan.upserts.find((r) => r.id === "folders");
+      if (folders) indexFolders(userId, folders, now);
       Object.assign(u, plan.counters);
       return { rev: plan.rev, results: plan.results };
     },
 
     async publicCards(telegramIds, limits) {
-      const sources = [];
+      const order = [];
+      const add = (uid) => { if (uid && !order.includes(uid)) order.push(uid); };
       for (const tg of telegramIds) {
         const u = find({ provider: "telegram", subject: Number(tg) });
-        const mine = u && cards.get(u.id);
+        if (u) add(u.id);
+      }
+      Array.from(publicOwners.entries()).sort((a, b) => b[1] - a[1]).slice(0, limits.publicMaxOwners).forEach(([uid]) => add(uid));
+      const sources = [];
+      for (const uid of order) {
+        const mine = cards.get(uid);
         const f = mine && mine.get("folders");
         if (!f || f.deleted || !f.data) continue;
         const decks = new Map();

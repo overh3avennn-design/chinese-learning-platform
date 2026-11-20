@@ -233,65 +233,106 @@ test("привязка со слиянием: карточки второго а
 });
 
 // ------------------------------------------------------- общие папки
-const PUB = 777;                     // Telegram id издателя в тестах
+const PUB = 777;                     // Telegram id издателя (преподавателя) в тестах
+const W = (h, t) => ({ hanzi: h, pinyin: "", translation: t });
 
-test("общие папки: всем видна только папка с public у издателя, и только её колоды", async () => {
-  const { call } = setup();          // без издателей в настройках
-  const { call: c2, tg: tg2, tick: tick2 } = setupPublisher();
-  const P = (await tg2(PUB)).data;
+test("общие папки: у любого пользователя видна папка с отметкой и только её колоды", async () => {
+  const { call, tg, tick, store } = setupPublisher();
+  const P = (await tg(PUB)).data;
+  const U = (await tg(5)).data;
   assert.equal(P.user.publisher, true);
-  await c2("PUT", "/cards", { items: [
+  assert.equal(U.user.publisher, false);
+  await call("PUT", "/cards", { items: [
     { id: "deck:conf-1", data: { title: "01.10-conf", words: [{ hanzi: "石头", pinyin: "shítou", translation: "камень", secret: "x" }] }, updatedAt: 10 },
-    { id: "deck:conf-2", data: { title: "21.10-conf", words: [{ hanzi: "碎", pinyin: "suì", translation: "разбить" }] }, updatedAt: 10 },
-    { id: "deck:private", data: { title: "Личная", words: [{ hanzi: "秘密", pinyin: "mìmì", translation: "секрет" }] }, updatedAt: 10 },
+    { id: "deck:conf-2", data: { title: "21.10-conf", words: [W("碎", "разбить")] }, updatedAt: 10 },
+    { id: "deck:private", data: { title: "Личная", words: [W("秘密", "секрет")] }, updatedAt: 10 },
     { id: "progress:conf-1", data: { words: { "石头|shítou": "learned" } }, updatedAt: 10 },
     { id: "folders", data: [
-      { id: "folder-conf", title: "conf", decks: ["conf-1", "conf-2", "26-09-conf"], public: true },
+      { id: "folder-conf", title: "конфуций", decks: ["conf-1", "conf-2", "26-09-conf"], public: true },
       { id: "folder-mine", title: "Мои", decks: ["private", "conf-1"] }
     ], updatedAt: 10 }
   ] }, P.token);
-  tick2(100);
+  tick(100);
+  // Ученик публикует свою папку и пытается подложить в неё колоду учителя
+  // своей колодой с тем же id.
+  await call("PUT", "/cards", { items: [
+    { id: "deck:u-deck", data: { title: "Мои слова", words: [W("书", "книга")] }, updatedAt: 10 },
+    { id: "deck:conf-1", data: { title: "ПОДМЕНА", words: [W("假", "подделка")] }, updatedAt: 10 },
+    { id: "deck:u-private", data: { title: "Только мне", words: [W("我", "я")] }, updatedAt: 10 },
+    { id: "folders", data: [
+      { id: "f-u", title: "Для всех", decks: ["u-deck", "conf-1", "u-gone"], public: true },
+      { id: "f-u-me", title: "Себе", decks: ["u-private"] }
+    ], updatedAt: 10 }
+  ] }, U.token);
   // без входа
-  const r = await c2("GET", "/public");
+  const r = await call("GET", "/public");
   assert.equal(r.status, 200);
   assert.equal(r.headers["Cache-Control"], "public, max-age=60");
-  assert.deepEqual(r.data.folders, [{ id: "folder-conf", title: "conf", decks: ["conf-1", "conf-2", "26-09-conf"] }]);
-  assert.deepEqual(r.data.decks.map((d) => d.id), ["conf-1", "conf-2"]);    // 26-09-conf — файл сайта, строки нет
+  assert.deepEqual(r.data.folders, [
+    { id: "folder-conf", title: "конфуций", decks: ["conf-1", "conf-2"] },     // учитель — первым; 26-09-conf нет
+    { id: "f-u", title: "Для всех", decks: ["u-deck"] }                         // conf-1 ученика не подкладывается
+  ]);
+  assert.deepEqual(r.data.decks.map((d) => d.id), ["conf-1", "conf-2", "u-deck"]);
   assert.deepEqual(r.data.decks[0].words, [{ hanzi: "石头", pinyin: "shítou", translation: "камень" }]);
   const text = JSON.stringify(r.data);
-  assert.ok(!/秘密|Личная|folder-mine|progress|secret|learned/.test(text), text);
-  // обычный пользователь — не издатель; его public не действует, чужое через /cards не получить
-  const U = (await tg2(5)).data;
-  assert.equal(U.user.publisher, false);
-  await c2("PUT", "/cards", { items: [
-    { id: "deck:spam", data: { title: "Спам", words: [{ hanzi: "广告", pinyin: "", translation: "" }] }, updatedAt: 10 },
-    { id: "folders", data: [{ id: "f-spam", title: "Спам", decks: ["spam"], public: true }], updatedAt: 10 }
-  ] }, U.token);
-  tick2(61000);                      // кэш ответа — минута
-  const r2 = await c2("GET", "/public");
-  assert.deepEqual(r2.data.folders.map((f) => f.id), ["folder-conf"]);
-  const theirs = (await c2("GET", "/cards", undefined, U.token)).data.items.map((i) => i.id).sort();
-  assert.deepEqual(theirs, ["deck:spam", "folders"]);
-  // без издателей в настройках — пусто, база не читается
-  assert.deepEqual((await call("GET", "/public")).data, { folders: [], decks: [] });
+  assert.ok(!/秘密|Личная|folder-mine|progress|secret|learned|ПОДМЕНА|Только мне|f-u-me/.test(text), text);
+  assert.deepEqual(Array.from(store.publicOwners.keys()).sort(), [P.user.id, U.user.id].sort());
+  // свои карточки по-прежнему видит только владелец
+  const theirs = (await call("GET", "/cards", undefined, U.token)).data.items.map((i) => i.id).sort();
+  assert.deepEqual(theirs, ["deck:conf-1", "deck:u-deck", "deck:u-private", "folders"]);
   assert.equal((await call("PUT", "/public", {})).status, 405);
 });
 
-test("общие папки: снятая отметка или удалённая колода пропадают из общего доступа", async () => {
-  const { call, tg, tick } = setupPublisher();
-  const P = (await tg(PUB)).data;
+test("общие папки: без издателей в настройках видны папки учеников", async () => {
+  const { call, tg, tick } = setup();
+  const A = (await tg(41)).data;
+  assert.deepEqual((await call("GET", "/public")).data, { folders: [], decks: [] });
   await call("PUT", "/cards", { items: [
-    { id: "deck:a", data: { title: "A", words: [{ hanzi: "一", pinyin: "yī", translation: "один" }] }, updatedAt: 10 },
-    { id: "deck:b", data: { title: "B", words: [{ hanzi: "二", pinyin: "èr", translation: "два" }] }, updatedAt: 10 },
+    { id: "deck:a", data: { title: "A", words: [W("一", "один")] }, updatedAt: 10 },
+    { id: "folders", data: [{ id: "f", title: "Общая", decks: ["a"], public: true }], updatedAt: 10 }
+  ] }, A.token);
+  tick(61000);                       // ответ помнится минуту
+  const r = await call("GET", "/public");
+  assert.deepEqual(r.data.folders, [{ id: "f", title: "Общая", decks: ["a"] }]);
+  assert.deepEqual(r.data.decks.map((d) => d.id), ["a"]);
+});
+
+test("общие папки: снятая отметка или удалённая колода пропадают из общего доступа", async () => {
+  const { call, tg, tick, store } = setup();
+  const A = (await tg(42)).data;
+  await call("PUT", "/cards", { items: [
+    { id: "deck:a", data: { title: "A", words: [W("一", "один")] }, updatedAt: 10 },
+    { id: "deck:b", data: { title: "B", words: [W("二", "два")] }, updatedAt: 10 },
     { id: "folders", data: [{ id: "f", title: "conf", decks: ["a", "b"], public: true }], updatedAt: 10 }
-  ] }, P.token);
+  ] }, A.token);
   assert.deepEqual((await call("GET", "/public")).data.decks.map((d) => d.id), ["a", "b"]);
-  tick(61000);
-  await call("PUT", "/cards", { items: [{ id: "deck:b", deleted: true, updatedAt: 20 }] }, P.token);
+  tick(61000);                       // ответ помнится минуту
+  await call("PUT", "/cards", { items: [{ id: "deck:b", deleted: true, updatedAt: 20 }] }, A.token);
   assert.deepEqual((await call("GET", "/public")).data.decks.map((d) => d.id), ["a"]);
   tick(61000);
-  await call("PUT", "/cards", { items: [{ id: "folders", data: [{ id: "f", title: "conf", decks: ["a"] }], updatedAt: 30 }] }, P.token);
+  await call("PUT", "/cards", { items: [{ id: "folders", data: [{ id: "f", title: "conf", decks: ["a"] }], updatedAt: 30 }] }, A.token);
   assert.deepEqual((await call("GET", "/public")).data, { folders: [], decks: [] });
+  assert.equal(store.publicOwners.has(A.user.id), false);
+});
+
+test("общие папки: при слиянии аккаунтов общая папка остаётся общей", async () => {
+  const { call, tg, google, tick, store } = setup();
+  const A = (await tg(43)).data;
+  const G = (await call("POST", "/auth/google", { credential: google("g-43") })).data;
+  await call("PUT", "/cards", { items: [
+    { id: "deck:g", data: { title: "Из Google", words: [W("好", "хорошо")] }, updatedAt: 10 },
+    { id: "folders", data: [{ id: "fg", title: "Общая из Google", decks: ["g"], public: true }], updatedAt: 10 }
+  ] }, G.token);
+  assert.ok(store.publicOwners.has(G.user.id));
+  tick(100);
+  const l = await call("POST", "/auth/link/google", { credential: google("g-43") }, A.token);
+  assert.equal(l.data.merged, true);
+  assert.equal(store.publicOwners.has(G.user.id), false);
+  assert.equal(store.publicOwners.has(A.user.id), true);
+  tick(61000);
+  const r = await call("GET", "/public");
+  assert.deepEqual(r.data.folders.map((f) => f.id), ["fg"]);
+  assert.deepEqual(r.data.decks.map((d) => d.id), ["g"]);
 });
 
 function setupPublisher() {
@@ -313,5 +354,5 @@ function setupPublisher() {
     return { status: res.status, headers: res.headers, data: res.body ? JSON.parse(res.body) : null };
   }
   const tg = (id) => call("POST", "/auth/telegram-miniapp", { initData: signInitData({ user: { id, first_name: "U" + id }, auth_date: String(Math.floor(base.now() / 1000)) }, TOKEN) });
-  return { call, tg, tick: base.tick };
+  return { call, tg, tick: base.tick, store: base.store };
 }
