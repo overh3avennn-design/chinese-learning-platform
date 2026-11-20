@@ -24,12 +24,13 @@
    вперемешку, а ответ записывается в прогресс самих колод — отдельного
    прогресса у папки нет.
 
-   Общие папки — свои папки преподавателя (издателя) с отметкой «общая»:
-   их и колоды из них отдаёт всем API (GET /public, адрес — window.
-   PUBLIC_DECKS_URL в decks/index.js), даже без входа. Для посетителей они
-   как папки и колоды сайта (pub), а у самого издателя его колоды и папки
-   остаются своими — он их меняет как обычно. Последний ответ API хранится
-   в localStorage (flashcards-public), чтобы список открывался сразу.
+   Общие папки — свои папки любого вошедшего пользователя с отметкой
+   «общая»: их и колоды из них отдаёт всем API (GET /public, адрес —
+   window.PUBLIC_DECKS_URL в decks/index.js), даже без входа; папки
+   преподавателя (издателя) — первыми. Для посетителей они как папки и
+   колоды сайта (pub), а у самого владельца его колоды и папки остаются
+   своими — он их меняет как обычно. Последний ответ API хранится в
+   localStorage (flashcards-public), чтобы список открывался сразу.
 
    Прогресс — три статуса слова: новое, изучается, выучено. «Знаю» —
    слово выучено, «Не знаю» — изучается и уходит в конец текущей сессии,
@@ -692,7 +693,14 @@
     });
   }
 
-  // Может ли вошедший делать свои папки общими (поле publisher от API).
+  // Вошёл ли человек в аккаунт: только тогда папку можно сделать общей
+  // (без входа папки живут в одном браузере).
+  function signedIn() {
+    return !!(window.Account && window.Account.user && window.Account.user());
+  }
+
+  // Издатель (преподаватель, поле publisher от API) — ему предлагается
+  // перенести колоды-файлы сайта в аккаунт.
   function isPublisher() {
     var user = window.Account && window.Account.user && window.Account.user();
     return !!(user && user.publisher);
@@ -1200,9 +1208,8 @@
     view.querySelector("[data-folder-save]").textContent = folder ? "Сохранить" : "Создать папку";
     view.querySelector("[data-folder-delete-line]").hidden = !folder;
     editTitle.value = folder ? folder.title : "";
-    // «Общая» — только у издателя (его папки с отметкой видят все).
-    view.querySelector("[data-folder-public-line]").hidden = !isPublisher();
     view.querySelector("[data-folder-public]").checked = !!(folder && folder.public);
+    updatePublicLine();
 
     // Свои колоды (новые первыми) — сверху, как в списке.
     var own = decks.filter(function (d) { return d.own; }).reverse();
@@ -1215,6 +1222,20 @@
     updatePicked();
     document.title = (folder ? "Изменить папку" : "Новая папка") + " — карточки — chineasy";
     show("edit");
+  }
+
+  // «Общая папка» в редакторе: у вошедших — галочка, без входа — она
+  // недоступна, и подпись предлагает войти.
+  function updatePublicLine() {
+    var view = views.edit;
+    var box = view.querySelector("[data-folder-public]");
+    var canShare = signedIn();
+    view.querySelector("[data-folder-public-line]").hidden = !window.PUBLIC_DECKS_URL;
+    box.disabled = !canShare;
+    if (!canShare) box.checked = false;
+    view.querySelector("[data-folder-public-text]").textContent = canShare
+      ? "Общая папка — её и её колоды видят все, даже без входа. Остальные ваши папки и колоды видите только вы."
+      : "Общей папку можно сделать, когда вы войдёте в аккаунт (Telegram или Google), — тогда её увидят все.";
   }
 
   pickList.addEventListener("change", function () {
@@ -1242,7 +1263,7 @@
       });
     }
     var wasNew = !editing;
-    var res = saveFolder(editing, title, ids, isPublisher() ? views.edit.querySelector("[data-folder-public]").checked : undefined);
+    var res = saveFolder(editing, title, ids, signedIn() ? views.edit.querySelector("[data-folder-public]").checked : undefined);
     savedNote = (wasNew ? "Папка создана." : "Папка сохранена.") + (res.stored ? ""
       : " Но браузер не даёт её запомнить — она пропадёт, когда закроете страницу.");
     editing = null;
@@ -2007,14 +2028,16 @@
   });
 
   // Вошли, вышли или узнали, что вошедший — издатель: перерисовать (галочка
-  // «общая» и перенос колод видны только издателю). js/account.js
-  // подключается позже этого файла.
+  // «общая» доступна только вошедшим, перенос колод виден только издателю).
+  // js/account.js подключается позже этого файла.
   function hookAccount() {
     if (!window.Account || !window.Account.onChange) return false;
-    window.Account.onChange(function () {
+    function changed() {
+      updatePublicLine();
       if (decksReady && !busyScreen()) route();
-    });
-    if (decksReady && !busyScreen()) route();
+    }
+    window.Account.onChange(changed);
+    changed();
     return true;
   }
   if (!hookAccount()) window.addEventListener("load", hookAccount);

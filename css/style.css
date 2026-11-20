@@ -3407,7 +3407,7 @@ a.side-row:hover {
   min-width: 0;
 }
 
-/* «Общая папка» в редакторе папки — только у издателя (js/flashcards.js).
+/* «Общая папка» в редакторе папки (js/flashcards.js, updatePublicLine).
    Тот же вид, что у строки колоды в списке выбора. */
 .fc-folder-public {
   display: flex;
@@ -3430,6 +3430,15 @@ a.side-row:hover {
   height: 1.15rem;
   margin: 0.1rem 0 0;
   accent-color: var(--text);
+}
+
+/* Без входа галочка недоступна — подпись предлагает войти. */
+.fc-folder-public input:disabled {
+  cursor: default;
+}
+
+.fc-folder-public input:disabled + span {
+  color: var(--text-2);
 }
 
 /* Перенос колод сайта в аккаунт издателя (список колод, один раз). */

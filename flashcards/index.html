@@ -254,10 +254,12 @@
               <ul class="fc-pick-list" data-pick-list></ul>
             </fieldset>
 
-            <!-- Только у издателя: папку с отметкой и её колоды видят все. -->
+            <!-- Общая папка: её и её колоды видят все, даже без входа. Сделать
+                 папку общей можно только после входа в аккаунт — без входа
+                 галочка недоступна (js/flashcards.js, updatePublicLine). -->
             <label class="fc-folder-public" data-folder-public-line hidden>
               <input type="checkbox" data-folder-public>
-              <span>Общая папка — её и её колоды видят все, даже без входа. Остальные ваши папки и колоды видите только вы.</span>
+              <span data-folder-public-text>Общая папка — её и её колоды видят все, даже без входа. Остальные ваши папки и колоды видите только вы.</span>
             </label>
 
             <p class="fc-save-error" data-folder-error role="alert" hidden></p>
