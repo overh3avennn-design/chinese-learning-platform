@@ -11,8 +11,9 @@
 //
 // Два тестовых пользователя Telegram с несуществующими id (9000000000001 и
 // …002): входят через Mini App подписью настоящим токеном бота, пишут
-// карточки и проверяют, что не видят и не меняют чужие. В конце свои
-// тестовые колоды удаляют.
+// карточки и проверяют, что не видят и не меняют чужие, а в общий доступ
+// (GET /public) их папка с отметкой «общая» не попадает. В конце свои
+// тестовые колоды и папки удаляют.
 
 const fs = require("fs");
 const os = require("os");
@@ -219,9 +220,17 @@ async function main() {
 
   const me = await call("GET", "/me", undefined, A.token);
   check("GET /me → A", me.status === 200 && me.data.user.id === A.user.id && me.data.user.telegram === true);
+  check("GET /me: тестовый пользователь — не издатель", me.data && me.data.user.publisher === false);
+
+  // Общие папки: без входа — 200; папки и колоды обычного пользователя туда
+  // не попадают, даже с отметкой «общая».
+  const pubPut = await call("PUT", "/cards", { items: [{ id: "folders", data: [{ id: "smoke-f", title: "smoke", decks: ["smoke-a"], public: true }], updatedAt: stamp }] }, A.token);
+  const pub = await call("GET", "/public");
+  check("GET /public без входа → 200", pub.status === 200 && pub.data && Array.isArray(pub.data.folders) && Array.isArray(pub.data.decks), "status " + pub.status);
+  check("в /public нет папок и колод обычного пользователя", pubPut.status === 200 && JSON.stringify(pub.data || {}).indexOf("smoke") === -1);
 
   // уборка
-  const delA = await call("PUT", "/cards", { items: [{ id: "deck:smoke-a", deleted: true, updatedAt: Date.now() }] }, A.token);
+  const delA = await call("PUT", "/cards", { items: [{ id: "deck:smoke-a", deleted: true, updatedAt: Date.now() }, { id: "folders", deleted: true, updatedAt: Date.now() }] }, A.token);
   const delB = await call("PUT", "/cards", { items: [{ id: "deck:smoke-a", deleted: true, updatedAt: Date.now() + 2000 }] }, B.token);
   check("уборка тестовых колод", delA.status === 200 && delB.status === 200);
 
