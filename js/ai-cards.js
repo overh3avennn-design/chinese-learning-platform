@@ -12,8 +12,18 @@
      браузере), "local" (всё в браузере). checked — слова проверены
      нейросетью (или, без неё, словарём).
      onStatus({ stage, done, total }) — "ai-read" (полосы), "ai-check",
-     и стадии js/notebook-ocr.js при распознавании в браузере.
-   AICards.cancel() — остановить.
+     и стадии js/notebook-ocr.js при распознавании в браузере;
+     "local-wait" — ждёт распознавателя в браузере (он занят другим фото).
+     Новый read() останавливает предыдущий. С { parallel: true } — нет:
+     несколько фото читаются одновременно (js/photo-cards.js, очередь фото),
+     и такой read останавливает свой { signal } (AbortSignal).
+   AICards.cancel() — остановить всё.
+
+   Лимит воркера — 20 запросов в минуту с одного адреса. Чтобы несколько
+   фото подряд в него не упирались, запросы к нейросети идут не чаще
+   RATE_MAX за RATE_WINDOW (лишние ждут очереди), а ответ «слишком много
+   запросов» — пауза RATE_PAUSE и повтор. Одно фото — это 3–7 запросов,
+   его очередь не задерживает.
 
    Как идёт работа:
    1. Сервер ИИ отвечает (AI.reachable)? Нет — всё в браузере, как раньше.
@@ -46,8 +56,17 @@
   var CHECK_BATCH = 40;         // слов в одном запросе проверки (предел воркера)
   var REACH_TIMEOUT = 8000;     // сервер ИИ отвечает? (через VPN бывает медленно)
   var FIELDS = ["hanzi", "pinyin", "translation"];
+  var RATE_MAX = 18;            // запросов за RATE_WINDOW (у воркера предел 20 в минуту)
+  var RATE_WINDOW = 61000;
+  var RATE_PAUSE = 20000;       // пауза после ответа «слишком много запросов»
+  var RATE_RETRIES = 3;
 
-  var run = null;               // { ctrl, stopped } — текущая работа
+  var runs = [];                // [{ ctrl, stopped }] — работы, которые идут сейчас
+  var sentAt = [];              // когда ушли последние запросы к нейросети
+  var pausedUntil = 0;
+  var localQueue = Promise.resolve();   // распознаватель в браузере — одно фото за раз
+  var localOwner = null;        // чья работа сейчас в распознавателе
+  var localCount = 0;           // фото в распознавателе и в очереди к нему
 
   function fail(code, message) {
     var err = new Error(message);
@@ -238,12 +257,47 @@
 
   // ------------------------------------------------------------ чтение
 
-  function stopped() {
-    if (!run || run.stopped) throw fail("aborted", "Распознавание остановлено.");
+  function stopped(me) {
+    if (me.stopped) throw fail("aborted", "Распознавание остановлено.");
   }
 
-  function ask(task, data, timeout) {
-    return window.AI.ask(task, data, { signal: run.ctrl ? run.ctrl.signal : undefined, timeout: timeout });
+  // Место в очереди запросов к нейросети: не больше RATE_MAX за RATE_WINDOW
+  // и не раньше конца паузы после «слишком много запросов». Ожидание
+  // проверяет остановку раз в секунду.
+  function pace(me) {
+    return new Promise(function (resolve, reject) {
+      (function attempt() {
+        if (me.stopped) {
+          reject(fail("aborted", "Распознавание остановлено."));
+          return;
+        }
+        var now = Date.now();
+        while (sentAt.length && now - sentAt[0] >= RATE_WINDOW) sentAt.shift();
+        var wait = Math.max(pausedUntil - now, sentAt.length >= RATE_MAX ? sentAt[0] + RATE_WINDOW - now : 0);
+        if (wait <= 0) {
+          sentAt.push(now);
+          resolve();
+          return;
+        }
+        setTimeout(attempt, Math.min(wait, 1000));
+      })();
+    });
+  }
+
+  // Запрос к нейросети в свою очередь. paced — место уже занято (pace).
+  // «Слишком много запросов» (лимит воркера) — пауза для всех и до retries
+  // повторов (по умолчанию RATE_RETRIES).
+  function ask(me, task, data, timeout, paced, retries) {
+    if (retries === undefined) retries = RATE_RETRIES;
+    return (paced ? Promise.resolve() : pace(me)).then(function () {
+      stopped(me);
+      return window.AI.ask(task, data, { signal: me.ctrl ? me.ctrl.signal : undefined, timeout: timeout });
+    }).then(null, function (err) {
+      if (!err || err.code !== "rate_limited" || me.stopped) throw err;
+      pausedUntil = Math.max(pausedUntil, Date.now() + RATE_PAUSE);
+      if (retries <= 0) throw err;
+      return ask(me, task, data, timeout, false, retries - 1);
+    });
   }
 
   // Слово нейросети с фото → общий вид. added в ответе — поля, которые
@@ -270,28 +324,47 @@
     };
   }
 
-  function local(image, status) {
-    return window.NotebookOCR.read(image, { onStatus: status }).then(function (res) {
+  // Распознаватель в браузере работает с одной картинкой за раз (новый
+  // NotebookOCR.read останавливает текущий), поэтому фото, которые читаются
+  // одновременно, ждут его по очереди.
+  function local(me, image, status) {
+    if (localCount > 0) status({ stage: "local-wait" });
+    localCount++;
+    var turn = localQueue.then(function () {
+      stopped(me);
+      localOwner = me;
+      return window.NotebookOCR.read(image, { onStatus: status });
+    });
+    function release() {
+      localCount--;
+      if (localOwner === me) localOwner = null;
+    }
+    localQueue = turn.then(release, release);
+    return turn.then(function (res) {
       return { words: res.words.map(fromLocal), checked: res.checked };
     });
   }
 
   // Полосы → нейросеть одновременно; не прочитанные — в браузере по одной
   // (распознаватель в браузере работает с одной картинкой за раз).
-  function readStrips(image, status) {
+  function readStrips(me, image, status) {
     var parts = strips(image);
     if (!parts.length) return Promise.reject(fail("image", "Не получилось открыть фото."));
     var done = 0;
     status({ stage: "ai-read", done: 0, total: parts.length });
-    function once(url, timeout) {
-      return ask("notebook-cards", { image: url }, timeout).then(function (res) {
+    function once(url, timeout, paced, retries) {
+      return ask(me, "notebook-cards", { image: url }, timeout, paced, retries).then(function (res) {
         return { ok: true, words: (res && res.words || []).map(fromAI) };
       });
     }
+    // Место в очереди — до hedged: иначе запасной запрос ушёл бы, пока
+    // основной ещё ждёт очереди. Основной после «слишком много запросов»
+    // не повторяется: его повтор — запасной запрос, он стартует сразу.
     return Promise.all(parts.map(function (part) {
-      return hedged(function () { return once(part.url, READ_TIMEOUT); },
-        function () { return once(shrink(part.canvas, HEDGE_SCALE), HEDGE_TIMEOUT); }
-      ).then(function (r) {
+      return pace(me).then(function () {
+        return hedged(function () { return once(part.url, READ_TIMEOUT, true, 0); },
+          function () { return once(shrink(part.canvas, HEDGE_SCALE), HEDGE_TIMEOUT, false); });
+      }).then(function (r) {
         status({ stage: "ai-read", done: ++done, total: parts.length });
         return r;
       }, function (err) {
@@ -300,10 +373,10 @@
         return { ok: false };
       });
     })).then(function (results) {
-      stopped();
+      stopped(me);
       var bad = results.filter(function (r) { return !r.ok; }).length;
       if (bad === results.length) {
-        return local(image, status).then(function (res) {
+        return local(me, image, status).then(function (res) {
           return { words: res.words, via: "local", localChecked: res.checked };
         });
       }
@@ -311,8 +384,8 @@
       results.forEach(function (r, i) {
         if (r.ok) return;
         chain = chain.then(function () {
-          stopped();
-          return local(parts[i].canvas, status).then(function (res) { r.words = res.words; }, function (err) {
+          stopped(me);
+          return local(me, parts[i].canvas, status).then(function (res) { r.words = res.words; }, function (err) {
             if (err.code === "aborted") throw err;
             r.words = [];                  // эту полосу не прочитать — допишет ученик
           });
@@ -328,7 +401,7 @@
 
   // Слова → нейросеть частями по CHECK_BATCH. Ответ — проверенные слова
   // по порядку; часть не проверилась — её слова как были (checked: false).
-  function check(words, status) {
+  function check(me, words, status) {
     status({ stage: "ai-check" });
     var batches = [];
     for (var i = 0; i < words.length; i += CHECK_BATCH) batches.push(words.slice(i, i + CHECK_BATCH));
@@ -337,7 +410,7 @@
       var data = batch.map(function (w) {
         return { hanzi: w.hanzi, pinyin: w.pinyin, translation: w.translation, unsure: w.unsure };
       });
-      return ask("check-cards", { words: data }, CHECK_TIMEOUT).then(function (res) {
+      return ask(me, "check-cards", { words: data }, CHECK_TIMEOUT).then(function (res) {
         var got = res && res.words || [];
         if (!(res && res.checked >= batch.length)) allOk = false;
         return batch.map(function (w, k) { return withCheck(w, got[k]); });
@@ -403,22 +476,48 @@
 
   // ---------------------------------------------------------------- итог
 
+  // Остановить одну работу. Если её фото сейчас в распознавателе в
+  // браузере — остановить и его (следующее фото из очереди пойдёт следом).
+  function stop(me) {
+    if (me.stopped) return;
+    me.stopped = true;
+    if (me.ctrl) me.ctrl.abort();
+    var i = runs.indexOf(me);
+    if (i >= 0) runs.splice(i, 1);
+    if (localOwner === me) {
+      localOwner = null;
+      window.NotebookOCR.cancel();
+    }
+  }
+
   function cancel() {
-    if (!run) return;
-    run.stopped = true;
-    if (run.ctrl) run.ctrl.abort();
-    run = null;
+    if (!runs.length) return;
+    runs.slice().forEach(stop);
     window.NotebookOCR.cancel();
   }
 
   function read(image, opts) {
     opts = opts || {};
     var status = typeof opts.onStatus === "function" ? opts.onStatus : function () {};
-    cancel();
-    var me = run = { ctrl: window.AbortController ? new AbortController() : null, stopped: false };
+    if (!opts.parallel) cancel();
+    var me = { ctrl: window.AbortController ? new AbortController() : null, stopped: false };
+    runs.push(me);
+    var signal = opts.signal;
+    function onAbort() {
+      stop(me);
+    }
+    if (signal) {
+      if (signal.aborted) stop(me);
+      else signal.addEventListener("abort", onAbort);
+    }
+    function finished() {
+      if (signal) signal.removeEventListener("abort", onAbort);
+      var i = runs.indexOf(me);
+      if (i >= 0) runs.splice(i, 1);
+    }
     function mine(fn) {
       return function (x) {
-        if (run !== me || me.stopped) throw fail("aborted", "Распознавание остановлено.");
+        if (me.stopped) throw fail("aborted", "Распознавание остановлено.");
         return fn(x);
       };
     }
@@ -426,30 +525,30 @@
     return reachable.then(mine(function (ok) {
       // Без ИИ — как раньше: в браузере, со сверкой по словарю.
       if (!ok) {
-        return local(image, status).then(mine(function (res) {
+        return local(me, image, status).then(mine(function (res) {
           return { words: res.words.map(finish), via: "local", checked: res.checked };
         }));
       }
-      return readStrips(image, status).then(mine(function (res) {
+      return readStrips(me, image, status).then(mine(function (res) {
         // Нейросеть не нашла ни слова — бывает и сбой, поэтому второе
         // мнение распознавания в браузере (если оно тут работает).
         if (!res.words.length && res.via !== "local" && window.NotebookOCR.supported()) {
-          return local(image, status).then(function (l) {
+          return local(me, image, status).then(function (l) {
             return { words: l.words, via: "local", localChecked: l.checked };
           });
         }
         return res;
       })).then(mine(function (res) {
         if (!res.words.length) return { words: [], via: res.via, checked: true };
-        return check(res.words, status).then(mine(function (c) {
+        return check(me, res.words, status).then(mine(function (c) {
           return { words: c.words.map(finish), via: res.via, checked: c.checked || !!res.localChecked };
         }));
       }));
     })).then(function (result) {
-      if (run === me) run = null;
+      finished();
       return result;
     }, function (err) {
-      if (run === me) run = null;
+      finished();
       throw err;
     });
   }
