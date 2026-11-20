@@ -6,7 +6,9 @@
 # Всё идемпотентно: что уже есть — обновляется, чего нет — создаётся.
 # Секреты — в Settings → Secrets → Actions: YC_SA_KEY (ключ сервисного
 # аккаунта github-deployer), YC_CLOUD_ID, YC_FOLDER_ID, TELEGRAM_BOT_TOKEN,
-# GOOGLE_CLIENT_ID, JWT_SECRET. В лог они не выводятся.
+# GOOGLE_CLIENT_ID, JWT_SECRET; необязательный PUBLISHER_TELEGRAM_IDS —
+# Telegram id тех, чьи папки с отметкой «общая» видят все. В лог они не
+# выводятся.
 
 name: backend
 
@@ -124,11 +126,22 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PUBLISHER_TELEGRAM_IDS: ${{ secrets.PUBLISHER_TELEGRAM_IDS }}
         run: |
           set -euo pipefail
           for name in TELEGRAM_BOT_TOKEN GOOGLE_CLIENT_ID JWT_SECRET; do
             [ -n "${!name}" ] || { echo "Секрет $name пуст"; exit 1; }
           done
+          # Издатели общих папок (GET /public). В --environment пары идут через
+          # запятую, поэтому несколько id — через «|».
+          PUBLISHERS=$(printf '%s' "$PUBLISHER_TELEGRAM_IDS" | tr -c '0-9' '|' | tr -s '|' | sed 's/^|//; s/|$//')
+          ENV_VARS="TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN,GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,JWT_SECRET=$JWT_SECRET,YDB_CONNECTION=$YDB_CONNECTION,ALLOWED_ORIGINS=$ALLOWED_ORIGINS"
+          if [ -n "$PUBLISHERS" ]; then
+            ENV_VARS="$ENV_VARS,PUBLISHER_TELEGRAM_IDS=$PUBLISHERS"
+            echo "Издателей общих папок: $(printf '%s' "$PUBLISHERS" | tr '|' '\n' | grep -c .)"
+          else
+            echo "::warning::Секрет PUBLISHER_TELEGRAM_IDS пуст — общих папок не будет"
+          fi
           if ! yc serverless function get "$FUNCTION_NAME" >/dev/null 2>&1; then
             echo "Создаю функцию $FUNCTION_NAME"
             yc serverless function create "$FUNCTION_NAME" >/dev/null
@@ -162,7 +175,7 @@ jobs:
             --service-account-id "$SA_ID" \
             "${LOG_ARGS[@]}" \
             --source-path "$RUNNER_TEMP/function.zip" \
-            --environment "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN,GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,JWT_SECRET=$JWT_SECRET,YDB_CONNECTION=$YDB_CONNECTION,ALLOWED_ORIGINS=$ALLOWED_ORIGINS" \
+            --environment "$ENV_VARS" \
             --format json > /dev/null
           echo "Новая версия функции готова"
 
