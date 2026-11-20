@@ -234,8 +234,14 @@ async function main() {
   check("GET /public без входа → 200", pub.status === 200 && pub.data && Array.isArray(pub.data.folders) && Array.isArray(pub.data.decks), "status " + pub.status);
   check("в /public нет тестовой папки без колод и личной колоды", pubPut.status === 200 && JSON.stringify(pub.data || {}).indexOf("smoke") === -1);
   if (pub.data && Array.isArray(pub.data.folders)) {
+    // Колоды, которые папка называет, а сервер не отдал (их нет в аккаунте
+    // владельца на сервере, например не дошли с устройства), — по id.
+    const served = new Set((pub.data.decks || []).map((d) => d.id));
     console.log("  общие папки сейчас: " + (pub.data.folders.length
-      ? pub.data.folders.map((f) => "«" + f.title + "» — колод: " + f.decks.length).join("; ")
+      ? pub.data.folders.map((f) => {
+        const missing = f.decks.filter((id) => !served.has(id));
+        return "«" + f.title + "» — колод: " + f.decks.length + (missing.length ? ", нет на сервере: " + missing.join(", ") : "");
+      }).join("; ")
       : "нет") + " (всего колод: " + pub.data.decks.length + ")");
   }
 
