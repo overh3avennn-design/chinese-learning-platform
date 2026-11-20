@@ -8,7 +8,9 @@
 // Переменные окружения (их ставит .github/workflows/backend.yml):
 //   TELEGRAM_BOT_TOKEN, GOOGLE_CLIENT_ID, JWT_SECRET — секреты;
 //   YDB_CONNECTION — grpcs://…/?database=… из `yc ydb database get`;
-//   ALLOWED_ORIGINS — сайты, которым можно обращаться к API (через запятую).
+//   ALLOWED_ORIGINS — сайты, которым можно обращаться к API (через запятую);
+//   PUBLISHER_TELEGRAM_IDS — Telegram id тех, чьи папки с отметкой «общая»
+//     видят все (GET /public), через запятую; пусто — общих папок нет.
 //
 // К YDB функция ходит с IAM-токеном своего сервисного аккаунта: платформа
 // кладёт его в context.token при каждом вызове.
@@ -51,7 +53,8 @@ const app = createApp({
     botToken: process.env.TELEGRAM_BOT_TOKEN,
     googleClientId: process.env.GOOGLE_CLIENT_ID,
     jwtSecret: process.env.JWT_SECRET,
-    allowedOrigins: (process.env.ALLOWED_ORIGINS || "").split(/[|,\s]+/).filter(Boolean)
+    allowedOrigins: (process.env.ALLOWED_ORIGINS || "").split(/[|,\s]+/).filter(Boolean),
+    publisherTelegramIds: (process.env.PUBLISHER_TELEGRAM_IDS || "").split(/[|,\s]+/).filter(Boolean)
   }
 });
 

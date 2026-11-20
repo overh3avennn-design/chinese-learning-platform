@@ -5,7 +5,7 @@
 
 const crypto = require("crypto");
 const { unauthorized } = require("../src/errors");
-const { FIELD, planPush, planMerge, decideLink, isCaughtUp, pageResult } = require("../src/sync");
+const { FIELD, planPush, planMerge, decideLink, isCaughtUp, pageResult, publicSet, publicDeckIds } = require("../src/sync");
 
 function createMemoryStore() {
   const users = new Map();            // id → user
@@ -94,6 +94,23 @@ function createMemoryStore() {
       cards.set(userId, mine);
       Object.assign(u, plan.counters);
       return { rev: plan.rev, results: plan.results };
+    },
+
+    async publicCards(telegramIds, limits) {
+      const sources = [];
+      for (const tg of telegramIds) {
+        const u = find({ provider: "telegram", subject: Number(tg) });
+        const mine = u && cards.get(u.id);
+        const f = mine && mine.get("folders");
+        if (!f || f.deleted || !f.data) continue;
+        const decks = new Map();
+        for (const id of publicDeckIds(f.data, limits)) {
+          const r = mine.get(id);
+          if (r && !r.deleted && r.data) decks.set(id.slice(5), r.data);
+        }
+        sources.push({ folders: f.data, decks });
+      }
+      return publicSet(sources, limits);
     }
   };
 }

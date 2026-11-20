@@ -11,6 +11,12 @@
 //   GET  /me                                         → { user }
 //   GET  /cards?rev=&id=                             → { items, cursor, more }
 //   PUT  /cards                   { items: [...] }   → { rev, results }
+//   GET  /public  (без входа)                        → { folders, decks }
+//
+// /public — общие папки: папки с public: true у издателей (Telegram id из
+// config.publisherTelegramIds) и колоды из них. Больше ничего из чужих
+// карточек сервер не отдаёт. В user поле publisher — может ли человек
+// делать свои папки общими.
 
 const { HttpError, unauthorized, badRequest } = require("./errors");
 const { verifyMiniAppInitData, verifyLoginWidget } = require("./telegram");
@@ -19,9 +25,13 @@ const { signToken, verifyToken } = require("./jwt");
 const { LIMITS, RATES, createRateLimiter } = require("./limits");
 const { validateItems } = require("./sync");
 
-function publicUser(u) {
-  return { id: u.id, name: u.name || "", photo: u.photo || "", telegram: u.telegramId != null, google: u.googleSub != null };
+function publicUser(u, publishers) {
+  const out = { id: u.id, name: u.name || "", photo: u.photo || "", telegram: u.telegramId != null, google: u.googleSub != null };
+  if (publishers) out.publisher = u.telegramId != null && publishers.has(String(u.telegramId));
+  return out;
 }
+
+const PUBLIC_CACHE = { "Cache-Control": "public, max-age=60" };
 
 function createApp(options) {
   const store = options.store;
@@ -31,7 +41,10 @@ function createApp(options) {
   const now = options.now || Date.now;
   const hit = createRateLimiter(now);
   const origins = new Set(config.allowedOrigins || []);
+  const publishers = new Set((config.publisherTelegramIds || []).map(String).filter((id) => /^\d{1,20}$/.test(id)));
   const log = options.log || ((...a) => console.error(...a));
+  let publicCache = null;           // { at, data } — ответ GET /public
+  const userOut = (u) => publicUser(u, publishers);
 
   function cors(origin) {
     const h = { "Vary": "Origin" };
@@ -98,7 +111,7 @@ function createApp(options) {
 
   function issue(user) {
     const t = signToken(user.id, config.jwtSecret, { now: now() });
-    return { token: t.token, expiresAt: t.expiresAt, user: publicUser(user) };
+    return { token: t.token, expiresAt: t.expiresAt, user: userOut(user) };
   }
 
   async function route(req) {
@@ -114,14 +127,14 @@ function createApp(options) {
       const identity = await identityFrom(auth[2], readJson(req));
       if (!linking) return issue(await store.login(identity, now()));
       const res = await store.link(userId, identity, limits, now());
-      return { user: publicUser(res.user), merged: res.merged };
+      return { user: userOut(res.user), merged: res.merged };
     }
 
     if (path === "/me") {
       if (m !== "GET") throw new HttpError(405, "method_not_allowed");
       const user = await store.getUser(authUserId(req));
       if (!user) throw unauthorized("user_gone");
-      return { user: publicUser(user) };
+      return { user: userOut(user) };
     }
 
     if (path === "/cards") {
@@ -140,6 +153,15 @@ function createApp(options) {
       throw new HttpError(405, "method_not_allowed");
     }
 
+    if (path === "/public") {
+      if (m !== "GET") throw new HttpError(405, "method_not_allowed");
+      if (!publishers.size) return { folders: [], decks: [] };
+      if (publicCache && now() - publicCache.at < limits.publicCacheMs) return publicCache.data;
+      const data = await store.publicCards(Array.from(publishers), limits);
+      publicCache = { at: now(), data };
+      return data;
+    }
+
     throw new HttpError(404, "not_found");
   }
 
@@ -149,7 +171,8 @@ function createApp(options) {
     try {
       limit("ip:" + req.ip, rates.ip);
       const data = await route(req);
-      return json(200, data, origin);
+      const cacheable = req.method === "GET" && req.path.replace(/\/+$/, "") === "/public";
+      return json(200, data, origin, cacheable ? PUBLIC_CACHE : undefined);
     } catch (err) {
       if (err instanceof HttpError) {
         const extra = err.status === 429 && /^\d+$/.test(err.message) ? { "Retry-After": err.message } : undefined;

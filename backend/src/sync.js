@@ -200,4 +200,78 @@ function pageResult(items, cursor, more) {
   return { items, cursor: { rev: last.rev, id: more ? last.id : DONE }, more };
 }
 
-module.exports = { ID_RE, FIELD, DONE, validateItems, planPush, planMerge, mergeData, decideLink, isCaughtUp, pageResult, utcDay };
+// ------------------------------------------------------- общие папки
+// Папка с public: true в строке folders издателя (его Telegram id — в
+// PUBLISHER_TELEGRAM_IDS) видна всем, вместе с её колодами. Остальные
+// папки и колоды сервер не отдаёт никому, кроме владельца (GET /cards).
+const DECK_ID_RE = /^[A-Za-z0-9_.-]{1,96}$/;
+
+const str = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+
+// Текст строки folders → публичные папки [{ id, title, decks: [id, …] }].
+function publicFolders(text) {
+  const list = parse(text);
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  for (const f of list) {
+    if (!f || f.public !== true || !DECK_ID_RE.test(String(f.id || ""))) continue;
+    const decks = Array.from(new Set((Array.isArray(f.decks) ? f.decks : []).filter((d) => typeof d === "string" && DECK_ID_RE.test(d))));
+    out.push({ id: f.id, title: str(f.title, 60) || f.id, decks });
+  }
+  return out;
+}
+
+// id и текст строки deck:<id> → { id, title, words } только с полями слова.
+function publicDeck(id, text) {
+  const d = parse(text);
+  if (!d || typeof d !== "object" || !Array.isArray(d.words)) return null;
+  const words = [];
+  for (const w of d.words) {
+    const hanzi = w && str(w.hanzi, 40);
+    if (hanzi) words.push({ hanzi, pinyin: str(w.pinyin, 100), translation: str(w.translation, 200) });
+  }
+  return words.length ? { id, title: str(d.title, 60) || id, words } : null;
+}
+
+// Папки и колоды нескольких издателей → ответ GET /public. sources —
+// [{ folders: текст строки folders, decks: id → текст строки deck:<id> }].
+// Не больше limits.publicMaxDecks колод и limits.publicMaxBytes байт;
+// одинаковые id — первый издатель.
+function publicSet(sources, limits) {
+  const folders = [];
+  const decks = [];
+  const seenFolder = new Set();
+  const seenDeck = new Set();
+  let bytes = 0;
+  for (const src of sources) {
+    for (const f of publicFolders(src.folders)) {
+      if (seenFolder.has(f.id)) continue;
+      seenFolder.add(f.id);
+      folders.push(f);
+      for (const id of f.decks) {
+        if (seenDeck.has(id) || decks.length >= limits.publicMaxDecks) continue;
+        const text = src.decks.get(id);
+        const deck = text ? publicDeck(id, text) : null;
+        if (!deck) continue;
+        const size = Buffer.byteLength(JSON.stringify(deck), "utf8");
+        if (bytes + size > limits.publicMaxBytes) continue;
+        bytes += size;
+        seenDeck.add(id);
+        decks.push(deck);
+      }
+    }
+  }
+  return { folders, decks };
+}
+
+// Какие строки deck:<id> прочитать для публичных папок (текст строки folders).
+function publicDeckIds(text, limits) {
+  const ids = new Set();
+  for (const f of publicFolders(text)) for (const id of f.decks) ids.add(id);
+  return Array.from(ids).slice(0, limits.publicMaxDecks).map((id) => "deck:" + id);
+}
+
+module.exports = {
+  ID_RE, FIELD, DONE, validateItems, planPush, planMerge, mergeData, decideLink, isCaughtUp, pageResult, utcDay,
+  publicFolders, publicDeck, publicSet, publicDeckIds
+};

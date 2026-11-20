@@ -12,7 +12,7 @@
 const crypto = require("crypto");
 const { Types, TypedValues } = require("ydb-sdk");
 const { unauthorized } = require("./errors");
-const { FIELD, planPush, planMerge, decideLink, isCaughtUp, pageResult } = require("./sync");
+const { FIELD, planPush, planMerge, decideLink, isCaughtUp, pageResult, publicSet, publicDeckIds } = require("./sync");
 
 const RW = { serializableReadWrite: {} };
 const RO = { snapshotReadOnly: {} };
@@ -252,6 +252,35 @@ function createYdbStore(getDriver) {
         text += "UPSERT INTO users (id, rev, rows_count, bytes_total, quota_day, quota_writes) VALUES ($uid, $rev, $nrows, $nbytes, $qday, $qwrites);";
         await run(session, text, params);
         return { rev: plan.rev, results: plan.results };
+      });
+    },
+
+    // Общие папки издателей (Telegram id) и их колоды — для GET /public.
+    // Читаются только строка folders издателя и колоды из общих папок.
+    async publicCards(telegramIds, limits) {
+      return tx("public", RO, async (session) => {
+        const sources = [];
+        for (const tg of telegramIds) {
+          const user = await findOwner(session, { provider: "telegram", subject: Number(tg) });
+          if (!user) continue;
+          const uid = TypedValues.utf8(user.id);
+          const [frows] = await run(session,
+            "DECLARE $uid AS Utf8; DECLARE $fid AS Utf8;\nSELECT data, deleted FROM cards WHERE user_id = $uid AND id = $fid;",
+            { $uid: uid, $fid: TypedValues.utf8("folders") });
+          const f = frows && frows[0];
+          if (!f || f.deleted || !f.data) continue;
+          const ids = publicDeckIds(f.data, limits);
+          const decks = new Map();
+          if (ids.length) {
+            const [drows] = await run(session,
+              "DECLARE $uid AS Utf8; DECLARE $ids AS List<Utf8>;\n" +
+              "SELECT id, data, deleted FROM cards WHERE user_id = $uid AND id IN $ids;",
+              { $uid: uid, $ids: TypedValues.list(Types.UTF8, ids) });
+            for (const r of drows || []) if (!r.deleted && r.data) decks.set(r.id.slice(5), r.data);
+          }
+          sources.push({ folders: f.data, decks });
+        }
+        return publicSet(sources, limits);
       });
     }
   };
