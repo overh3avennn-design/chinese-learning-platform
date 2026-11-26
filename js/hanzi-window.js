@@ -531,6 +531,7 @@
           '<p class="hz-gloss"></p>' +
           '<div class="hz-actions">' +
             '<button class="hz-say" type="button" aria-label="Озвучить" title="Озвучить">' + ICONS.say + '</button>' +
+            '<button class="btn btn--sm btn--outline" type="button" data-word-cards hidden>В карточки</button>' +
             '<button class="hz-explain" type="button" data-explain>' + ICONS.spark + 'Объяснить</button>' +
           '</div>' +
         '</div>' +
@@ -589,6 +590,15 @@
       return;
     }
     if (!state) return;
+    var add = e.target.closest("[data-word-cards]");
+    if (add && window.DictionaryCardDialog) {
+      window.DictionaryCardDialog.open(add, {
+        hanzi: state.word,
+        pinyin: ui.pinyin.textContent,
+        translation: ui.gloss.textContent
+      });
+      return;
+    }
     if (e.target.closest(".hz-say")) {
       speak(state.word);
       return;
@@ -683,6 +693,7 @@
       cards: [],
       returnFocus: opts.returnFocus || document.activeElement
     };
+    ui.word.closest("dialog").querySelector("[data-word-cards]").hidden = !window.DictionaryCardDialog;
     ui.word.textContent = word;
     var len = Array.from ? Array.from(word).length : word.length;
     ui.word.className = "hz-word" + (len > 8 ? " is-long" : len > 4 ? " is-mid" : "");

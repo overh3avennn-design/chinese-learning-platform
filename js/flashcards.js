@@ -370,27 +370,25 @@
   // Если localStorage недоступен, всё живёт в userData, пока открыта страница.
   var USER_KEY = "flashcards-user";
   var userData = null;
+  var storageReadable = false;
 
   function loadUser() {
     if (userData) return userData;
-    var data = null;
     try {
-      data = JSON.parse(window.localStorage.getItem(USER_KEY) || "null");
+      userData = window.OwnDecks.read();
+      storageReadable = true;
     } catch (e) {
-      if (!(e instanceof SyntaxError)) storageFailed();
+      storageReadable = false;
+      storageFailed();
+      userData = { decks: [], extra: {}, folders: [] };
     }
-    userData = {
-      decks: data && Array.isArray(data.decks) ? data.decks : [],
-      extra: data && data.extra && typeof data.extra === "object" ? data.extra : {},
-      folders: data && Array.isArray(data.folders) ? data.folders : []
-    };
     return userData;
   }
 
   function saveUser() {
+    if (!storageReadable) return false;
     try {
-      window.localStorage.setItem(USER_KEY, JSON.stringify(userData));
-      cloudChanged();
+      window.OwnDecks.write(userData);
       return true;
     } catch (e) {
       storageFailed();
@@ -501,6 +499,8 @@
     folders.forEach(function (f) {
       if (f.own) f.decks = f.decks.filter(function (id) { return id !== deck.id; });
     });
+    var published = publication();
+    if (published) published.decks = published.decks.filter(function (id) { return id !== deck.id; });
     storeFolders();       // он же сохраняет user целиком
     delete deckById[deck.id];
     decks = decks.filter(function (d) { return d !== deck; });
@@ -577,10 +577,18 @@
     collectPublicFolders();
   }
 
+  // Список отдельно опубликованных колод синхронизируется в той же строке,
+  // что и папки. Пользовательские папки имеют префикс folder-.
+  var publicationId = "published-decks";
+
+  function publication() {
+    return loadUser().folders.find(function (f) { return f && f.id === publicationId && Array.isArray(f.decks); });
+  }
+
   function collectOwnFolders() {
     loadUser().folders.forEach(function (raw) {
       var folder = cleanFolder(raw);
-      if (!folder || folderById[folder.id]) return;
+      if (!folder || folder.id === publicationId || folderById[folder.id]) return;
       folder.own = true;
       folderById[folder.id] = folder;
       folders.push(folder);
@@ -589,11 +597,13 @@
 
   // Свои папки — в flashcards-user в порядке создания.
   function storeFolders() {
+    var published = publication();
     loadUser().folders = folders.filter(function (f) { return f.own; }).map(function (f) {
       var out = { id: f.id, title: f.title, decks: f.decks.slice() };
       if (f.public) out.public = true;
       return out;
     });
+    if (published && published.decks.length) loadUser().folders.unshift(published);
     return saveUser();
   }
 
@@ -630,7 +640,7 @@
 
   function cleanPublic(data) {
     if (!data || !Array.isArray(data.folders) || !Array.isArray(data.decks)) return null;
-    return { folders: data.folders, decks: data.decks };
+    return { folders: data.folders, decks: data.decks, catalog: Array.isArray(data.catalog) ? data.catalog : [] };
   }
 
   function readPublicCache() {
@@ -648,7 +658,7 @@
     if (!url || !window.fetch) return Promise.resolve(null);
     var ctrl = window.AbortController ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, PUBLIC_TIMEOUT);
-    return fetch(url, { signal: ctrl ? ctrl.signal : undefined }).then(function (res) {
+    return fetch(url, { cache: "no-store", signal: ctrl ? ctrl.signal : undefined }).then(function (res) {
       if (!res.ok) throw new Error("HTTP " + res.status);
       return res.json();
     }).then(function (data) {
@@ -656,7 +666,7 @@
       data = cleanPublic(data);
       if (data) {
         try {
-          window.localStorage.setItem(PUBLIC_KEY, JSON.stringify(data));
+          window.localStorage.setItem(PUBLIC_KEY, JSON.stringify({ folders: data.folders, decks: data.decks }));
         } catch (e) {}
       }
       return data;
@@ -672,11 +682,12 @@
     loadUser().decks.forEach(function (d) {
       if (d && typeof d.id === "string") own[d.id.trim()] = true;
     });
-    publicData.decks.forEach(function (raw) {
+    publicData.decks.concat(publicData.catalog).forEach(function (raw) {
       if (!raw || typeof raw.id !== "string" || !raw.id.trim() || own[raw.id.trim()]) return;
       var deck = cleanDeck(raw, "");
       if (!deck || deckById[deck.id] || !deck.words.length) return;
       deck.pub = true;
+      if (publicData.catalog.indexOf(raw) !== -1) deck.author = raw.author || "Пользователь";
       deckById[deck.id] = deck;
       decks.push(deck);
     });
@@ -926,6 +937,8 @@
     var folderGrid = $("[data-folder-list]");
     var status = $("[data-deck-status]");
     var errorBox = $("[data-deck-errors]");
+    var catalogGrid = $("[data-public-grid]");
+    catalogGrid.textContent = "";
     var ownCount = 0;
     grid.textContent = "";
     ownGrid.textContent = "";
@@ -941,14 +954,24 @@
     decks.forEach(function (deck) {
       var card = deckCard(deck);
       if (deck.own) {
+        var published = publication();
+        var isPublic = (published && published.decks.indexOf(deck.id) !== -1) ||
+          foldersOf(deck).some(function (folder) { return folder.own && folder.public; });
+        card.querySelector(".fc-set__name").appendChild(el("span", "fc-folder-row__meta", " · " + (isPublic ? "Опубликовано" : "Частная")));
         ownGrid.insertBefore(card, ownGrid.firstChild);
         ownCount++;
+      } else if (deck.author) {
+        var title = card.querySelector(".fc-set__name");
+        title.appendChild(document.createElement("br"));
+        title.appendChild(el("small", "fc-folder-row__meta", deck.author + " · " + words(deck.words.length)));
+        catalogGrid.appendChild(card);
       } else {
         grid.appendChild(card);
       }
     });
 
     $("[data-own-decks]").hidden = !ownCount;
+    $("[data-public-section]").hidden = !catalogGrid.children.length;
     status.hidden = decks.length > ownCount;
     status.textContent = "Колод пока нет.";
 
@@ -1107,11 +1130,20 @@
 
     // Своя колода: где хранится, изменить, скачать файл, удалить. Готовая
     // колода со словами с фото: сколько их и как убрать.
-    $("[data-own]").hidden = !deck.own && !deck.extra;
+    $("[data-own]").hidden = !deck.own && !deck.extra && !deck.pub;
     $("[data-own-text]").textContent = deck.own
       ? "Колода собрана вами и хранится в этом браузере — на другом устройстве её не будет. " +
         "Файл колоды можно скачать: отправить преподавателю или добавить на сайт."
       : words(deck.extra || 0) + " добавлено по фото — они есть только в этом браузере.";
+    if (deck.own && signedIn()) $("[data-own-text]").textContent = "Ваша колода синхронизируется с аккаунтом.";
+    if (deck.pub && !deck.extra) $("[data-own-text]").textContent = deck.author ? "Автор: " + deck.author : "Колода из общей папки.";
+    var published = publication();
+    var publish = $("[data-own-publish]");
+    publish.hidden = !deck.own || !signedIn();
+    publish.textContent = published && published.decks.indexOf(deck.id) !== -1
+      ? "Снять с публикации" : "Опубликовать колоду";
+    $("[data-public-copy]").hidden = !deck.pub;
+    $("[data-own-delete]").hidden = !deck.own && !deck.extra;
     var editLink = $("[data-own-edit]");
     editLink.hidden = !deck.own;
     editLink.setAttribute("href", deckHash(deck.id, "edit"));
@@ -1654,6 +1686,38 @@
       speak(sayBtn.getAttribute("data-say"));
       return;
     }
+    if (e.target.closest("[data-own-publish]") && deckOnPage && deckOnPage.own && signedIn()) {
+      var pub = publication();
+      var removing = pub && pub.decks.indexOf(deckOnPage.id) !== -1;
+      if (!removing && !window.confirm("Опубликовать колоду «" + deckOnPage.title +
+          "»? Все посетители смогут увидеть ваше имя, просмотреть и скопировать слова.")) return;
+      if (!pub) {
+        pub = { id: publicationId, title: "Опубликованные колоды", decks: [], public: true };
+        loadUser().folders.unshift(pub);
+      }
+      if (removing) pub.decks = pub.decks.filter(function (id) { return id !== deckOnPage.id; });
+      else pub.decks.push(deckOnPage.id);
+      if (!pub.decks.length) loadUser().folders = loadUser().folders.filter(function (f) { return f !== pub; });
+      if (saveUser()) {
+        savedNote = removing ? "После синхронизации колода исчезнет из каталога." : "После синхронизации колода появится в каталоге.";
+        if (removing && foldersOf(deckOnPage).some(function (f) { return f.own && f.public; })) {
+          savedNote += " Колода также находится в общей папке и останется доступна через неё.";
+        }
+        refreshAfterPublication = true;
+        if (window.CloudSync) window.CloudSync.syncSoon(0);
+      } else {
+        userData = null;
+        savedNote = "Изменение не сохранено. Проверьте доступное место в браузере.";
+      }
+      renderDeck(deckOnPage);
+      return;
+    }
+    if (e.target.closest("[data-public-copy]") && deckOnPage && deckOnPage.pub) {
+      var copied = saveOwnDeck(null, deckOnPage.title, deckOnPage.fileWords || deckOnPage.words);
+      savedNote = copied.stored ? "Копия добавлена в ваши колоды." : "Браузер не смог сохранить копию.";
+      navigate(deckHash(copied.id));
+      return;
+    }
     if (e.target.closest("[data-own-download]") && deckOnPage) {
       downloadDeck(deckOnPage);
       return;
@@ -2030,15 +2094,26 @@
   // Вошли, вышли или узнали, что вошедший — издатель: перерисовать (галочка
   // «общая» доступна только вошедшим, перенос колод виден только издателю).
   // js/account.js подключается позже этого файла.
+  var refreshAfterPublication = false;
   function hookAccount() {
     if (!window.Account || !window.Account.onChange) return false;
     function changed() {
       updatePublicLine();
       if (decksReady && !busyScreen()) route();
     }
+    if (window.CloudSync) window.CloudSync.onStatus(function (state) {
+      if (!refreshAfterPublication || state !== "idle") return;
+      refreshAfterPublication = false;
+      fetchPublic().then(function (data) {
+        if (data) { publicData = data; reloadFromStorage(); }
+      });
+    });
     window.Account.onChange(changed);
     changed();
     return true;
   }
+  window.addEventListener("storage", function (event) {
+    if (event.key === USER_KEY || event.key === null) reloadFromStorage();
+  });
   if (!hookAccount()) window.addEventListener("load", hookAccount);
 })();

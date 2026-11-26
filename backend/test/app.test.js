@@ -267,7 +267,7 @@ test("общие папки: у любого пользователя видна
   // без входа
   const r = await call("GET", "/public");
   assert.equal(r.status, 200);
-  assert.equal(r.headers["Cache-Control"], "public, max-age=60");
+  assert.equal(r.headers["Cache-Control"], "no-store");
   assert.deepEqual(r.data.folders, [
     { id: "folder-conf", title: "конфуций", decks: ["conf-1", "conf-2"] },     // учитель — первым; 26-09-conf нет
     { id: "f-u", title: "Для всех", decks: ["u-deck"] }                         // conf-1 ученика не подкладывается

@@ -49,3 +49,10 @@ CREATE TABLE IF NOT EXISTS public_owners (
   updated_at Uint64,
   PRIMARY KEY (user_id)
 );
+
+-- История помощника. При откате приложения таблица сохраняется.
+CREATE TABLE IF NOT EXISTS chat_history (
+  user_id Utf8 NOT NULL,
+  data Utf8,
+  PRIMARY KEY (user_id)
+);

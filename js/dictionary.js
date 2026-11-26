@@ -719,10 +719,9 @@
     // Статья с иероглифами в заголовке открывает окно слова: разбор
     // иероглифов, порядок черт, письмо (js/hanzi-window.js).
     var card = window.HanziWindow && CJK.test(e[0]);
-    if (card) {
-      node.className += " has-card";
-      node.dictEntry = e;
-    }
+    node.dictEntry = e;
+    if (card) node.className += " has-card";
+    var addButton = "";
     // Длина слова в знаках — от неё зависит размер иероглифов.
     var len = Math.min(Array.from(e[0]).length, 9);
     var hanzi = '<span class="dict-hanzi is-len-' + len + '" lang="zh-CN">' + esc(e[0]) + "</span>";
@@ -741,12 +740,12 @@
       }
       // «ИИ: объяснить» — то же окно слова, но сразу с объяснением от
       // нейросети (js/ai.js; если он не подключён, кнопки нет).
-      var actions = !card ? "" : '<div class="dict-main__actions">' +
+      var actions = !card ? addButton : '<div class="dict-main__actions">' +
         '<button class="btn btn--sm btn--outline dict-card-btn" type="button" aria-label="Разбор иероглифов: ' + esc(e[0]) +
           '"><span>разобрать<span class="wide-only"> иероглиф</span></span></button>' +
         (window.AI ? '<button class="btn btn--sm btn--outline dict-card-btn dict-explain-btn" type="button" aria-label="Объяснить слово: ' +
           esc(e[0]) + '">' + ICON_AI + "ИИ: объяснить</button>" +
-          '<span class="dict-main__vpn wide-only">ИИ пока работает с VPN</span>' : "") + "</div>";
+          '<span class="dict-main__vpn wide-only">ИИ пока работает с VPN</span>' : "") + addButton + "</div>";
       html = '<div class="dict-main__word">' + hanzi +
         '<div class="dict-main__body">' +
           '<div class="dict-main__top">' + pinyin + '<span class="tag">точное совпадение</span></div>' +
@@ -767,7 +766,7 @@
       // совпадает с коротким значением, и кнопки нет.
       var full = lines.length > 1 || !!lead;
       html = '<div class="dict-head">' + hanzi + pinyin + "</div>" +
-        '<div class="dict-text' + (foreign ? " is-foreign" : "") + '">' + summary + "</div>" +
+        '<div class="dict-text' + (foreign ? " is-foreign" : "") + '">' + summary + addButton + "</div>" +
         (full ? '<button class="dict-toggle dict-row__more" type="button" aria-expanded="false" aria-label="Показать всю статью: ' +
           esc(e[0]) + '"><span>статья</span>' + ICON_DOWN + "</button>" : '<span class="dict-row__more"></span>') +
         (card ? '<button class="dict-card-btn dict-row__open" type="button" aria-label="Разбор иероглифов: ' + esc(e[0]) + '">' +

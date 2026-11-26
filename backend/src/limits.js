@@ -14,8 +14,7 @@ const LIMITS = {
   publicMaxDecks: 200,              // колод в ответе GET /public
   publicMaxBytes: 2 * 1024 * 1024,  // и байт
   publicMaxOwners: 50,              // чьи общие папки (последние сохранившие)
-  publicMaxFoldersPerUser: 20,      // общих папок одного пользователя
-  publicCacheMs: 60 * 1000          // ответ GET /public помнится в экземпляре функции
+  publicMaxFoldersPerUser: 20      // общих папок одного пользователя
 };
 
 // Частота запросов — в памяти экземпляра функции (окно в минуту). Экземпляров

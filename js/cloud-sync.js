@@ -40,6 +40,7 @@
   var status = "idle";
   var statusListeners = [];
   var running = null;
+  var generation = 0;
   var again = false;
   var timer = null;
   var firstChangeAt = 0;
@@ -225,7 +226,7 @@
     // Новые колоды — в порядке создания (id своих колод растёт со временем).
     added.sort(function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; });
     user.decks = user.decks.concat(added);
-    if (userChanged) setItem(USER_KEY, JSON.stringify(user));
+    if (userChanged && !setItem(USER_KEY, JSON.stringify(user))) throw new Error("cards_storage_unavailable");
   }
 
   function unionWords(a, b) {
@@ -278,13 +279,23 @@
     return local;
   }
 
+  function currentOwner(state) {
+    var user = Account && Account.user();
+    return !!user && user.id === state.userId;
+  }
+
+  function checkOwner(state, started) {
+    if (started !== generation || !currentOwner(state)) throw new Error("account_changed");
+  }
+
   // «Что поменялось на сервере» — страницами, пока не догоним.
-  function pullAll(state, first) {
+  function pullAll(state, first, started) {
     var changes = [];
     var local = first ? collectLocal() : null;
     function page() {
       var q = "?rev=" + encodeURIComponent(state.cursor.rev) + "&id=" + encodeURIComponent(state.cursor.id || "");
       return Account.api("GET", "/cards" + q).then(function (res) {
+        checkOwner(state, started);
         (res.items || []).forEach(function (item) {
           var id = item.id;
           if (typeof id !== "string" || !ID_RE.test(id)) return;
@@ -314,6 +325,7 @@
       });
     }
     return page().then(function () {
+      checkOwner(state, started);
       if (changes.length) {
         applyLocal(changes);
         reloadCards();
@@ -322,7 +334,7 @@
   }
 
   // Отправить несохранённое. keepalive — страница закрывается.
-  function push(state, keepalive) {
+  function push(state, keepalive, started) {
     var local = collectLocal();
     var items = [];
     Object.keys(state.dirty).forEach(function (id) {
@@ -358,11 +370,13 @@
 
     var needPull = false;
     function send(i) {
+      checkOwner(state, started);
       if (i >= batches.length) return Promise.resolve(needPull);
       var batch = batches[i];
       var body = { items: batch.items.map(function (it) { return it.body; }) };
       var opts = { keepalive: !!keepalive && batch.bytes < KEEPALIVE_BYTES };
       return Account.api("PUT", "/cards", body, opts).then(function (res) {
+        checkOwner(state, started);
         var byId = {};
         batch.items.forEach(function (it) { byId[it.body.id] = it; });
         (res.results || []).forEach(function (r) {
@@ -375,7 +389,9 @@
             delete state.dirty[r.id];
             state.pushed = true;
           } else if (r.status === "stale") {
-            delete state.dirty[r.id];        // на сервере новее — заберём при сверке
+            // Сохраняем время правки до загрузки серверной версии. Иначе
+            // scan пометит старую версию как только что изменённую.
+            state.cursor = { rev: 0, id: "" };
             needPull = true;
           } else if (r.status === "quota") {
             d.q = true;
@@ -407,11 +423,13 @@
   }
 
   function finish(state) {
+    if (!currentOwner(state)) return;
     saveState(state);
     setStatus(hasQuota(state) ? "quota" : "idle");
   }
 
   function failed(state, err) {
+    if (state && !currentOwner(state)) return;
     if (state) saveState(state);
     if (!Account.user()) setStatus("idle");             // пропуск отклонён — вышли
     else setStatus(err && err.status === 0 ? "offline" : "error");
@@ -437,20 +455,28 @@
     var user = Account && Account.user();
     if (!user) return Promise.resolve();
     return guard(function () {
+      var started = generation;
       var state = loadState();
+      if (state.userId && state.userId !== user.id) {
+        setStatus("error");
+        return Promise.resolve();
+      }
       var first = state.userId !== user.id;
       if (first) state = freshState(user.id);
       else scan(state);
       setStatus("syncing");
-      return pullAll(state, first).then(function () {
+      return pullAll(state, first, started).then(function () {
+        checkOwner(state, started);
         scan(state);
         saveState(state);
-        return push(state, false);
+        return push(state, false, started);
       }).then(function (needPull) {
+        if (started !== generation) return;
         state.lastPull = Date.now();
         finish(state);
         if (needPull) again = true;
       }, function (err) {
+        if (started !== generation) return;
         // Первая сверка оборвалась — её не запоминаем: в следующий раз
         // объединение начнётся заново, а не перезапишет аккаунт.
         if (first && !state.pushed) return failed(null, err);
@@ -477,11 +503,13 @@
     if (!Object.keys(state.dirty).some(function (id) { return !state.dirty[id].q; })) return Promise.resolve();
     return guard(function () {
       setStatus("syncing");
-      return push(state, keepalive).then(function (needPull) {
+      var started = generation;
+      return push(state, keepalive, started).then(function (needPull) {
+        if (started !== generation) return;
         finish(state);
         if (needPull) again = true;
       }, function (err) {
-        failed(state, err);
+        if (started === generation) failed(state, err);
       });
     });
   }
@@ -506,6 +534,11 @@
       timer = setTimeout(function () { flush(false); }, Math.max(0, Math.min(PUSH_DELAY, firstChangeAt + PUSH_MAX_WAIT - now)));
     },
     syncSoon: syncSoon,
+    syncNow: sync,
+    ownsLocal: function (id) {
+      var owner = loadState().userId;
+      return !owner || owner === id;
+    },
     status: function () { return status; },
     onStatus: function (fn) { statusListeners.push(fn); },
 
@@ -525,6 +558,12 @@
     clearLocal: function (flushFirst) {
       var before = flushFirst ? flush(false).then(noop, noop) : Promise.resolve();
       return before.then(function () {
+        generation++;
+        clearTimeout(timer);
+        clearTimeout(soon);
+        timer = soon = null;
+        firstChangeAt = 0;
+        again = false;
         removeItem(USER_KEY);
         storageKeys().forEach(function (k) {
           if (k && k.indexOf(PREFIX) === 0) removeItem(k);

@@ -88,6 +88,29 @@
     </aside>
   </div>
 
+  <dialog class="hz" data-dict-card-dialog aria-labelledby="dict-card-title">
+    <div class="hz-sheet">
+      <h2 class="panel__head" id="dict-card-title">В карточки</h2>
+      <form data-dict-card-form>
+        <label class="fc-field"><span class="fc-field-label">Моя колода</span>
+          <select class="fc-input" name="deck"></select>
+        </label>
+        <div data-dict-new-title hidden><label class="fc-field"><span class="fc-field-label">Название новой колоды</span>
+          <input class="fc-input" name="deckTitle" maxlength="60">
+        </label></div>
+        <div class="hz-hero">
+          <p class="hz-word" lang="zh-CN" data-card-word></p>
+          <p class="hz-pinyin" data-card-pinyin></p>
+          <p class="hz-gloss" data-card-translation></p>
+        </div>
+        <p class="dict-status" role="status" data-dict-card-status></p>
+        <div class="hz-actions">
+          <button class="btn" type="submit">Сохранить</button>
+          <button class="btn btn--outline" type="button" data-dict-card-close>Отмена</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
   <footer class="site-footer">
     <div class="site-footer__brand">
       <a class="site-footer__logo" href="../index.html"><span class="seal seal--sm" lang="zh-CN" aria-hidden="true">中</span>chineasy.</a>
@@ -106,6 +129,8 @@
   <script src="../js/ai.js"></script>
   <script src="../js/hanzi-window.js"></script>
   <script src="../js/dict-extra.js"></script>
+  <script src="../js/own-decks.js"></script>
+  <script src="../js/dict-card-dialog.js"></script>
   <script src="../js/dictionary.js"></script>
   <script src="../js/handwriting.js"></script>
 </body>

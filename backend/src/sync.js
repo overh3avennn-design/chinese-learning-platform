@@ -205,6 +205,8 @@ function pageResult(items, cursor, more) {
 // вместе с её колодами — но только колодами самого владельца папки.
 // Остальные папки и колоды сервер не отдаёт никому, кроме владельца
 // (GET /cards). Папки издателей (PUBLISHER_TELEGRAM_IDS) идут первыми.
+const { createHash } = require("node:crypto");
+const PUBLISHED_FOLDER = "published-decks";
 const DECK_ID_RE = /^[A-Za-z0-9_.-]{1,96}$/;
 
 const str = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -225,13 +227,13 @@ function publicFolders(text, max) {
 }
 
 // id и текст строки deck:<id> → { id, title, words } только с полями слова.
-function publicDeck(id, text) {
+function publicDeck(id, text, full) {
   const d = parse(text);
   if (!d || typeof d !== "object" || !Array.isArray(d.words)) return null;
   const words = [];
   for (const w of d.words) {
-    const hanzi = w && str(w.hanzi, 40);
-    if (hanzi) words.push({ hanzi, pinyin: str(w.pinyin, 100), translation: str(w.translation, 200) });
+    const hanzi = w && str(w.hanzi, full ? text.length : 40);
+    if (hanzi) words.push({ hanzi, pinyin: str(w.pinyin, full ? text.length : 100), translation: str(w.translation, full ? text.length : 200) });
   }
   return words.length ? { id, title: str(d.title, 60) || id, words } : null;
 }
@@ -250,11 +252,27 @@ function hasPublicFolder(text) {
 function publicSet(sources, limits) {
   const folders = [];
   const decks = [];
+  const catalog = [];
   const seenFolder = new Set();
   const deckOwner = new Map();        // id колоды → номер владельца
   let bytes = 0;
   sources.forEach((src, owner) => {
     for (const f of publicFolders(src.folders, limits.publicMaxFoldersPerUser)) {
+      if (f.id === PUBLISHED_FOLDER) {
+        for (const id of f.decks) {
+          if (decks.length + catalog.length >= limits.publicMaxDecks) break;
+          const data = src.decks.get(id);
+          const deck = data && publicDeck(id, data, true);
+          if (!deck) continue;
+          deck.id = "catalog-" + createHash("sha256").update(JSON.stringify([src.uid, id])).digest("hex");
+          deck.author = str(src.author, 100) || "Пользователь";
+          const size = Buffer.byteLength(JSON.stringify(deck), "utf8");
+          if (bytes + size > limits.publicMaxBytes) continue;
+          bytes += size;
+          catalog.push(deck);
+        }
+        continue;
+      }
       if (seenFolder.has(f.id)) continue;
       const kept = [];
       for (const id of f.decks) {
@@ -262,7 +280,7 @@ function publicSet(sources, limits) {
           if (deckOwner.get(id) === owner) kept.push(id);
           continue;
         }
-        if (decks.length >= limits.publicMaxDecks) continue;
+        if (decks.length + catalog.length >= limits.publicMaxDecks) continue;
         const text = src.decks.get(id);
         const deck = text ? publicDeck(id, text) : null;
         if (!deck) continue;
@@ -278,7 +296,7 @@ function publicSet(sources, limits) {
       folders.push({ id: f.id, title: f.title, decks: kept });
     }
   });
-  return { folders, decks };
+  return catalog.length ? { folders, decks, catalog } : { folders, decks };
 }
 
 // Какие строки deck:<id> прочитать для публичных папок (текст строки folders).

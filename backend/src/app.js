@@ -32,7 +32,7 @@ function publicUser(u, publishers) {
   return out;
 }
 
-const PUBLIC_CACHE = { "Cache-Control": "public, max-age=60" };
+const { chatRoute } = require("./chat");
 
 function createApp(options) {
   const store = options.store;
@@ -44,7 +44,6 @@ function createApp(options) {
   const origins = new Set(config.allowedOrigins || []);
   const publishers = new Set((config.publisherTelegramIds || []).map(String).filter((id) => /^\d{1,20}$/.test(id)));
   const log = options.log || ((...a) => console.error(...a));
-  let publicCache = null;           // { at, data } — ответ GET /public
   const userOut = (u) => publicUser(u, publishers);
 
   function cors(origin) {
@@ -138,6 +137,10 @@ function createApp(options) {
       return { user: userOut(user) };
     }
 
+    if (path === "/chat") {
+      return chatRoute(m, authUserId(req), m === "POST" ? readJson(req) : {}, store);
+    }
+
     if (path === "/cards") {
       const userId = authUserId(req);
       if (m === "GET") {
@@ -156,10 +159,7 @@ function createApp(options) {
 
     if (path === "/public") {
       if (m !== "GET") throw new HttpError(405, "method_not_allowed");
-      if (publicCache && now() - publicCache.at < limits.publicCacheMs) return publicCache.data;
-      const data = await store.publicCards(Array.from(publishers), limits);
-      publicCache = { at: now(), data };
-      return data;
+      return store.publicCards(Array.from(publishers), limits);
     }
 
     throw new HttpError(404, "not_found");
@@ -171,8 +171,7 @@ function createApp(options) {
     try {
       limit("ip:" + req.ip, rates.ip);
       const data = await route(req);
-      const cacheable = req.method === "GET" && req.path.replace(/\/+$/, "") === "/public";
-      return json(200, data, origin, cacheable ? PUBLIC_CACHE : undefined);
+      return json(200, data, origin);
     } catch (err) {
       if (err instanceof HttpError) {
         const extra = err.status === 429 && /^\d+$/.test(err.message) ? { "Retry-After": err.message } : undefined;
