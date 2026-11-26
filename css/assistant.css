@@ -1,0 +1,17 @@
+/* Только раздел помощника. */
+.ai-page .assistant-toolbar { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+.ai-page .assistant-workspace { display: flex; align-items: flex-start; gap: 24px; }
+.ai-page .assistant-history { flex: 0 0 240px; width: 240px; padding-right: 20px; border-right: 1px solid var(--line); }
+.ai-page .ai-chat { flex: 1; min-width: 0; margin-top: 0; }
+.ai-page .ai-empty { text-align: center; padding: 56px 24px; margin-inline: auto; }
+.ai-page .ai-empty .lead { margin-inline: auto; }
+.ai-page [data-history-list] { display: grid; gap: 8px; max-height: 60vh; overflow-y: auto; margin-bottom: 20px; }
+.ai-page .assistant-thread { display: block; width: 100%; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.ai-page .assistant-thread[aria-current="true"] { background: var(--surface-2); border-color: var(--text); }
+.ai-page .assistant-thread time { display: block; font-size: 12px; color: var(--text-2); }
+@media (max-width: 760px) {
+  .ai-page .assistant-workspace { display: block; }
+  .ai-page .assistant-history { width: 100%; padding: 16px; margin-bottom: 20px; border: 1px solid var(--line); background: var(--surface); }
+  .ai-page .ai-empty { padding: 32px 16px; }
+  .ai-page .assistant-toolbar { flex-wrap: wrap; }
+}

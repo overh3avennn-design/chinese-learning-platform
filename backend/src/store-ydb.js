@@ -14,6 +14,8 @@ const { Types, TypedValues } = require("ydb-sdk");
 const { unauthorized } = require("./errors");
 const { FIELD, planPush, planMerge, decideLink, isCaughtUp, pageResult, publicSet, publicDeckIds, hasPublicFolder } = require("./sync");
 
+const { createChatStore, mergeChatHistory } = require("./chat-store");
+
 const RW = { serializableReadWrite: {} };
 const RO = { snapshotReadOnly: {} };
 
@@ -121,6 +123,8 @@ function createYdbStore(getDriver) {
   }
 
   return {
+    ...createChatStore({ tx, run, readUser, RW, RO }),
+
     async login(identity, now) {
       return tx("login", RW, async (session) => {
         const p = identity.provider;
@@ -167,6 +171,7 @@ function createYdbStore(getDriver) {
           const target = await readAllRows(session, userId);
           const source = await readAllRows(session, owner.id);
           const plan = planMerge(target, source, limits, now, current.rev);
+          await mergeChatHistory(session, run, userId, owner.id);
           // public_owners: у слитого аккаунта строки больше нет, у текущего —
           // по итоговой строке folders.
           const folders = plan.upserts.find((r) => r.id === "folders") || target.find((r) => r.id === "folders");
@@ -301,10 +306,14 @@ function createYdbStore(getDriver) {
 
         const [frows] = await run(session,
           "DECLARE $ids AS List<Utf8>; DECLARE $fid AS Utf8;\n" +
-          "SELECT user_id AS uid, data, deleted FROM cards WHERE user_id IN $ids AND id = $fid;",
+          "SELECT c.user_id AS uid, c.data AS data, c.deleted AS deleted, u.name AS author FROM cards AS c INNER JOIN users AS u ON c.user_id = u.id WHERE c.user_id IN $ids AND c.id = $fid;",
           { $ids: TypedValues.list(Types.UTF8, order), $fid: TypedValues.utf8("folders") });
+        const authors = new Map();
         const foldersOf = new Map();
-        for (const r of frows || []) if (!r.deleted && r.data) foldersOf.set(r.uid, r.data);
+        for (const r of frows || []) if (!r.deleted && r.data) {
+          foldersOf.set(r.uid, r.data);
+          authors.set(r.uid, r.author);
+        }
 
         const keys = [];
         for (const uid of order) {
@@ -324,7 +333,7 @@ function createYdbStore(getDriver) {
           }
         }
         return publicSet(order.filter((uid) => foldersOf.has(uid)).map((uid) => ({
-          folders: foldersOf.get(uid),
+          uid, author: authors.get(uid), folders: foldersOf.get(uid),
           decks: decksOf.get(uid) || new Map()
         })), limits);
       });

@@ -49,6 +49,15 @@
     });
   }
 
+  // Другая вкладка могла завершить сеанс или войти под другим аккаунтом.
+  window.addEventListener("storage", function (event) {
+    if (event.key !== KEY && event.key !== null) return;
+    session = readSession();
+    listeners.forEach(function (fn) {
+      try { fn(session); } catch (e) {}
+    });
+  });
+
   function isMiniApp() {
     try {
       return window.sessionStorage.getItem("tg-mini-app") === "1";
@@ -127,6 +136,9 @@
 
   function login(method, payload, extra) {
     return api("POST", "/auth/" + method, payload, { token: null }).then(function (data) {
+      if (window.CloudSync && !window.CloudSync.ownsLocal(data.user.id)) {
+        throw new ApiError(409, "local_cards_owner");
+      }
       saveLogin(data, extra);
       return data.user;
     });
@@ -211,6 +223,7 @@
   var errorText = "";
 
   var ERRORS = {
+    local_cards_owner: "На устройстве остались карточки другого аккаунта. Войдите в прежний аккаунт, синхронизируйте карточки и выйдите из него.",
     offline: "Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.",
     auth_expired: "Данные входа устарели — попробуйте ещё раз.",
     already_linked: "К аккаунту уже привязан другой вход этого вида.",

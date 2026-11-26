@@ -16,6 +16,12 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../components/site-header/header.css">
   <link rel="stylesheet" href="../css/home-screen.css">
+  <style>
+    .fc-deck-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; margin-bottom: 16px; }
+    .fc-deck-heading [data-deck-name] { flex: 1; min-width: 0; margin: 0; overflow-wrap: anywhere; }
+    .fc-deck-heading .fc-own-actions { flex: 0 1 auto; justify-content: flex-end; max-width: 55%; }
+    .fc-deck-heading .btn { white-space: normal; }
+  </style>
 </head>
 <body>
   <script src="../components/site-header/header.js"></script>
@@ -145,11 +151,24 @@
               он продержится, пока открыта эта страница.
             </p>
           </section>
+          <section class="section" aria-labelledby="fc-public-title" data-public-section hidden>
+            <h2 class="section-label" id="fc-public-title">общедоступные колоды</h2>
+            <div class="table-wrap fc-decks">
+              <div class="fc-decks__head" aria-hidden="true"><span>колода и автор</span><span>слов</span><span>прогресс</span><span></span></div>
+              <div class="fc-decks__rows" data-public-grid></div>
+            </div>
+          </section>
         </div>
 
         <div class="fc-view fc-deck-page" data-view="deck" hidden>
           <a class="fc-back" href="#" data-back="">← назад</a>
-          <h1 class="page-title page-title--long" data-deck-name></h1>
+          <div class="fc-deck-heading">
+            <h1 class="page-title page-title--long" data-deck-name></h1>
+            <div class="fc-own-actions">
+              <button class="btn btn--outline" type="button" data-own-publish hidden>Опубликовать колоду</button>
+              <button class="btn btn--outline" type="button" data-public-copy hidden>Добавить в свои колоды</button>
+            </div>
+          </div>
           <p class="page-subtitle" data-deck-size></p>
           <p class="fc-saved" data-saved-note role="status" hidden></p>
 
@@ -519,6 +538,7 @@
   </div>
   <script src="decks/index.js"></script>
   <script src="../js/deck-editor.js"></script>
+  <script src="../js/own-decks.js"></script>
   <script src="../js/flashcards.js"></script>
   <script src="../js/home-screen.js"></script>
   <script src="../js/dict-lookup.js"></script>

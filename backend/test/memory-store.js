@@ -126,7 +126,7 @@ function createMemoryStore() {
           const r = mine.get(id);
           if (r && !r.deleted && r.data) decks.set(id.slice(5), r.data);
         }
-        sources.push({ folders: f.data, decks });
+        sources.push({ uid, author: users.get(uid).name, folders: f.data, decks });
       }
       return publicSet(sources, limits);
     }

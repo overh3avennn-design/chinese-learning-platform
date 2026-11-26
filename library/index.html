@@ -15,6 +15,11 @@
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../components/site-header/header.css">
+  <style>
+    .lib-materials-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .lib-materials-heading .section-title { min-width: 0; }
+    .lib-materials-heading .lib-plum { position: static; flex-shrink: 0; }
+  </style>
 </head>
 <body>
   <script src="../components/site-header/header.js"></script>
@@ -170,14 +175,16 @@
         </section>
 
         <!-- Материалы к занятиям. Подпись секции ведёт на общую страницу
-             «Материалы». Слева внизу — цветок сливы (images/icons/). -->
+             «Материалы». Слева рядом с заголовком — цветок сливы (images/icons/). -->
         <section class="section" aria-labelledby="lib-mat-title">
           <p class="section-label"><a href="materials/index.html">материалы</a></p>
           <div class="panel">
             <div class="lib-feature">
-              <h2 class="section-title" id="lib-mat-title">материалы<br>к занятиям</h2>
+              <div class="lib-materials-heading">
+                <h2 class="section-title" id="lib-mat-title">материалы<br>к занятиям</h2>
+                <img class="lib-plum" src="../images/icons/plum-blossom.svg" alt="" width="140" height="140" aria-hidden="true">
+              </div>
               <p class="lib-feature__text">Лексика уроков, грамматика, практика и подготовка к устному экзамену.</p>
-              <img class="lib-plum" src="../images/icons/plum-blossom.svg" alt="" width="140" height="140" aria-hidden="true">
             </div>
             <div class="panel__side lib-feature__rows">
               <a class="row lib-row" href="textbooks/materials.html?from=library">
